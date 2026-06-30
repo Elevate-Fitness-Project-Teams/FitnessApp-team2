@@ -1,0 +1,53 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    hostname: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Youssef@salah1
+    ports:
+      - "1433:1433"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: rabbitmq
+
+  authenticationservice:
+    image: ${DOCKER_REGISTRY-}authenticationservice
+    build:
+      context: .
+      dockerfile: AuthenticationService/Dockerfile
+
+  fitnesscalculationservice:
+    image: ${DOCKER_REGISTRY-}fitnesscalculationservice
+    build:
+      context: .
+      dockerfile: FitnessCalculationService/Dockerfile
+
+  nutritionservice:
+    image: ${DOCKER_REGISTRY-}nutritionservice
+    build:
+      context: .
+      dockerfile: NutritionService/Dockerfile
+
+  progresstrackingservice:
+    image: ${DOCKER_REGISTRY-}progresstrackingservice
+    build:
+      context: .
+      dockerfile: ProgressTrackingService/Dockerfile
+
+  userprofileservice:
+    image: ${DOCKER_REGISTRY-}userprofileservice
+    build:
+      context: .
+      dockerfile: UserProfileService/Dockerfile
+    ports:
+      - "8080:8080"
+
+  workoutservice:
+    image: ${DOCKER_REGISTRY-}workoutservice
+    build:
+      context: .
+      dockerfile: WorkoutService/Dockerfile
+    ports:
+      - "8085:8080"

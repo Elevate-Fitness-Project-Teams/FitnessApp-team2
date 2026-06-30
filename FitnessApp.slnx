@@ -1,0 +1,11 @@
+<Solution>
+  <Project Path="AuthenticationService/AuthenticationService.csproj" />
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+  <Project Path="FitnessCalculationService/FitnessCalculationService.csproj" />
+  <Project Path="NutritionService/NutritionService.csproj" />
+  <Project Path="ProgressTrackingService/ProgressTrackingService.csproj" />
+  <Project Path="UserProfileService/UserProfileService.csproj" />
+  <Project Path="WorkoutService/WorkoutService.csproj" />
+</Solution>
