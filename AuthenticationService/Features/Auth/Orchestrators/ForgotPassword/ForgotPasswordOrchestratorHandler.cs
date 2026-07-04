@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.SendOtp;
 using AuthenticationService.Features.Auth.Queries.GetUserByEmail;
+using AuthenticationService.Features.Auth.Orchestrators.SendOtp;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
@@ -18,10 +18,10 @@ public class ForgotPasswordOrchestratorHandler : IRequestHandler<ForgotPasswordO
     {
         // 1. Check if user exists
         var user = await _mediator.Send(new GetUserByEmailQuery(request.Email), cancellationToken);
-        if (user == null) return Result<bool>.Failure(Error.NotFound(AuthErrorCodes.UserNotFound, "User not found"));
+        if (user == null) return Result<bool>.Success(true);
 
         // 2. Generate and Send OTP
-        var sendOtpResult = await _mediator.Send(new SendOtpCommand(request.Email), cancellationToken);
+        var sendOtpResult = await _mediator.Send(new SendOtpOrchestrator(request.Email), cancellationToken);
         if (sendOtpResult.IsFailure) return Result<bool>.Failure(sendOtpResult.Errors);
 
         return Result<bool>.Success(true);

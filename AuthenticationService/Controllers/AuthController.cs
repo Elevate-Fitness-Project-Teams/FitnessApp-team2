@@ -1,15 +1,15 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.Login;
-using AuthenticationService.Features.Auth.Commands.Logout;
-using AuthenticationService.Features.Auth.Commands.SendOtp;
-using AuthenticationService.Features.Auth.Commands.VerifyOtp;
+using AuthenticationService.Features.Auth.Orchestrators.Logout;
 using AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
 using AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
 using AuthenticationService.Features.Auth.Orchestrators.Login;
 using AuthenticationService.Features.Auth.Orchestrators.RefreshToken;
 using AuthenticationService.Features.Auth.Orchestrators.Register;
 using AuthenticationService.Features.Auth.Orchestrators.ResetPassword;
+using AuthenticationService.Features.Auth.Orchestrators.SendOtp;
+using AuthenticationService.Features.Auth.Orchestrators.VerifyOtp;
 using AuthenticationService.Models.Requests;
+using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,33 +29,33 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
         var command = new RegisterOrchestrator(
             request.Email,
             request.Password,
             request.FirstName,
             request.LastName,
-            request.PhoneNumber);
+            request.PhoneNumber
+        );
 
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
         {
-            var isDuplicateEmail = result.Errors.Any(e =>
-                e.Code == AuthErrorCodes.DuplicateUserName || e.Code == AuthErrorCodes.DuplicateEmail);
+            var isDuplicateEmail = result.Errors.Any(e => e.Code == AuthErrorCodes.DuplicateEmail);
 
             var statusCode = isDuplicateEmail ? 409 : 400;
             var message = isDuplicateEmail ? "User already exists" : "Registration failed";
 
-            return StatusCode(statusCode, ApiResponse<RegisterOrchestratorResponse>.Failure(
+            return StatusCode(statusCode, ApiResponse<RegisterResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 message,
                 statusCode));
         }
 
-        return Created("",
-            ApiResponse<RegisterOrchestratorResponse>.Success(result.Value, "User registered successfully", 201));
+        return CreatedAtAction(nameof(Register), new { id = result.Value.UserId },
+            ApiResponse<RegisterResponse>.Success(result.Value, "User registered successfully", 201));
     }
 
     [HttpPost("login")]
@@ -68,66 +68,57 @@ public class AuthController : ControllerBase
             var isLocked = result.Errors.Any(e => e.Code == AuthErrorCodes.AccountLocked);
             var statusCode = isLocked ? 423 : 401;
 
-            return StatusCode(statusCode, ApiResponse<LoginCommandResponse>.Failure(
+            return StatusCode(statusCode, ApiResponse<LoginResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description,
                 statusCode));
         }
 
-        return Ok(ApiResponse<LoginCommandResponse>.Success(result.Value, "User successfully authenticated."));
+        return Ok(ApiResponse<LoginResponse>.Success(result.Value, "User successfully authenticated."));
     }
 
     [HttpPost("send-otp")]
-    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
+    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request, CancellationToken cancellationToken)
     {
-        var command = new SendOtpCommand(request.Email);
-        var result = await _mediator.Send(command);
+        var command = new SendOtpOrchestrator(request.Email);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
         {
             var isRateLimited = result.Errors.Any(e => e.Code == AuthErrorCodes.RateLimitExceeded);
             var statusCode = isRateLimited ? 429 : 400;
 
-            return StatusCode(statusCode, ApiResponse<SendOtpCommandResponse>.Failure(
+            return StatusCode(statusCode, ApiResponse<SendOtpResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description,
                 statusCode));
         }
 
-        return Ok(ApiResponse<SendOtpCommandResponse>.Success(result.Value, "OTP sent successfully."));
+        return Ok(ApiResponse<SendOtpResponse>.Success(result.Value, "OTP sent successfully."));
     }
 
     [HttpPost("verify-otp")]
-    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
     {
-        var command = new VerifyOtpCommand(request.Email, request.Otp);
-        var result = await _mediator.Send(command);
+        var command = new VerifyOtpOrchestrator(request.Email, request.Otp);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return StatusCode(401, ApiResponse<VerifyOtpCommandResponse>.Failure(
+            return StatusCode(401, ApiResponse<VerifyOtpResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description,
                 401));
 
-        return Ok(ApiResponse<VerifyOtpCommandResponse>.Success(result.Value, "OTP verified successfully."));
+        return Ok(ApiResponse<VerifyOtpResponse>.Success(result.Value, "OTP verified successfully."));
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordOrchestrator command)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordOrchestrator command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
         {
-            var isNotFound = result.Errors.Any(e => e.Code == AuthErrorCodes.UserNotFound);
-            if (isNotFound)
-                // To prevent email enumeration, we return 200 OK even if the user is not found.
-                // In some systems, an explicit 404 is preferred. We will return 404 here to align with SendOtp logic.
-                return StatusCode(404, ApiResponse<bool>.Failure(
-                    result.Errors.Select(e => e.Description),
-                    "User not found.",
-                    404));
-
             return StatusCode(400, ApiResponse<bool>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description));
@@ -137,9 +128,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordOrchestrator command)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordOrchestrator command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
             return StatusCode(400, ApiResponse<bool>.Failure(
@@ -150,9 +141,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenOrchestrator command)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenOrchestrator command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
             return StatusCode(401, ApiResponse<RefreshTokenOrchestratorResponse>.Failure(
@@ -166,14 +157,14 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                      ?? User.FindFirst("sub")?.Value
                      ?? string.Empty;
 
         var command = new ChangePasswordOrchestrator(userId, request.OldPassword, request.NewPassword);
-        var result = await _mediator.Send(command);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
             return StatusCode(400, ApiResponse<bool>.Failure(
@@ -185,20 +176,22 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+    public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                     ?? User.FindFirst("sub")?.Value
-                     ?? string.Empty;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
 
-        var command = new LogoutCommand(request.RefreshToken, userId);
-        var result = await _mediator.Send(command);
+        var command = new LogoutOrchestrator(request.RefreshToken, userId);
+        var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-            return StatusCode(400, ApiResponse<Unit>.Failure(
+        {
+            return StatusCode(400, ApiResponse<bool>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description));
+        }
 
-        return Ok(ApiResponse<Unit>.Success(result.Value, "Logged out successfully."));
+        return Ok(ApiResponse<bool>.Success(true, "Logged out successfully."));
     }
 }

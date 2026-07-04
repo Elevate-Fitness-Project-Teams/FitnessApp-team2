@@ -20,9 +20,13 @@ public class UpdateUserLockoutCommandHandler : IRequestHandler<UpdateUserLockout
     {
         await _unitOfWork.ExecuteAsync(async () =>
         {
-            request.User.IsLockedOut = request.IsLockedOut;
-            request.User.LockedUntil = request.LockedUntil;
-            await _userManager.UpdateAsync(request.User);
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user != null)
+            {
+                user.IsLockedOut = request.IsLockedOut;
+                user.LockedUntil = request.LockedUntil;
+                await _userManager.UpdateAsync(user);
+            }
         }, cancellationToken);
     }
 }

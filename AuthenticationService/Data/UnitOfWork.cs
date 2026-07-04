@@ -35,7 +35,7 @@ public class UnitOfWork : IUnitOfWork
         {
             var result = await action();
 
-            bool shouldRollback = result is AuthenticationService.Common.Result r && r.BusinessRuleFailed;
+            bool shouldRollback = result is Common.Result r && r.BusinessRuleFailed;
 
             _depth--;
 

@@ -1,10 +1,11 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Features.Auth.Queries.CheckPassword;
 
-public class CheckPasswordQueryHandler : IRequestHandler<CheckPasswordQuery, bool>
+public class CheckPasswordQueryHandler : IRequestHandler<CheckPasswordQuery, Result<bool>>
 {
     private readonly UserManager<User> _userManager;
 
@@ -13,8 +14,13 @@ public class CheckPasswordQueryHandler : IRequestHandler<CheckPasswordQuery, boo
         _userManager = userManager;
     }
 
-    public async Task<bool> Handle(CheckPasswordQuery request, CancellationToken cancellationToken)
+    public async Task<Result<bool>> Handle(CheckPasswordQuery request, CancellationToken cancellationToken)
     {
-        return await _userManager.CheckPasswordAsync(request.User, request.Password);
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null) return Result<bool>.Failure(Error.Failure(AuthErrorCodes.InvalidCredentials, "Invalid credentials."));
+
+        var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+
+        return Result<bool>.Success(isPasswordValid);
     }
 }

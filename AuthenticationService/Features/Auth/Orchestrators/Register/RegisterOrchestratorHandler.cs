@@ -1,45 +1,54 @@
 using AuthenticationService.Common;
-using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Commands.PublishUserRegisteredEvent;
 using AuthenticationService.Features.Auth.Commands.Register;
-using AuthenticationService.Features.Auth.Commands.SendOtp;
+using AuthenticationService.Features.Auth.Orchestrators.SendOtp;
+using AuthenticationService.Models.Responses;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.Register;
 
-public class RegisterOrchestratorHandler : IRequestHandler<RegisterOrchestrator, Result<RegisterOrchestratorResponse>>
+public class RegisterOrchestratorHandler : IRequestHandler<RegisterOrchestrator, Result<RegisterResponse>>
 {
     private readonly IMediator _mediator;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public RegisterOrchestratorHandler(IMediator mediator, IUnitOfWork unitOfWork)
+    public RegisterOrchestratorHandler(IMediator mediator)
     {
         _mediator = mediator;
-        _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<RegisterOrchestratorResponse>> Handle(RegisterOrchestrator request,
+    public async Task<Result<RegisterResponse>> Handle(RegisterOrchestrator request,
         CancellationToken cancellationToken)
     {
-        return await _unitOfWork.ExecuteAsync(async () =>
+        var userId = Guid.NewGuid().ToString();
+
+        var registerCommand = new RegisterCommand(
+            userId,
+            request.Email,
+            request.Password,
+            request.FirstName,
+            request.LastName,
+            request.PhoneNumber
+            );
+
+        var registerResult = await _mediator.Send(registerCommand, cancellationToken);
+
+        if (registerResult.IsFailure)
         {
-            var registerCommand = new RegisterCommand(request.Email, request.Password, request.FirstName,
-                request.LastName, request.PhoneNumber);
-            var registerResult = await _mediator.Send(registerCommand, cancellationToken);
+            return Result<RegisterResponse>.Failure(registerResult.Errors);
+        }
 
-            if (registerResult.IsFailure) return Result<RegisterOrchestratorResponse>.Failure(registerResult.Errors);
+        var publishEventCommand = new PublishUserRegisteredEventCommand(
+            userId,
+            request.Email,
+            request.FirstName,
+            request.LastName,
+            request.PhoneNumber);
+        await _mediator.Send(publishEventCommand, cancellationToken);
 
-            var userId = registerResult.Value.UserId;
+        var otpResult = await _mediator.Send(new SendOtpOrchestrator(request.Email), cancellationToken);
+        if (otpResult.IsFailure) return Result<RegisterResponse>.Failure(otpResult.Errors);
 
-            var publishEventCommand = new PublishUserRegisteredEventCommand(userId, request.Email, request.FirstName,
-                request.LastName, request.PhoneNumber);
-            await _mediator.Send(publishEventCommand, cancellationToken);
-
-            var otpResult = await _mediator.Send(new SendOtpCommand(request.Email), cancellationToken);
-            if (otpResult.IsFailure) return Result<RegisterOrchestratorResponse>.Failure(otpResult.Errors);
-
-            return Result<RegisterOrchestratorResponse>.Success(
-                new RegisterOrchestratorResponse(userId, registerResult.Value.RequiresProfileCompletion));
-        }, cancellationToken);
+        return Result<RegisterResponse>.Success(
+            new RegisterResponse(userId, true));
     }
 }

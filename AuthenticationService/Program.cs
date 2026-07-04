@@ -1,3 +1,4 @@
+using AuthenticationService.Common.Behaviors;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using AuthenticationService.Middleware;
@@ -15,7 +16,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
     {

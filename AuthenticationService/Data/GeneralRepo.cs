@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AuthenticationService.Data;
 
@@ -16,7 +16,7 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+        return await _dbSet.FindAsync(new[] { id }, cancellationToken);
     }
 
     public IQueryable<T> GetAll()

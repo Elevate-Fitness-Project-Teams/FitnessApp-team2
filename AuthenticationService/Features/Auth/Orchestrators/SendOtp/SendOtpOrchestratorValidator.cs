@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace AuthenticationService.Features.Auth.Commands.SendOtp;
+namespace AuthenticationService.Features.Auth.Orchestrators.SendOtp;
 
-public class SendOtpCommandValidator : AbstractValidator<SendOtpCommand>
+public class SendOtpOrchestratorValidator : AbstractValidator<SendOtpOrchestrator>
 {
-    public SendOtpCommandValidator()
+    public SendOtpOrchestratorValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required.")

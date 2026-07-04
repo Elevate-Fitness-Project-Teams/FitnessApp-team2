@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using AuthenticationService.Data.Entities;
+using AuthenticationService.Models.Responses;
 using AuthenticationService.Options;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +18,7 @@ public class JwtProvider : IJwtProvider
         _options = options.Value;
     }
 
-    public (string Token, int ExpiresIn) GenerateToken(User applicationUser)
+    public (string Token, int ExpiresIn) GenerateToken(UserDto applicationUser)
     {
         Claim[] claims =
         {

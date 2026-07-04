@@ -3,4 +3,6 @@ using MediatR;
 
 namespace AuthenticationService.Features.Auth.Queries.GetUserById;
 
-public record GetUserByIdQuery(string UserId) : IRequest<User?>;
+using AuthenticationService.Models.Responses;
+
+public record GetUserByIdQuery(string UserId) : IRequest<UserDto?>;

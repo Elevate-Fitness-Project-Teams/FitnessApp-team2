@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace AuthenticationService.Features.Auth.Commands.VerifyOtp;
+namespace AuthenticationService.Features.Auth.Orchestrators.VerifyOtp;
 
-public class VerifyOtpCommandValidator : AbstractValidator<VerifyOtpCommand>
+public class VerifyOtpOrchestratorValidator : AbstractValidator<VerifyOtpOrchestrator>
 {
-    public VerifyOtpCommandValidator()
+    public VerifyOtpOrchestratorValidator()
     {
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Email is required.")
