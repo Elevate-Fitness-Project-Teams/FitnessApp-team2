@@ -1,8 +1,9 @@
-using AuthenticationService.Data;
+
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UserProfileService.Common;
 using UserProfileService.Common.Database;
+using UserProfileService.Common.DataBase;
 using UserProfileService.Models;
 
 namespace UserProfileService.Features.Settings.UpdateSettings.UpdateNotificationSettings;
@@ -21,15 +22,15 @@ public class UpdateNotificationSettingsHandler : IRequestHandler<UpdateNotificat
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            int rows = await _repository.GetQueryable()
+            var rows = await _repository.GetQueryable()
          .Where(ns => ns.Id == request.UserId)
          .ExecuteUpdateAsync(setter => setter
-         .SetProperty(ns => ns.WorkoutReminders, ns => request.WorkoutReminders)
-         .SetProperty(ns => ns.MealReminders, ns => request.MealReminders)
-         .SetProperty(ns => ns.AchievementAlerts, ns => request.AchievementAlerts)
-         .SetProperty(ns => ns.WeeklyReports, ns => request.WeeklyReports)
-         .SetProperty(ns => ns.EmailNotifications, ns => request.EmailNotifications)
-         .SetProperty(ns => ns.PushNotifications, ns => request.PushNotifications),
+         .SetProperty(ns => ns.WorkoutReminders, ns => request.WorkoutReminders ?? ns.WorkoutReminders)
+         .SetProperty(ns => ns.MealReminders, ns => request.MealReminders ?? ns.MealReminders)
+         .SetProperty(ns => ns.AchievementAlerts, ns => request.AchievementAlerts ?? ns.AchievementAlerts)
+         .SetProperty(ns => ns.WeeklyReports, ns => request.WeeklyReports ?? ns.WeeklyReports)
+         .SetProperty(ns => ns.EmailNotifications, ns => request.EmailNotifications ?? ns.EmailNotifications)
+         .SetProperty(ns => ns.PushNotifications, ns => request.PushNotifications ?? ns.PushNotifications),
           cancellationToken);
 
             if (rows == 0)

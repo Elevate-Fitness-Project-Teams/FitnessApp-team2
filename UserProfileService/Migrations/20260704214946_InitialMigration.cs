@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace UserProfileService.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,7 +15,7 @@ namespace UserProfileService.Migrations
                 name: "UserProfiles",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
@@ -32,7 +33,7 @@ namespace UserProfileService.Migrations
                 name: "NotificationSettings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     WorkoutReminders = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     MealReminders = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     AchievementAlerts = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
@@ -55,7 +56,7 @@ namespace UserProfileService.Migrations
                 name: "PrivacySettings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProfileVisibility = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "private"),
                     ShowProgressToFriends = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     AllowDataSharing = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
@@ -75,7 +76,7 @@ namespace UserProfileService.Migrations
                 name: "UserPreferences",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Language = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false, defaultValue: "en"),
                     Theme = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: false, defaultValue: "light"),
                     WeightUnit = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: false, defaultValue: "kg"),
