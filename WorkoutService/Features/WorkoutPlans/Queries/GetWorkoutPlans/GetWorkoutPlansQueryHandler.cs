@@ -17,8 +17,14 @@ public class GetWorkoutPlansQueryHandler : IRequestHandler<GetWorkoutPlansQuery,
 
     public async Task<Result<IEnumerable<GetWorkoutPlansResponse>>> Handle(GetWorkoutPlansQuery request, CancellationToken cancellationToken)
     {
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var skip = (Math.Max(request.Page, 1) - 1) * pageSize;
+
         var plans = await _workoutPlanRepo.GetAll()
             .AsNoTracking()
+            .OrderBy(p => p.Id)
+            .Skip(skip)
+            .Take(pageSize)
             .Select(p => new GetWorkoutPlansResponse(
                 p.Id,
                 p.ExternalPlanId,

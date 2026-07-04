@@ -19,19 +19,22 @@ public class CompleteSessionCommandHandler : IRequestHandler<CompleteSessionComm
 
     public async Task<Result> Handle(CompleteSessionCommand request, CancellationToken cancellationToken)
     {
-        var session = await _sessionRepo.GetAll()
+		return await _unitOfWork.ExecuteAsync(async () =>
+        {
+            var session = await _sessionRepo.GetAll()
             .FirstOrDefaultAsync(s => s.SessionId == request.SessionId && s.UserId == request.UserId, cancellationToken);
 
-        if (session == null)
-            return Result.Failure(Error.NotFound("SESSION_NOT_FOUND", "Workout session not found or does not belong to the user."));
+            if (session == null)
+                return Result.Failure(Error.NotFound("SESSION_NOT_FOUND", "Workout session not found or does not belong to the user."));
 
-        if (session.Status != "Active")
-            return Result.Failure(Error.Conflict("SESSION_NOT_ACTIVE", "Workout session is not active."));
+            if (session.Status != "Active")
+                return Result.Failure(Error.Conflict("SESSION_NOT_ACTIVE", "Workout session is not active."));
 
-        session.Status = "Completed";
-        
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            session.Status = "Completed";
 
-        return Result.Success();
-    }
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return Result.Success();
+        }, cancellationToken);
+	}
 }

@@ -23,7 +23,7 @@ public class ExercisesController : ControllerBase
         var result = await _mediator.Send(new GetExercisesQuery());
         
         if (result.IsFailure)
-            return StatusCode(400, ApiResponse<object>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
+            return StatusCode(400, ApiResponse<GetExercisesResponse>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
 
         return Ok(ApiResponse<IEnumerable<GetExercisesResponse>>.Success(result.Value, "Exercises fetched successfully."));
     }
@@ -38,7 +38,7 @@ public class ExercisesController : ControllerBase
             var isNotFound = result.Errors.Any(e => e.Code == WorkoutErrorCodes.ExerciseNotFound);
             var statusCode = isNotFound ? 404 : 400;
 
-            return StatusCode(statusCode, ApiResponse<object>.Failure(
+            return StatusCode(statusCode, ApiResponse<GetExerciseByIdResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Error.Description,
                 statusCode));
