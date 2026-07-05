@@ -7,6 +7,8 @@ using NutritionService.Features.BrowseMealPlans.Dtos;
 using NutritionService.Features.BrowseMealPlans.Queries;
 using NutritionService.Features.GetMealDetail.Dtos;
 using NutritionService.Features.GetMealDetail.Queries;
+using NutritionService.Features.GetMealRecommendations.Dtos;
+using NutritionService.Features.GetMealRecommendations.Queries;
 
 namespace NutritionService.Controllers;
 
@@ -74,5 +76,64 @@ public class MealPlansController : ControllerBase
         }
 
         return BadRequest(ApiResponse<IEnumerable<MealPlanDto>>.Failure(errorMessages));
+    }
+    [HttpGet("recommendations")]
+    public async Task<IActionResult> GetRecommendations(
+        [FromQuery] string? mealType,
+        [FromQuery] int? maxCalories,
+        [FromQuery] double? minProtein,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                     ?? User.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(ApiResponse<MealRecommendationResponseDto>.Failure(new[] { "User ID claim is missing." }, "Unauthorized", 401));
+        }
+
+        var query = new GetMealRecommendationsQuery(userId, mealType, maxCalories, minProtein, page, pageSize);
+        var result = await _mediator.Send(query);
+
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse<MealRecommendationResponseDto>.Success(result.Value));
+        }
+
+        var errorMessages = result.Errors.Select(e => e.Description);
+
+        if (result.Errors.Any(e => e.Code == "FCE_METRICS_NOT_CALCULATED"))
+        {
+            return BadRequest(ApiResponse<MealRecommendationResponseDto>.Failure(errorMessages, "FCE Metrics Not Calculated", 400));
+        }
+
+        return BadRequest(ApiResponse<MealRecommendationResponseDto>.Failure(errorMessages));
+    }
+    [HttpGet("recommendations/{userId}")]
+    public async Task<IActionResult> GetRecommendationsByUserId(
+       string userId,
+       [FromQuery] string? mealType,
+       [FromQuery] int? maxCalories,
+       [FromQuery] double? minProtein,
+       [FromQuery] int page = 1,
+       [FromQuery] int pageSize = 10)
+    {
+        var query = new GetMealRecommendationsQuery(userId, mealType, maxCalories, minProtein, page, pageSize);
+        var result = await _mediator.Send(query);
+
+        if (result.IsSuccess)
+        {
+            return Ok(ApiResponse<MealRecommendationResponseDto>.Success(result.Value));
+        }
+
+        var errorMessages = result.Errors.Select(e => e.Description);
+
+        if (result.Errors.Any(e => e.Code == "FCE_METRICS_NOT_CALCULATED"))
+        {
+            return BadRequest(ApiResponse<MealRecommendationResponseDto>.Failure(errorMessages, "FCE Metrics Not Calculated", 400));
+        }
+
+        return BadRequest(ApiResponse<MealRecommendationResponseDto>.Failure(errorMessages));
     }
 }
