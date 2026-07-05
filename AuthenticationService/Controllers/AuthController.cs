@@ -1,8 +1,8 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Orchestrators.Logout;
 using AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
 using AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
 using AuthenticationService.Features.Auth.Orchestrators.Login;
+using AuthenticationService.Features.Auth.Orchestrators.Logout;
 using AuthenticationService.Features.Auth.Orchestrators.RefreshToken;
 using AuthenticationService.Features.Auth.Orchestrators.Register;
 using AuthenticationService.Features.Auth.Orchestrators.ResetPassword;
@@ -193,5 +193,30 @@ public class AuthController : ControllerBase
         }
 
         return Ok(ApiResponse<bool>.Success(true, "Logged out successfully."));
+    }
+
+    [HttpPost("validate-token")]
+    public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenRequest request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token))
+        {
+            return BadRequest(ApiResponse<bool>.Failure(
+                new List<string> { "Token is required" },
+                "Invalid request",
+                400));
+        }
+
+        var command = new Features.Auth.Commands.ValidateToken.ValidateTokenCommand(request.Token);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return StatusCode(401, ApiResponse<bool>.Failure(
+                result.Errors.Select(e => e.Description),
+                result.Errors.First().Description,
+                401));
+        }
+
+        return Ok(ApiResponse<bool>.Success(true, "Token is valid."));
     }
 }
