@@ -1,0 +1,18 @@
+﻿syntax = "proto3";
+
+package fitness; 
+option csharp_namespace = "NutritionService.Grpc";
+
+service CalorieTargetService {
+  rpc GetUserMetrics (UserMetricsRequest) returns (UserMetricsResponse);
+}
+
+message UserMetricsRequest {
+  string user_id = 1;
+}
+
+message UserMetricsResponse {
+  int32 calorie_target = 1;
+  string status = 2;
+  bool is_calculated = 3;
+}
