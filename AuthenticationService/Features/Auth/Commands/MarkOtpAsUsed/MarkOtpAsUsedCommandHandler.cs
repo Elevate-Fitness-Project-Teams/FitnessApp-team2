@@ -21,16 +21,15 @@ public class MarkOtpAsUsedCommandHandler : IRequestHandler<MarkOtpAsUsedCommand,
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var otps = await _otpRepo
+            var otpRecord = await _otpRepo
                                     .Find(o => o.Email == request.Email && o.Code == request.Otp && !o.IsUsed)
-                                    .ToListAsync(cancellationToken);
-            var otpRecord = otps.OrderByDescending(o => o.Id).FirstOrDefault();
+                                    .OrderByDescending(o => o.Id)
+                                    .FirstOrDefaultAsync(cancellationToken);
 
             if (otpRecord == null || otpRecord.ExpiresAt < DateTime.UtcNow)
                 return Result.Failure(Error.Failure("AUTH_INVALID_CREDENTIALS",
                     "Invalid or expired OTP."));
 
-            // Mark OTP as used
             otpRecord.IsUsed = true;
             _otpRepo.Update(otpRecord);
 
