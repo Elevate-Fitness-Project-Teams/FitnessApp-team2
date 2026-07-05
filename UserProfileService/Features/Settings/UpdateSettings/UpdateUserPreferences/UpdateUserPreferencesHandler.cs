@@ -12,7 +12,7 @@ public class UpdateUserPreferencesHandler : IRequestHandler<UpdateUserPreference
     private readonly IGenericRepository<UserPreferences> _repository;
     private readonly Common.DataBase.IUnitOfWork _unitOfWork;
 
-    public UpdateUserPreferencesHandler(IGenericRepository<UserPreferences> repository, IUnitOfWork unitOfWork = null)
+    public UpdateUserPreferencesHandler(IGenericRepository<UserPreferences> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
