@@ -32,8 +32,6 @@ public class CompleteSessionCommandHandler : IRequestHandler<CompleteSessionComm
 
             session.Status = "Completed";
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
             return Result.Success();
         }, cancellationToken);
 	}
