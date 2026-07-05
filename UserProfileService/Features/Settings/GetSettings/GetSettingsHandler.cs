@@ -2,21 +2,23 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UserProfileService.Common;
 using UserProfileService.Common.Database;
+using UserProfileService.Models;
 
 namespace UserProfileService.Features.Settings.GetSettings;
 
 public class GetSettingsHandler : IRequestHandler<GetSettingsQuery, Result<GetSettingsResponse>>
 {
-    private readonly ApplicationDbContext _dbContext;
 
-    public GetSettingsHandler(ApplicationDbContext dbContext)
+    private readonly GenericRepository<UserProfile> _userProfileRepository;
+
+    public GetSettingsHandler(ApplicationDbContext dbContext, GenericRepository<UserProfile> userProfileRepository)
     {
-        _dbContext = dbContext;
+        _userProfileRepository = userProfileRepository;
     }
 
     public async Task<Result<GetSettingsResponse>> Handle(GetSettingsQuery request, CancellationToken cancellationToken)
     {
-        var response = await _dbContext.UserProfiles
+        var response = await _userProfileRepository.GetQueryable()
             .Where(up => up.Id == request.UserId)
             .Select(up => new GetSettingsResponse
             {

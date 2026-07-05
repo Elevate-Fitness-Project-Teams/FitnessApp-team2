@@ -13,7 +13,7 @@ public class UpdatePrivacySettingsHandler : IRequestHandler<UpdatePrivacySetting
     private readonly IGenericRepository<PrivacySettings> _repository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdatePrivacySettingsHandler(IGenericRepository<PrivacySettings> repository, IUnitOfWork unitOfWork = null)
+    public UpdatePrivacySettingsHandler(IGenericRepository<PrivacySettings> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;

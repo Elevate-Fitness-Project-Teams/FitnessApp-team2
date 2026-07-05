@@ -28,7 +28,7 @@ public class GetProfileHandler : IRequestHandler<GetProfileQuery, Result<GetProf
                 ProfilePictureUrl = up.ProfilePictureUrl,
                 IsPremiumCached = up.IsPremiumCached,
                 MemberSince = up.MemberSince
-            }).FirstOrDefaultAsync(cancellationToken);)
+            }).FirstOrDefaultAsync(cancellationToken);
 
         if (userProfile == null)
         {
@@ -37,3 +37,4 @@ public class GetProfileHandler : IRequestHandler<GetProfileQuery, Result<GetProf
         }
         return Result<GetProfileResponse>.Success(userProfile);
     }
+}

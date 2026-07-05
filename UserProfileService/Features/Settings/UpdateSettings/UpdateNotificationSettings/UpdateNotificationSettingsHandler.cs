@@ -12,7 +12,7 @@ public class UpdateNotificationSettingsHandler : IRequestHandler<UpdateNotificat
 {
     private readonly IGenericRepository<NotificationSettings> _repository;
     private readonly IUnitOfWork _unitOfWork;
-    public UpdateNotificationSettingsHandler(IGenericRepository<NotificationSettings> repository, IUnitOfWork unitOfWork = null)
+    public UpdateNotificationSettingsHandler(IGenericRepository<NotificationSettings> repository, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
