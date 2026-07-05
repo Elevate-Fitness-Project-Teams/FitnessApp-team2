@@ -1,10 +1,11 @@
+using AuthenticationService.Features.Auth.Commands.ChangeUserPassword;
 using FluentValidation;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
 
-public class ChangePasswordOrchestratorValidator : AbstractValidator<ChangePasswordOrchestrator>
+public class ChangeUserPasswordCommandValidator : AbstractValidator<ChangeUserPasswordCommand>
 {
-    public ChangePasswordOrchestratorValidator()
+    public ChangeUserPasswordCommandValidator()
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithErrorCode("VAL_REQUIRED_FIELD").WithMessage("User ID is required.");

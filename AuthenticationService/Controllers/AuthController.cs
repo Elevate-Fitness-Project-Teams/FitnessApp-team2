@@ -1,6 +1,5 @@
-using System.Security.Claims;
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
+using AuthenticationService.Features.Auth.Commands.ChangeUserPassword;
 using AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
 using AuthenticationService.Features.Auth.Orchestrators.Login;
 using AuthenticationService.Features.Auth.Orchestrators.Logout;
@@ -15,6 +14,7 @@ using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AuthenticationService.Controllers;
 
@@ -166,7 +166,7 @@ public class AuthController : ControllerBase
                      ?? User.FindFirst("sub")?.Value
                      ?? string.Empty;
 
-        var command = new ChangePasswordOrchestrator(userId, request.OldPassword, request.NewPassword);
+        var command = new ChangeUserPasswordCommand(userId, request.OldPassword, request.NewPassword);
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
@@ -174,7 +174,7 @@ public class AuthController : ControllerBase
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description));
 
-        return Ok(ApiResponse<bool>.Success(result.Value, "Password changed successfully."));
+        return Ok(ApiResponse<bool>.Success(true, "Password changed successfully."));
     }
 
     [Authorize]
