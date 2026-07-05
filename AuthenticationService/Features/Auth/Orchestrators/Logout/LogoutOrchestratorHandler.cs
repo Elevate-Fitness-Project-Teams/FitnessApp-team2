@@ -1,5 +1,6 @@
 using AuthenticationService.Common;
 using AuthenticationService.Features.Auth.Commands.RevokeRefreshToken;
+using AuthenticationService.Data;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.Logout;
@@ -7,22 +8,27 @@ namespace AuthenticationService.Features.Auth.Orchestrators.Logout;
 public class LogoutOrchestratorHandler : IRequestHandler<LogoutOrchestrator, Result<Unit>>
 {
     private readonly IMediator _mediator;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public LogoutOrchestratorHandler(IMediator mediator)
+    public LogoutOrchestratorHandler(IMediator mediator, IUnitOfWork unitOfWork)
     {
         _mediator = mediator;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Unit>> Handle(LogoutOrchestrator request, CancellationToken cancellationToken)
     {
-        // For logout, we just revoke the refresh token. The JWT token will naturally expire.
-        var result = await _mediator.Send(new RevokeRefreshTokenCommand(request.RefreshToken), cancellationToken);
-
-        if (result.IsFailure)
+        return await _unitOfWork.ExecuteAsync(async () =>
         {
-            return Result<Unit>.Failure(result.Errors);
-        }
+            // For logout, we just revoke the refresh token. The JWT token will naturally expire.
+            var result = await _mediator.Send(new RevokeRefreshTokenCommand(request.RefreshToken), cancellationToken);
 
-        return Result<Unit>.Success(Unit.Value);
+            if (result.IsFailure)
+            {
+                return Result<Unit>.Failure(result.Errors);
+            }
+
+            return Result<Unit>.Success(Unit.Value);
+        }, cancellationToken);
     }
 }

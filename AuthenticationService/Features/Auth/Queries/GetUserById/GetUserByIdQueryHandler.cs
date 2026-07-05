@@ -1,5 +1,6 @@
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
+using AuthenticationService.Common;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,8 +8,7 @@ namespace AuthenticationService.Features.Auth.Queries.GetUserById;
 
 using AuthenticationService.Models.Responses;
 
-// Add Result
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto>>
 {
     private readonly IGeneralRepo<User> _repo;
 
@@ -17,9 +17,9 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto
         _repo = repo;
     }
 
-    public async Task<UserDto?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _repo.Find(u => u.Id == request.UserId)
+        var user = await _repo.Find(u => u.Id == request.UserId)
             .Select(user => new UserDto
             {
                 Id = user.Id,
@@ -32,5 +32,10 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto
                 CreatedAt = user.CreatedAt
             })
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (user == null)
+            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound, $"User with ID {request.UserId} not found."));
+
+        return Result<UserDto>.Success(user);
     }
 }
