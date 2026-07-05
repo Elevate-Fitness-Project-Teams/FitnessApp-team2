@@ -24,8 +24,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.NotificationSettings", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("AchievementAlerts")
                         .ValueGeneratedOnAdd()
@@ -64,8 +64,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.PrivacySettings", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("AllowDataSharing")
                         .ValueGeneratedOnAdd()
@@ -91,8 +91,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.UserPreferences", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DistanceUnit")
                         .IsRequired()
@@ -136,8 +136,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.UserProfile", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()

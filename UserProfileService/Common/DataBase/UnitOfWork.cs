@@ -1,7 +1,7 @@
-using Microsoft.EntityFrameworkCore.Storage;
+﻿using Microsoft.EntityFrameworkCore.Storage;
 using UserProfileService.Common.Database;
 
-namespace AuthenticationService.Data;
+namespace UserProfileService.Common.DataBase;
 
 public class UnitOfWork : IUnitOfWork
 {

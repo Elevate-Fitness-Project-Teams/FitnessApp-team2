@@ -3,4 +3,4 @@ using UserProfileService.Common;
 
 namespace UserProfileService.Features.Profiles.UploadProfilePicture;
 
-public record UploadProfilePictureCommand(int UserId, IFormFile ProfilePicture) : IRequest<Result<string>>;
+public record UploadProfilePictureCommand(string UserId, IFormFile ProfilePicture) : IRequest<Result<string>>;

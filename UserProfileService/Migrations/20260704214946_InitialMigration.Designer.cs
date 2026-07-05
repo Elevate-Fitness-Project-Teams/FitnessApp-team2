@@ -12,8 +12,8 @@ using UserProfileService.Common.Database;
 namespace UserProfileService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260629154424_UpdateSchema")]
-    partial class UpdateSchema
+    [Migration("20260704214946_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,8 +27,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.NotificationSettings", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("AchievementAlerts")
                         .ValueGeneratedOnAdd()
@@ -67,8 +67,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.PrivacySettings", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("AllowDataSharing")
                         .ValueGeneratedOnAdd()
@@ -94,8 +94,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.UserPreferences", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("DistanceUnit")
                         .IsRequired()
@@ -139,8 +139,8 @@ namespace UserProfileService.Migrations
 
             modelBuilder.Entity("UserProfileService.Models.UserProfile", b =>
                 {
-                    b.Property<int>("Id")
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .IsRequired()

@@ -1,6 +1,7 @@
-using AuthenticationService.Data;
+
 using MediatR;
 using UserProfileService.Common;
+using UserProfileService.Common.DataBase;
 using UserProfileService.Features.Settings.UpdateSettings.UpdateNotificationSettings;
 using UserProfileService.Features.Settings.UpdateSettings.UpdatePrivacySettings;
 using UserProfileService.Features.Settings.UpdateSettings.UpdateUserPreferences;

@@ -1,4 +1,5 @@
-namespace AuthenticationService.Data;
+﻿namespace UserProfileService.Common.DataBase;
+
 
 public interface IUnitOfWork : IAsyncDisposable
 {

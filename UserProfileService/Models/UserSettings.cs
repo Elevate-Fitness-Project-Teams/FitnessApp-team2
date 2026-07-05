@@ -2,7 +2,7 @@ namespace UserProfileService.Models
 {
     public class UserPreferences
     {
-        public int Id { get; set; } // PK and FK -> UserProfile.Id
+        public string Id { get; set; } = string.Empty; // PK and FK -> UserProfile.Id
         public string Language { get; set; } = "en";
         public string Theme { get; set; } = "light";
         public string WeightUnit { get; set; } = "kg";

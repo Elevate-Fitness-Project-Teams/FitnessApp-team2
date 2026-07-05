@@ -4,7 +4,7 @@ using UserProfileService.Common;
 namespace UserProfileService.Features.Settings.UpdateSettings;
 
 public record UpdateSettingsOrchestrator(
-    int UserId,
+    string UserId,
     UpdateUserPreferencesDto? UserPreferences,
     UpdateNotificationSettingsDto? NotificationSettings,
     UpdatePrivacySettingsDto? PrivacySettings

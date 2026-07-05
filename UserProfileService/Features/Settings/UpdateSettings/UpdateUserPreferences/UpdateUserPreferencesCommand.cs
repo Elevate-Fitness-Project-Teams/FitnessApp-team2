@@ -4,7 +4,7 @@ using UserProfileService.Common;
 namespace UserProfileService.Features.Settings.UpdateSettings.UpdateUserPreferences;
 
 public record UpdateUserPreferencesCommand(
-    int UserId,
+    string UserId,
     string? Language,
     string? Theme,
     string? WeightUnit,
