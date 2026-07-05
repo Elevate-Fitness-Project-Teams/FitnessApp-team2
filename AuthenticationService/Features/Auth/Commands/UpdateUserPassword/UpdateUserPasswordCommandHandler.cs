@@ -1,5 +1,4 @@
 using AuthenticationService.Common;
-using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;

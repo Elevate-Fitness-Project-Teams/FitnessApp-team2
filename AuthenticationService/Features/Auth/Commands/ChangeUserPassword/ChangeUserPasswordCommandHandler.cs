@@ -1,5 +1,4 @@
 using AuthenticationService.Common;
-using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -18,10 +17,7 @@ public class ChangeUserPasswordCommandHandler : IRequestHandler<ChangeUserPasswo
     public async Task<Result> Handle(ChangeUserPasswordCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
-        if (user == null)
-        {
-            return Result.Failure(Error.NotFound("USER_NOT_FOUND", "User not found."));
-        }
+        if (user == null) return Result.Failure(Error.NotFound("USER_NOT_FOUND", "User not found."));
 
         var result = await _userManager.ChangePasswordAsync(user, request.OldPassword, request.NewPassword);
 

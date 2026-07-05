@@ -14,7 +14,8 @@ public class GetRecentFailedLoginAttemptsQueryHandler : IRequestHandler<GetRecen
         _repo = repo;
     }
 
-    public async Task<Result<int>> Handle(GetRecentFailedLoginAttemptsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<int>> Handle(GetRecentFailedLoginAttemptsQuery request,
+        CancellationToken cancellationToken)
     {
         return Result<int>.Success(await _repo.CountAsync(
             x => x.Email == request.Email && !x.IsSuccess && x.AttemptedAt >= request.CutoffTime,

@@ -1,9 +1,9 @@
+using System.Security.Cryptography;
 using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 
 namespace AuthenticationService.Features.Auth.Commands.CreateOtp;
 

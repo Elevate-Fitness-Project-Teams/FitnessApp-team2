@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.CreateOtp;
 using AuthenticationService.Data;
+using AuthenticationService.Features.Auth.Commands.CreateOtp;
 using AuthenticationService.Features.Auth.Queries.GetUserByEmail;
 using MediatR;
 

@@ -1,12 +1,11 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
+using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationService.Features.Auth.Queries.GetUserByEmail;
-
-using AuthenticationService.Common;
-using AuthenticationService.Models.Responses;
 
 public class GetUserByEmailQueryHandler : IRequestHandler<GetUserByEmailQuery, Result<UserDto>>
 {
@@ -34,7 +33,8 @@ public class GetUserByEmailQueryHandler : IRequestHandler<GetUserByEmailQuery, R
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)
-            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound, $"User with email {request.Email} not found."));
+            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound,
+                $"User with email {request.Email} not found."));
 
         return Result<UserDto>.Success(user);
     }

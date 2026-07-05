@@ -1,9 +1,9 @@
 using AuthenticationService.Common;
+using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Commands.CreateRefreshToken;
 using AuthenticationService.Features.Auth.Commands.RevokeRefreshToken;
 using AuthenticationService.Features.Auth.Queries.GetRefreshToken;
 using AuthenticationService.Features.Auth.Queries.GetUserById;
-using AuthenticationService.Data;
 using AuthenticationService.Services;
 using MediatR;
 
@@ -13,12 +13,12 @@ public class
     RefreshTokenOrchestratorHandler : IRequestHandler<RefreshTokenOrchestrator,
     Result<RefreshTokenOrchestratorResponse>>
 {
-    private readonly IMediator _mediator;
     private readonly IJwtProvider _jwtProvider;
+    private readonly IMediator _mediator;
     private readonly IUnitOfWork _unitOfWork;
 
     public RefreshTokenOrchestratorHandler(
-        IMediator mediator, 
+        IMediator mediator,
         IJwtProvider jwtProvider,
         IUnitOfWork unitOfWork)
     {
@@ -34,12 +34,14 @@ public class
         {
             var tokenResult = await _mediator.Send(new GetRefreshTokenQuery(request.RefreshToken), cancellationToken);
 
-            if (tokenResult.IsFailure || tokenResult.Value.ExpiresAt < DateTime.UtcNow || tokenResult.Value.RevokedAt != null)
+            if (tokenResult.IsFailure || tokenResult.Value.ExpiresAt < DateTime.UtcNow ||
+                tokenResult.Value.RevokedAt != null)
                 return Result<RefreshTokenOrchestratorResponse>.Failure(Error.Failure("AUTH_INVALID_REFRESH_TOKEN",
                     "Invalid, expired, or revoked refresh token."));
 
             var userResult = await _mediator.Send(new GetUserByIdQuery(tokenResult.Value.UserId), cancellationToken);
-            if (userResult.IsFailure || (userResult.Value.IsLockedOut && userResult.Value.LockedUntil > DateTime.UtcNow))
+            if (userResult.IsFailure ||
+                (userResult.Value.IsLockedOut && userResult.Value.LockedUntil > DateTime.UtcNow))
                 return Result<RefreshTokenOrchestratorResponse>.Failure(Error.Failure("AUTH_USER_UNAUTHORIZED",
                     "User is locked or not found."));
 

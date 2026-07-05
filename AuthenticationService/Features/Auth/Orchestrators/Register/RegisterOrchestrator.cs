@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using MediatR;
 using AuthenticationService.Models.Responses;
+using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.Register;
 

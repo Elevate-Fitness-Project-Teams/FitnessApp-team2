@@ -1,11 +1,11 @@
 using AuthenticationService.Common;
+using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Commands.CreateRefreshToken;
 using AuthenticationService.Features.Auth.Commands.LogLoginAttempt;
 using AuthenticationService.Features.Auth.Commands.UpdateUserLockout;
 using AuthenticationService.Features.Auth.Queries.CheckPassword;
 using AuthenticationService.Features.Auth.Queries.GetRecentFailedLoginAttempts;
 using AuthenticationService.Features.Auth.Queries.GetUserByEmail;
-using AuthenticationService.Data;
 using AuthenticationService.Services;
 using MediatR;
 
@@ -18,6 +18,7 @@ public class LoginOrchestratorHandler : IRequestHandler<LoginOrchestrator, Resul
     private readonly IJwtProvider _jwtProvider;
     private readonly IMediator _mediator;
     private readonly IUnitOfWork _unitOfWork;
+
     public LoginOrchestratorHandler(
         IMediator mediator,
         IJwtProvider jwtProvider,
@@ -57,7 +58,8 @@ public class LoginOrchestratorHandler : IRequestHandler<LoginOrchestrator, Resul
                 return Result<LoginResponse>.Failure(Error.Failure(AuthErrorCodes.EmailNotConfirmed,
                     "Email not confirmed. Please verify your email."));
 
-            var isPasswordValid = await _mediator.Send(new CheckPasswordQuery(request.Email, request.Password), cancellationToken);
+            var isPasswordValid = await _mediator.Send(new CheckPasswordQuery(request.Email, request.Password),
+                cancellationToken);
 
             if (!isPasswordValid.Value)
             {
@@ -70,7 +72,9 @@ public class LoginOrchestratorHandler : IRequestHandler<LoginOrchestrator, Resul
 
                 if (recentFailuresCount.Value >= 5)
                 {
-                    await _mediator.Send(new UpdateUserLockoutCommand(request.Email, true, DateTime.UtcNow.AddMinutes(15)), cancellationToken);
+                    await _mediator.Send(
+                        new UpdateUserLockoutCommand(request.Email, true, DateTime.UtcNow.AddMinutes(15)),
+                        cancellationToken);
 
                     return Result<LoginResponse>.Failure(Error.Failure(AuthErrorCodes.AccountLocked,
                         "Account is locked due to multiple failed login attempts."));
@@ -83,9 +87,7 @@ public class LoginOrchestratorHandler : IRequestHandler<LoginOrchestrator, Resul
             await _mediator.Send(new LogLoginAttemptCommand(request.Email, true, ipAddress), cancellationToken);
 
             if (user.IsLockedOut)
-            {
                 await _mediator.Send(new UpdateUserLockoutCommand(request.Email, false, null), cancellationToken);
-            }
 
             var (accessToken, expiresIn) = _jwtProvider.GenerateToken(user);
             var refreshTokenString = _jwtProvider.GenerateRefreshToken();

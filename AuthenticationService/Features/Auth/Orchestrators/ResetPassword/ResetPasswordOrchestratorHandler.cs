@@ -1,7 +1,7 @@
 using AuthenticationService.Common;
+using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Commands.UpdateUserPassword;
 using AuthenticationService.Features.Auth.Orchestrators.VerifyOtp;
-using AuthenticationService.Data;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ResetPassword;

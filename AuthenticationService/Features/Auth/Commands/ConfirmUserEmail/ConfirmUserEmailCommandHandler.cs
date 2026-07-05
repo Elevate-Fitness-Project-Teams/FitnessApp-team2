@@ -17,7 +17,7 @@ public class ConfirmUserEmailCommandHandler : IRequestHandler<ConfirmUserEmailCo
     public async Task<Result> Handle(ConfirmUserEmailCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-        
+
         if (user != null && !user.EmailConfirmed)
         {
             user.EmailConfirmed = true;

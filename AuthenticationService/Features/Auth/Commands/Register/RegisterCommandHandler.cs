@@ -8,8 +8,8 @@ namespace AuthenticationService.Features.Auth.Commands.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result>
 {
-    private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<User> _userManager;
 
     public RegisterCommandHandler(
         UserManager<User> userManager,

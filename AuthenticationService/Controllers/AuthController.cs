@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using AuthenticationService.Common;
 using AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
 using AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
@@ -8,12 +9,12 @@ using AuthenticationService.Features.Auth.Orchestrators.Register;
 using AuthenticationService.Features.Auth.Orchestrators.ResetPassword;
 using AuthenticationService.Features.Auth.Orchestrators.SendOtp;
 using AuthenticationService.Features.Auth.Orchestrators.VerifyOtp;
+using AuthenticationService.Features.Auth.Queries.ValidateToken;
 using AuthenticationService.Models.Requests;
 using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace AuthenticationService.Controllers;
 
@@ -113,22 +114,22 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordOrchestrator command, CancellationToken cancellationToken)
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordOrchestrator command,
+        CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-        {
             return StatusCode(400, ApiResponse<bool>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description));
-        }
 
         return Ok(ApiResponse<bool>.Success(result.Value, "Password reset OTP sent to your email."));
     }
 
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordOrchestrator command, CancellationToken cancellationToken)
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordOrchestrator command,
+        CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
 
@@ -141,7 +142,8 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenOrchestrator command, CancellationToken cancellationToken)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenOrchestrator command,
+        CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command, cancellationToken);
 
@@ -157,7 +159,8 @@ public class AuthController : ControllerBase
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request,
+        CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
                      ?? User.FindFirst("sub")?.Value
@@ -186,36 +189,30 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-        {
             return StatusCode(400, ApiResponse<bool>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description));
-        }
 
         return Ok(ApiResponse<bool>.Success(true, "Logged out successfully."));
     }
 
     [HttpPost("validate-token")]
-    public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ValidateToken([FromBody] ValidateTokenRequest request,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Token))
-        {
             return BadRequest(ApiResponse<bool>.Failure(
                 new List<string> { "Token is required" },
-                "Invalid request",
-                400));
-        }
+                "Invalid request"));
 
-        var command = new Features.Auth.Commands.ValidateToken.ValidateTokenCommand(request.Token);
+        var command = new ValidateTokenQuery(request.Token);
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
-        {
             return StatusCode(401, ApiResponse<bool>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Errors.First().Description,
                 401));
-        }
 
         return Ok(ApiResponse<bool>.Success(true, "Token is valid."));
     }

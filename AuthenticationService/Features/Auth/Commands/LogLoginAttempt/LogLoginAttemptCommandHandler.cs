@@ -1,10 +1,11 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Commands.LogLoginAttempt;
 
-public class LogLoginAttemptCommandHandler : IRequestHandler<LogLoginAttemptCommand>
+public class LogLoginAttemptCommandHandler : IRequestHandler<LogLoginAttemptCommand, Result>
 {
     private readonly IGeneralRepo<LoginAttempt> _repo;
     private readonly IUnitOfWork _unitOfWork;
@@ -15,9 +16,9 @@ public class LogLoginAttemptCommandHandler : IRequestHandler<LogLoginAttemptComm
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(LogLoginAttemptCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(LogLoginAttemptCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.ExecuteAsync(async () =>
+        return await _unitOfWork.ExecuteAsync(async () =>
         {
             var attempt = new LoginAttempt
             {
@@ -27,6 +28,7 @@ public class LogLoginAttemptCommandHandler : IRequestHandler<LogLoginAttemptComm
                 IpAddress = request.IpAddress
             };
             await _repo.AddAsync(attempt, cancellationToken);
+            return Result.Success();
         }, cancellationToken);
     }
 }

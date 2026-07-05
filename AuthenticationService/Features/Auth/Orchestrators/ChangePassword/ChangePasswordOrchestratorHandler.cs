@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.ChangeUserPassword;
 using AuthenticationService.Data;
+using AuthenticationService.Features.Auth.Commands.ChangeUserPassword;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ChangePassword;
@@ -20,7 +20,10 @@ public class ChangePasswordOrchestratorHandler : IRequestHandler<ChangePasswordO
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var result = await _mediator.Send(new ChangeUserPasswordCommand(request.UserId, request.OldPassword, request.NewPassword), cancellationToken);
+            var result =
+                await _mediator.Send(
+                    new ChangeUserPasswordCommand(request.UserId, request.OldPassword, request.NewPassword),
+                    cancellationToken);
 
             if (result.IsFailure) return Result<bool>.Failure(result.Errors);
 

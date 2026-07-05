@@ -27,7 +27,9 @@ public class GetRefreshTokenQueryHandler : IRequestHandler<GetRefreshTokenQuery,
                 t.RevokedAt))
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (token == null) return Result<RefreshTokenDto>.Failure(Error.Failure("AUTH_INVALID_REFRESH_TOKEN", "Refresh token not found"));
+        if (token == null)
+            return Result<RefreshTokenDto>.Failure(Error.Failure("AUTH_INVALID_REFRESH_TOKEN",
+                "Refresh token not found"));
 
         return Result<RefreshTokenDto>.Success(token);
     }

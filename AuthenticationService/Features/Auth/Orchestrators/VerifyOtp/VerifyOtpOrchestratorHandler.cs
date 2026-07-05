@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.ConfirmUserEmail;
 using AuthenticationService.Data;
+using AuthenticationService.Features.Auth.Commands.ConfirmUserEmail;
 using AuthenticationService.Features.Auth.Commands.MarkOtpAsUsed;
 using MediatR;
 
@@ -22,19 +22,15 @@ public class VerifyOtpOrchestratorHandler : IRequestHandler<VerifyOtpOrchestrato
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var markOtpResult = await _mediator.Send(new MarkOtpAsUsedCommand(request.Email, request.Otp), cancellationToken);
+            var markOtpResult =
+                await _mediator.Send(new MarkOtpAsUsedCommand(request.Email, request.Otp), cancellationToken);
 
-            if (markOtpResult.IsFailure)
-            {
-                return Result<VerifyOtpResponse>.Failure(markOtpResult.Errors);
-            }
+            if (markOtpResult.IsFailure) return Result<VerifyOtpResponse>.Failure(markOtpResult.Errors);
 
-            var confirmEmailResult = await _mediator.Send(new ConfirmUserEmailCommand(request.Email), cancellationToken);
+            var confirmEmailResult =
+                await _mediator.Send(new ConfirmUserEmailCommand(request.Email), cancellationToken);
 
-            if (confirmEmailResult.IsFailure)
-            {
-                return Result<VerifyOtpResponse>.Failure(confirmEmailResult.Errors);
-            }
+            if (confirmEmailResult.IsFailure) return Result<VerifyOtpResponse>.Failure(confirmEmailResult.Errors);
 
             // Generate a short-lived reset token
             var resetToken = Guid.NewGuid().ToString("N");

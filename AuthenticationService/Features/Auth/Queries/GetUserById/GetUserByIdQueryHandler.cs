@@ -1,12 +1,11 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
-using AuthenticationService.Common;
+using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationService.Features.Auth.Queries.GetUserById;
-
-using AuthenticationService.Models.Responses;
 
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto>>
 {
@@ -34,7 +33,8 @@ public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user == null)
-            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound, $"User with ID {request.UserId} not found."));
+            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound,
+                $"User with ID {request.UserId} not found."));
 
         return Result<UserDto>.Success(user);
     }

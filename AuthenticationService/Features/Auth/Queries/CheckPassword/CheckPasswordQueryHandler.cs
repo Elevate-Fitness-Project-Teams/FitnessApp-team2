@@ -17,7 +17,8 @@ public class CheckPasswordQueryHandler : IRequestHandler<CheckPasswordQuery, Res
     public async Task<Result<bool>> Handle(CheckPasswordQuery request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-        if (user == null) return Result<bool>.Failure(Error.Failure(AuthErrorCodes.InvalidCredentials, "Invalid credentials."));
+        if (user == null)
+            return Result<bool>.Failure(Error.Failure(AuthErrorCodes.InvalidCredentials, "Invalid credentials."));
 
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
 

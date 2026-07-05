@@ -1,7 +1,7 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Queries.GetUserByEmail;
 using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Orchestrators.SendOtp;
+using AuthenticationService.Features.Auth.Queries.GetUserByEmail;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;

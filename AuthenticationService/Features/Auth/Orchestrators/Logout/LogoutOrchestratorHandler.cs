@@ -1,6 +1,6 @@
 using AuthenticationService.Common;
-using AuthenticationService.Features.Auth.Commands.RevokeRefreshToken;
 using AuthenticationService.Data;
+using AuthenticationService.Features.Auth.Commands.RevokeRefreshToken;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.Logout;
@@ -23,10 +23,7 @@ public class LogoutOrchestratorHandler : IRequestHandler<LogoutOrchestrator, Res
             // For logout, we just revoke the refresh token. The JWT token will naturally expire.
             var result = await _mediator.Send(new RevokeRefreshTokenCommand(request.RefreshToken), cancellationToken);
 
-            if (result.IsFailure)
-            {
-                return Result<Unit>.Failure(result.Errors);
-            }
+            if (result.IsFailure) return Result<Unit>.Failure(result.Errors);
 
             return Result<Unit>.Success(Unit.Value);
         }, cancellationToken);

@@ -34,14 +34,11 @@ public class RegisterOrchestratorHandler : IRequestHandler<RegisterOrchestrator,
                 request.FirstName,
                 request.LastName,
                 request.PhoneNumber
-                );
+            );
 
             var registerResult = await _mediator.Send(registerCommand, cancellationToken);
 
-            if (registerResult.IsFailure)
-            {
-                return Result<RegisterResponse>.Failure(registerResult.Errors);
-            }
+            if (registerResult.IsFailure) return Result<RegisterResponse>.Failure(registerResult.Errors);
 
             var publishEventCommand = new PublishUserRegisteredEventCommand(
                 userId,

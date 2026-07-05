@@ -8,7 +8,7 @@ public class LogoutOrchestratorValidator : AbstractValidator<LogoutOrchestrator>
     {
         RuleFor(x => x.RefreshToken)
             .NotEmpty().WithMessage("Refresh token is required.");
-        
+
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("User ID is required.");
     }

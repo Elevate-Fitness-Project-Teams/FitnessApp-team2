@@ -22,9 +22,9 @@ public class MarkOtpAsUsedCommandHandler : IRequestHandler<MarkOtpAsUsedCommand,
         return await _unitOfWork.ExecuteAsync(async () =>
         {
             var otpRecord = await _otpRepo
-                                    .Find(o => o.Email == request.Email && o.Code == request.Otp && !o.IsUsed)
-                                    .OrderByDescending(o => o.Id)
-                                    .FirstOrDefaultAsync(cancellationToken);
+                .Find(o => o.Email == request.Email && o.Code == request.Otp && !o.IsUsed)
+                .OrderByDescending(o => o.Id)
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (otpRecord == null || otpRecord.ExpiresAt < DateTime.UtcNow)
                 return Result.Failure(Error.Failure("AUTH_INVALID_CREDENTIALS",
