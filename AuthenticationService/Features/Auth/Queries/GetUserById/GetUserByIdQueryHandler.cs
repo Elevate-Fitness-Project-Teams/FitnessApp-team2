@@ -1,5 +1,5 @@
-using AuthenticationService.Data.Entities;
 using AuthenticationService.Data;
+using AuthenticationService.Data.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +7,7 @@ namespace AuthenticationService.Features.Auth.Queries.GetUserById;
 
 using AuthenticationService.Models.Responses;
 
+// Add Result
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto?>
 {
     private readonly IGeneralRepo<User> _repo;

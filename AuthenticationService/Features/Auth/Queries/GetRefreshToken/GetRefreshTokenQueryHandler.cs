@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationService.Features.Auth.Queries.GetRefreshToken;
 
+// ADD Result
+// Select *
 public class GetRefreshTokenQueryHandler : IRequestHandler<GetRefreshTokenQuery, RefreshTokenDto?>
 {
     private readonly IGeneralRepo<RefreshToken> _repo;
