@@ -1,20 +1,41 @@
+using AuthenticationService.Common;
+using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
+using AuthenticationService.Models.Responses;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationService.Features.Auth.Queries.GetUserById;
 
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, User?>
+public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto>>
 {
-    private readonly UserManager<User> _userManager;
+    private readonly IGeneralRepo<User> _repo;
 
-    public GetUserByIdQueryHandler(UserManager<User> userManager)
+    public GetUserByIdQueryHandler(IGeneralRepo<User> repo)
     {
-        _userManager = userManager;
+        _repo = repo;
     }
 
-    public async Task<User?> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserDto>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _userManager.FindByIdAsync(request.UserId);
+        var user = await _repo.Find(u => u.Id == request.UserId)
+            .Select(user => new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                IsLockedOut = user.IsLockedOut,
+                LockedUntil = user.LockedUntil,
+                EmailConfirmed = user.EmailConfirmed,
+                CreatedAt = user.CreatedAt
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (user == null)
+            return Result<UserDto>.Failure(Error.Failure(AuthErrorCodes.UserNotFound,
+                $"User with ID {request.UserId} not found."));
+
+        return Result<UserDto>.Success(user);
     }
 }

@@ -6,24 +6,26 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Features.Auth.Commands.Register;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterCommandResponse>>
+public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result>
 {
-    private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<User> _userManager;
 
-    public RegisterCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
+    public RegisterCommandHandler(
+        UserManager<User> userManager,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<RegisterCommandResponse>> Handle(RegisterCommand request,
-        CancellationToken cancellationToken)
+    public async Task<Result> Handle(RegisterCommand request, CancellationToken cancellationToken)
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
             var user = new User
             {
+                Id = request.UserId,
                 UserName = request.Email,
                 Email = request.Email,
                 FirstName = request.FirstName,
@@ -40,10 +42,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Re
                     .Select(e => Error.Failure(e.Code, e.Description))
                     .ToList();
 
-                return Result<RegisterCommandResponse>.Failure(errors);
+                return Result.Failure(errors);
             }
 
-            return Result<RegisterCommandResponse>.Success(new RegisterCommandResponse(user.Id, true));
+            return Result.Success();
         }, cancellationToken);
     }
 }

@@ -1,7 +1,7 @@
 using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Features.Auth.Commands.UpdateUserPassword;
-using AuthenticationService.Features.Auth.Commands.VerifyOtp;
+using AuthenticationService.Features.Auth.Orchestrators.VerifyOtp;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.ResetPassword;
@@ -22,7 +22,7 @@ public class ResetPasswordOrchestratorHandler : IRequestHandler<ResetPasswordOrc
         return await _unitOfWork.ExecuteAsync(async () =>
         {
             var verifyOtpResult =
-                await _mediator.Send(new VerifyOtpCommand(request.Email, request.Otp), cancellationToken);
+                await _mediator.Send(new VerifyOtpOrchestrator(request.Email, request.Otp), cancellationToken);
             if (verifyOtpResult.IsFailure) return Result<bool>.Failure(verifyOtpResult.Errors);
 
             var updatePasswordResult =

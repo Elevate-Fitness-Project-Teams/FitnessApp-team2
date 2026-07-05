@@ -1,4 +1,5 @@
 using AuthenticationService.Common;
+using AuthenticationService.Models.Responses;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Orchestrators.Register;
@@ -8,8 +9,4 @@ public record RegisterOrchestrator(
     string Password,
     string FirstName,
     string LastName,
-    string PhoneNumber) : IRequest<Result<RegisterOrchestratorResponse>>;
-
-public record RegisterOrchestratorResponse(
-    string UserId,
-    bool RequiresProfileCompletion);
+    string PhoneNumber) : IRequest<Result<RegisterResponse>>;

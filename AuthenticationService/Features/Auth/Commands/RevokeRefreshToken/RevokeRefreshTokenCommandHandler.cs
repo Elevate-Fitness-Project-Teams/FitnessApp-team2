@@ -1,3 +1,4 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthenticationService.Features.Auth.Commands.RevokeRefreshToken;
 
-public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTokenCommand, Unit>
+public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTokenCommand, Result>
 {
     private readonly IGeneralRepo<RefreshToken> _repo;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,7 +17,7 @@ public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTok
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Unit> Handle(RevokeRefreshTokenCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RevokeRefreshTokenCommand request, CancellationToken cancellationToken)
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
@@ -29,7 +30,7 @@ public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTok
                 _repo.Update(token);
             }
 
-            return Unit.Value;
+            return Result.Success();
         }, cancellationToken);
     }
 }
