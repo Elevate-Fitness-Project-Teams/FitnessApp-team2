@@ -4,20 +4,20 @@ using WorkoutService.Common;
 using WorkoutService.Data;
 using WorkoutService.Data.Entities;
 
-namespace WorkoutService.Features.WorkoutSessions.Commands.CheckWorkoutExists;
+namespace WorkoutService.Features.WorkoutSessions.Queries.CheckWorkoutExists;
 
-public class CheckWorkoutExistsCommandHandler : IRequestHandler<CheckWorkoutExistsCommand, Result>
+public class CheckWorkoutExistsQueryHandler : IRequestHandler<CheckWorkoutExistsQuery, Result>
 {
     private readonly IGeneralRepo<Workout> _workoutRepo;
 	private readonly IUnitOfWork _unitOfWork;
 
-	public CheckWorkoutExistsCommandHandler(IGeneralRepo<Workout> workoutRepo, IUnitOfWork unitOfWork)
+	public CheckWorkoutExistsQueryHandler(IGeneralRepo<Workout> workoutRepo, IUnitOfWork unitOfWork)
     {
         _workoutRepo = workoutRepo;
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result> Handle(CheckWorkoutExistsCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CheckWorkoutExistsQuery request, CancellationToken cancellationToken)
     {
 		return await _unitOfWork.ExecuteAsync(async () =>
 		{

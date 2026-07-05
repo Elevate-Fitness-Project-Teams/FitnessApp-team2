@@ -6,7 +6,7 @@ using WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
 
 namespace WorkoutService.Features.WorkoutSessions.Commands.CreateSession;
 
-public class CreateSessionCommandHandler : IRequestHandler<CreateSessionCommand, Result<StartSessionResponse>>
+public class CreateSessionCommandHandler : IRequestHandler<CreateSessionCommand, Result>
 {
     private readonly IGeneralRepo<WorkoutSession> _sessionRepo;
     private readonly IUnitOfWork _unitOfWork;
@@ -17,7 +17,7 @@ public class CreateSessionCommandHandler : IRequestHandler<CreateSessionCommand,
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<StartSessionResponse>> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
     {
 		return await _unitOfWork.ExecuteAsync(async () =>
         {
@@ -32,7 +32,7 @@ public class CreateSessionCommandHandler : IRequestHandler<CreateSessionCommand,
 
             await _sessionRepo.AddAsync(session, cancellationToken);
 
-            return Result<StartSessionResponse>.Success(new StartSessionResponse(session.SessionId, session.StartedAt));
+            return Result.Success();
         }, cancellationToken);
     }
 }

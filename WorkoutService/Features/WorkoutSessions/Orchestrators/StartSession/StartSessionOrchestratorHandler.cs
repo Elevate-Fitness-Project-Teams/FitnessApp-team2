@@ -1,8 +1,8 @@
 using MediatR;
 using WorkoutService.Common;
 using WorkoutService.Data;
-using WorkoutService.Features.WorkoutSessions.Commands.CheckActiveSession;
-using WorkoutService.Features.WorkoutSessions.Commands.CheckWorkoutExists;
+using WorkoutService.Features.WorkoutSessions.Queries.CheckActiveSession;
+using WorkoutService.Features.WorkoutSessions.Queries.CheckWorkoutExists;
 using WorkoutService.Features.WorkoutSessions.Commands.CreateSession;
 
 namespace WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
@@ -22,11 +22,11 @@ public class StartSessionOrchestratorHandler : IRequestHandler<StartSessionOrche
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var workoutResult = await _mediator.Send(new CheckWorkoutExistsCommand(request.WorkoutId), cancellationToken);
+            var workoutResult = await _mediator.Send(new CheckWorkoutExistsQuery(request.WorkoutId), cancellationToken);
             if (workoutResult.IsFailure)
                 return Result<StartSessionResponse>.Failure(workoutResult.Errors);
 
-            var activeSessionResult = await _mediator.Send(new CheckActiveSessionCommand(request.UserId), cancellationToken);
+            var activeSessionResult = await _mediator.Send(new CheckActiveSessionQuery(request.UserId), cancellationToken);
             if (activeSessionResult.IsFailure)
                 return Result<StartSessionResponse>.Failure(activeSessionResult.Errors);
 

@@ -46,13 +46,13 @@ public class WorkoutSessionsController : ControllerBase
             var isNotFound = result.Errors.Any(e => e.Code == "SESSION_NOT_FOUND");
             var statusCode = isNotFound ? 404 : 400;
 
-            return StatusCode(statusCode, ApiResponse<object>.Failure(
+            return StatusCode(statusCode, ApiResponse<CompleteSessionCommand>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Error.Description,
                 statusCode));
         }
 
-        return Ok(ApiResponse<object>.Success(new object(), "Workout session completed successfully."));
+        return Ok(ApiResponse<CompleteSessionCommand>.Success(command, "Workout session completed successfully."));
     }
 
 }
