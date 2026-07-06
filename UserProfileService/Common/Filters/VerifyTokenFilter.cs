@@ -1,4 +1,7 @@
-﻿namespace UserProfileService.Common.Filters;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+
+namespace UserProfileService.Common.Filters;
 
 public class VerifyTokenEndpointFilter : IEndpointFilter
 {
@@ -43,7 +46,19 @@ public class VerifyTokenEndpointFilter : IEndpointFilter
             // Auth Service is down
             return Results.Json(new { Message = "Authentication service is currently unavailable." }, statusCode: StatusCodes.Status503ServiceUnavailable);
         }
-        return await next(context);
+        // 4. Token is valid! Now let's extract the claims so the endpoint can use them.
+        var handler = new JwtSecurityTokenHandler();
+        if (handler.CanReadToken(token))
+        {
+            var jwtToken = handler.ReadJwtToken(token);
+
+            // Create an identity with the claims from the token
+            var identity = new ClaimsIdentity(jwtToken.Claims, "CustomAuth");
+
+            // Attach the user identity to the current HttpContext
+            context.HttpContext.User = new ClaimsPrincipal(identity);
+            return await next(context);
+        }
     }
 }
 

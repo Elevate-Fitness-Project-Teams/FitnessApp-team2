@@ -7,6 +7,7 @@ using UserProfileService.Common;
 using UserProfileService.Common.Behaviors;
 using UserProfileService.Common.Database;
 using UserProfileService.Common.DataBase;
+using UserProfileService.Features.Profiles.GetProfile;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,4 +67,7 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map the endpoints for the profile features
+app.MapGetProfileEndpoint();
 app.Run();
