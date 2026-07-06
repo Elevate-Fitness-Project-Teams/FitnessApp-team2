@@ -8,6 +8,10 @@ using UserProfileService.Common.Behaviors;
 using UserProfileService.Common.Database;
 using UserProfileService.Common.DataBase;
 using UserProfileService.Features.Profiles.GetProfile;
+using UserProfileService.Features.Profiles.UpdateProfile;
+using UserProfileService.Features.Profiles.UploadProfilePicture;
+using UserProfileService.Features.Settings.GetSettings;
+using UserProfileService.Features.Settings.UpdateSettings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,4 +74,8 @@ app.UseAuthorization();
 
 // Map the endpoints for the profile features
 app.MapGetProfileEndpoint();
+app.MapUpdateProfileEndpoint();
+app.MapUploadProfilePictureEndpoint();
+app.MapGetSettingsEndpoint();
+app.MapUpdateSettingsEndpoint();
 app.Run();
