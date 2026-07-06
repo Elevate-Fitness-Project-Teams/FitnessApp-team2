@@ -1,0 +1,122 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  authenticationservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "AuthenticationService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/AuthenticationService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "authenticationservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\AuthenticationService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  fitnesscalculationservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "FitnessCalculationService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/FitnessCalculationService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "fitnesscalculationservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\FitnessCalculationService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  nutritionservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "NutritionService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/NutritionService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "nutritionservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\NutritionService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  progresstrackingservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "ProgressTrackingService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/ProgressTrackingService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "progresstrackingservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\ProgressTrackingService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  userprofileservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "UserProfileService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/UserProfileService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "userprofileservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\UserProfileService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  workoutservice:
+    build:
+      context: "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2"
+      dockerfile: "WorkoutService/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/WorkoutService.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "workoutservice:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2\\WorkoutService:/app:rw"
+    - "C:\\Users\\josal\\source\\repos\\FitnessAppElevate\\FitnessApp-team2:/src:rw"
+    - "C:\\Users\\josal\\AppData\\Roaming\\Microsoft\\UserSecrets:/home/app/.microsoft/usersecrets"
+    - "C:\\Users\\josal\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"

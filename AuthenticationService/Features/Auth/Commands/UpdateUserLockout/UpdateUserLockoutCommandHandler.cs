@@ -1,3 +1,4 @@
+using AuthenticationService.Common;
 using AuthenticationService.Data;
 using AuthenticationService.Data.Entities;
 using MediatR;
@@ -5,10 +6,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Features.Auth.Commands.UpdateUserLockout;
 
-public class UpdateUserLockoutCommandHandler : IRequestHandler<UpdateUserLockoutCommand>
+public class UpdateUserLockoutCommandHandler : IRequestHandler<UpdateUserLockoutCommand, Result>
 {
-    private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<User> _userManager;
 
     public UpdateUserLockoutCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
     {
@@ -16,13 +17,19 @@ public class UpdateUserLockoutCommandHandler : IRequestHandler<UpdateUserLockout
         _unitOfWork = unitOfWork;
     }
 
-    public async Task Handle(UpdateUserLockoutCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateUserLockoutCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.ExecuteAsync(async () =>
+        return await _unitOfWork.ExecuteAsync(async () =>
         {
-            request.User.IsLockedOut = request.IsLockedOut;
-            request.User.LockedUntil = request.LockedUntil;
-            await _userManager.UpdateAsync(request.User);
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user != null)
+            {
+                user.IsLockedOut = request.IsLockedOut;
+                user.LockedUntil = request.LockedUntil;
+                await _userManager.UpdateAsync(user);
+            }
+
+            return Result.Success();
         }, cancellationToken);
     }
 }
