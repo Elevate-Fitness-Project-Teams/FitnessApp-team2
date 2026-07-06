@@ -57,8 +57,8 @@ public class VerifyTokenEndpointFilter : IEndpointFilter
 
             // Attach the user identity to the current HttpContext
             context.HttpContext.User = new ClaimsPrincipal(identity);
-            return await next(context);
         }
+        return await next(context);
     }
 }
 

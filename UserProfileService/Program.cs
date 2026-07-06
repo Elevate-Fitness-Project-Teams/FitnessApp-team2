@@ -12,6 +12,7 @@ using UserProfileService.Features.Profiles.UpdateProfile;
 using UserProfileService.Features.Profiles.UploadProfilePicture;
 using UserProfileService.Features.Settings.GetSettings;
 using UserProfileService.Features.Settings.UpdateSettings;
+using UserProfileService.MessageBroker;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +34,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
-
+// Add MassTransit Messaging
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
