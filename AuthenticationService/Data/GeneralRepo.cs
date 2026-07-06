@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AuthenticationService.Data;
 
@@ -16,17 +16,17 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
+        return await _dbSet.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
     }
 
     public IQueryable<T> GetAll()
     {
-        return _dbSet.AsNoTracking();
+        return _dbSet;
     }
 
     public IQueryable<T> Find(Expression<Func<T, bool>> predicate)
     {
-        return _dbSet.Where(predicate).AsNoTracking();
+        return _dbSet.Where(predicate);
     }
 
     public async Task<int> CountAsync(Expression<Func<T, bool>> predicate,
