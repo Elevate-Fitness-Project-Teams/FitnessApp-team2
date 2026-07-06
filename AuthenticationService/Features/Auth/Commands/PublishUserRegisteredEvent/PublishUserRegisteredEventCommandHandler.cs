@@ -1,7 +1,7 @@
 using AuthenticationService.Common;
-using AuthenticationService.Events;
 using MassTransit;
 using MediatR;
+using MessageBroker.Events;
 
 namespace AuthenticationService.Features.Auth.Commands.PublishUserRegisteredEvent;
 

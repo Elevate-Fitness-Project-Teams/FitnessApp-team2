@@ -11,4 +11,5 @@ public interface IGeneralRepo<T> where T : class
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
     void Update(T entity);
     void Delete(T entity);
+    void SaveInclude(T entity, params string[] includedProperties);
 }

@@ -24,6 +24,7 @@ public class MarkOtpAsUsedCommandHandler : IRequestHandler<MarkOtpAsUsedCommand,
             var otpRecord = await _otpRepo
                 .Find(o => o.Email == request.Email && o.Code == request.Otp && !o.IsUsed)
                 .OrderByDescending(o => o.Id)
+                .Select(o => new OtpCode { Id = o.Id, ExpiresAt = o.ExpiresAt })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (otpRecord == null || otpRecord.ExpiresAt < DateTime.UtcNow)
@@ -31,7 +32,7 @@ public class MarkOtpAsUsedCommandHandler : IRequestHandler<MarkOtpAsUsedCommand,
                     "Invalid or expired OTP."));
 
             otpRecord.IsUsed = true;
-            _otpRepo.Update(otpRecord);
+            _otpRepo.SaveInclude(otpRecord, nameof(otpRecord.IsUsed));
 
             return Result.Success();
         }, cancellationToken);

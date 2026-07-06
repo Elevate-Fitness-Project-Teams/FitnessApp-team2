@@ -1,4 +1,4 @@
-namespace AuthenticationService.Events;
+namespace MessageBroker.Events;
 
 public class UserRegisteredIntegrationEvent
 {
