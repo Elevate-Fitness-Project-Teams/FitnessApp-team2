@@ -22,9 +22,9 @@ public class SendOtpOrchestratorHandler : IRequestHandler<SendOtpOrchestrator, R
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var user = await _mediator.Send(new GetUserByEmailQuery(request.Email), cancellationToken);
+            var userResult = await _mediator.Send(new GetUserByEmailQuery(request.Email), cancellationToken);
 
-            if (user == null)
+            if (userResult.IsFailure)
                 return Result<SendOtpResponse>.Success(new SendOtpResponse(request.Email, 600, 30));
 
             var result = await _mediator.Send(new CreateOtpCommand(request.Email), cancellationToken);
