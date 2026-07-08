@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace UserProfileService.Common.Filters;
@@ -26,14 +26,14 @@ public class VerifyTokenEndpointFilter : IEndpointFilter
         }
 
         var client = _httpClientFactory.CreateClient();
-        var authServiceUrl = _configuration["AuthServiceUrl"]!;
+        var authServiceUrl = _configuration["ServiceUrls:AuthenticationService"]!;
         client.BaseAddress = new Uri(authServiceUrl);
 
         try
         {
             //  Send the POST request to the Auth Service
             var requestPayload = new { Token = token };
-            var response = await client.PostAsJsonAsync("api/auth/validate-token", requestPayload);
+            var response = await client.PostAsJsonAsync("api/v1/auth/validate-token", requestPayload);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -52,8 +52,28 @@ public class VerifyTokenEndpointFilter : IEndpointFilter
         {
             var jwtToken = handler.ReadJwtToken(token);
 
-            // Create an identity with the claims from the token
-            var identity = new ClaimsIdentity(jwtToken.Claims, "CustomAuth");
+            // Build claims explicitly from the JWT payload to avoid claim type mapping issues
+            var claims = new List<Claim>();
+
+            // Add the sub claim with both possible type names to ensure compatibility
+            if (!string.IsNullOrEmpty(jwtToken.Subject))
+            {
+                claims.Add(new Claim(JwtRegisteredClaimNames.Sub, jwtToken.Subject));
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, jwtToken.Subject));
+            }
+
+            // Add all other claims from the token
+            foreach (var claim in jwtToken.Claims)
+            {
+                if (claim.Type != JwtRegisteredClaimNames.Sub &&
+                    claim.Type != ClaimTypes.NameIdentifier &&
+                    claim.Type != "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")
+                {
+                    claims.Add(claim);
+                }
+            }
+
+            var identity = new ClaimsIdentity(claims, "CustomAuth");
 
             // Attach the user identity to the current HttpContext
             context.HttpContext.User = new ClaimsPrincipal(identity);

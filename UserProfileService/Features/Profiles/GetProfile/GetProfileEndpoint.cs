@@ -9,9 +9,9 @@ public static class GetProfileEndpoint
 {
     public static IEndpointRouteBuilder MapGetProfileEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/v1/profiles", async (ClaimsPrincipal user, IMediator mediator) =>
+        app.MapGet("/api/v1/profiles", async (HttpContext httpContext, IMediator mediator) =>
         {
-            var userId = user.GetUserId();
+            var userId = httpContext.User.GetUserId();
             var query = new GetProfileQuery(userId);
             var result = await mediator.Send(query);
             return result.ToHttpResult();

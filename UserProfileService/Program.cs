@@ -71,8 +71,8 @@ if (app.Environment.IsDevelopment())
 
 // Serve uploaded files (profile pictures, etc.) from the wwwroot/ folder
 app.UseStaticFiles();
-app.UseAuthentication();
-app.UseAuthorization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 // Map the endpoints for the profile features
 app.MapGetProfileEndpoint();

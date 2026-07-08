@@ -9,9 +9,9 @@ public static class GetSettingsEndpoint
 {
     public static IEndpointRouteBuilder MapGetSettingsEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/v1/profiles/settings", async (ClaimsPrincipal user, IMediator mediator) =>
+        app.MapGet("/api/v1/profiles/settings", async (HttpContext httpContext, IMediator mediator) =>
         {
-            var result = await mediator.Send(new GetSettingsQuery(user.GetUserId()));
+            var result = await mediator.Send(new GetSettingsQuery(httpContext.User.GetUserId()));
             return result.ToHttpResult();
         })
         .WithName("GetSettings")

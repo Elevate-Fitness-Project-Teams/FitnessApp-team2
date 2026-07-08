@@ -1,5 +1,4 @@
 using MediatR;
-using System.Security.Claims;
 using UserProfileService.Common.Extensions;
 using UserProfileService.Common.Filters;
 
@@ -9,10 +8,10 @@ public static class UpdateSettingsEndpoint
 {
     public static IEndpointRouteBuilder MapUpdateSettingsEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/api/v1/profiles/settings", async (UpdateSettingsRequest request, ClaimsPrincipal user, IMediator mediator) =>
+        app.MapPut("/api/v1/profiles/settings", async (UpdateSettingsRequest request, HttpContext httpContext, IMediator mediator) =>
         {
             var result = await mediator.Send(new UpdateSettingsOrchestrator(
-                user.GetUserId(),
+                httpContext.User.GetUserId(),
                 request.UserPreferences,
                 request.NotificationSettings,
                 request.PrivacySettings));

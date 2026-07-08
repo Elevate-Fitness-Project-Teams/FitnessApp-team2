@@ -9,10 +9,10 @@ public static class UpdateProfileEndpoint
 {
     public static IEndpointRouteBuilder MapUpdateProfileEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/api/v1/profiles", async (UpdateProfileRequest request, ClaimsPrincipal user, IMediator mediator) =>
+        app.MapPut("/api/v1/profiles", async (UpdateProfileRequest request, HttpContext httpContext, IMediator mediator) =>
         {
             var result = await mediator.Send(new UpdateProfileCommand(
-                user.GetUserId(),
+                httpContext.User.GetUserId(),
                 request.FirstName,
                 request.LastName,
                 request.Email,
