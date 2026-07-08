@@ -22,8 +22,8 @@ public class ForgotPasswordOrchestratorHandler : IRequestHandler<ForgotPasswordO
         return await _unitOfWork.ExecuteAsync(async () =>
         {
             // 1. Check if user exists
-            var user = await _mediator.Send(new GetUserByEmailQuery(request.Email), cancellationToken);
-            if (user == null) return Result<bool>.Success(true);
+            var userResult = await _mediator.Send(new GetUserByEmailQuery(request.Email), cancellationToken);
+            if (userResult.IsFailure) return Result<bool>.Success(true);
 
             // 2. Generate and Send OTP
             var sendOtpResult = await _mediator.Send(new SendOtpOrchestrator(request.Email), cancellationToken);
