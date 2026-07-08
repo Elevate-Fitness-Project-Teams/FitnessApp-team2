@@ -11,6 +11,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq
+    ports:
+      - "15672:15672"
 
   authenticationservice:
     image: ${DOCKER_REGISTRY-}authenticationservice
