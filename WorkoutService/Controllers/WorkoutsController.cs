@@ -25,7 +25,7 @@ public class WorkoutsController : ControllerBase
         var result = await _mediator.Send(query);
         
         if (result.IsFailure)
-            return StatusCode(400, ApiResponse<object>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
+            return StatusCode(400, ApiResponse<GetWorkoutsResponse>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
 
         return Ok(ApiResponse<IEnumerable<GetWorkoutsResponse>>.Success(result.Value, "Workouts fetched successfully."));
     }
@@ -40,7 +40,7 @@ public class WorkoutsController : ControllerBase
             var isNotFound = result.Errors.Any(e => e.Code == WorkoutErrorCodes.WorkoutNotFound);
             var statusCode = isNotFound ? 404 : 400;
 
-            return StatusCode(statusCode, ApiResponse<object>.Failure(
+            return StatusCode(statusCode, ApiResponse<GetWorkoutByIdResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Error.Description,
                 statusCode));
@@ -55,7 +55,7 @@ public class WorkoutsController : ControllerBase
         var result = await _mediator.Send(new GetWorkoutsByPlanQuery(planId));
 
         if (result.IsFailure)
-            return StatusCode(400, ApiResponse<object>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
+            return StatusCode(400, ApiResponse<GetWorkoutsResponse>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
 
         return Ok(ApiResponse<IEnumerable<GetWorkoutsResponse>>.Success(result.Value, "Workouts fetched successfully."));
     }
@@ -66,7 +66,7 @@ public class WorkoutsController : ControllerBase
         var result = await _mediator.Send(new GetWorkoutsByCategoryQuery(categoryName));
 
         if (result.IsFailure)
-            return StatusCode(400, ApiResponse<object>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
+            return StatusCode(400, ApiResponse<GetWorkoutsResponse>.Failure(result.Errors.Select(e => e.Description), result.Error.Description));
 
         return Ok(ApiResponse<IEnumerable<GetWorkoutsResponse>>.Success(result.Value, "Workouts fetched successfully."));
     }

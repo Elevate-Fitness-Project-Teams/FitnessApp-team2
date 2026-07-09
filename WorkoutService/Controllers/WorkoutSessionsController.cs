@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WorkoutService.Common;
 using WorkoutService.Features.WorkoutSessions.Commands.CompleteSession;
-using WorkoutService.Features.WorkoutSessions.Commands.StartSession;
+using WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
 
 namespace WorkoutService.Controllers;
 
@@ -18,7 +18,7 @@ public class WorkoutSessionsController : ControllerBase
     }
 
     [HttpPost("start")]
-    public async Task<IActionResult> StartSession([FromBody] StartSessionCommand command)
+    public async Task<IActionResult> StartSession([FromBody] StartSessionOrchestrator command)
     {
         var result = await _mediator.Send(command);
 
@@ -27,7 +27,7 @@ public class WorkoutSessionsController : ControllerBase
             var isNotFound = result.Errors.Any(e => e.Code == WorkoutErrorCodes.WorkoutNotFound);
             var statusCode = isNotFound ? 404 : 400;
 
-            return StatusCode(statusCode, ApiResponse<object>.Failure(
+            return StatusCode(statusCode, ApiResponse<StartSessionResponse>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Error.Description,
                 statusCode));
@@ -46,13 +46,13 @@ public class WorkoutSessionsController : ControllerBase
             var isNotFound = result.Errors.Any(e => e.Code == "SESSION_NOT_FOUND");
             var statusCode = isNotFound ? 404 : 400;
 
-            return StatusCode(statusCode, ApiResponse<object>.Failure(
+            return StatusCode(statusCode, ApiResponse<CompleteSessionCommand>.Failure(
                 result.Errors.Select(e => e.Description),
                 result.Error.Description,
                 statusCode));
         }
 
-        return Ok(ApiResponse<object>.Success(new object(), "Workout session completed successfully."));
+        return Ok(ApiResponse<CompleteSessionCommand>.Success(command, "Workout session completed successfully."));
     }
 
 }

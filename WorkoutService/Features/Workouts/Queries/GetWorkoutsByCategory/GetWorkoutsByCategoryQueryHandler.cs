@@ -18,10 +18,15 @@ public class GetWorkoutsByCategoryQueryHandler : IRequestHandler<GetWorkoutsByCa
 
     public async Task<Result<IEnumerable<GetWorkoutsResponse>>> Handle(GetWorkoutsByCategoryQuery request, CancellationToken cancellationToken)
     {
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var skip = (Math.Max(request.Page, 1) - 1) * pageSize;
+
         var workouts = await _workoutRepo.GetAll()
             .AsNoTracking()
             .Where(w => w.Category == request.CategoryName)
             .OrderBy(w => w.Id)
+            .Skip(skip)
+            .Take(pageSize)
             .Select(w => new GetWorkoutsResponse(
                 w.Id,
                 w.Name,

@@ -17,8 +17,14 @@ public class GetExercisesQueryHandler : IRequestHandler<GetExercisesQuery, Resul
 
     public async Task<Result<IEnumerable<GetExercisesResponse>>> Handle(GetExercisesQuery request, CancellationToken cancellationToken)
     {
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var skip = (Math.Max(request.Page, 1) - 1) * pageSize;
+
         var exercises = await _exerciseRepo.GetAll()
             .AsNoTracking()
+            .OrderBy(e => e.Id)
+            .Skip(skip)
+            .Take(pageSize)
             .Select(e => new GetExercisesResponse(
                 e.Id,
                 e.Name,

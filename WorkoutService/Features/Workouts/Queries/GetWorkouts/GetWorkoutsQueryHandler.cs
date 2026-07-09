@@ -39,12 +39,13 @@ public class GetWorkoutsQueryHandler : IRequestHandler<GetWorkoutsQuery, Result<
             query = query.Where(w => w.Name.Contains(request.Search));
         }
 
-        var skip = (request.Page - 1) * request.PageSize;
+        var pageSize = Math.Clamp(request.PageSize, 1, 100);
+        var skip = (Math.Max(request.Page, 1) - 1) * pageSize;
 
         var workouts = await query
             .OrderBy(w => w.Id)
             .Skip(skip)
-            .Take(request.PageSize)
+            .Take(pageSize)
             .Select(w => new GetWorkoutsResponse(
                 w.Id,
                 w.Name,

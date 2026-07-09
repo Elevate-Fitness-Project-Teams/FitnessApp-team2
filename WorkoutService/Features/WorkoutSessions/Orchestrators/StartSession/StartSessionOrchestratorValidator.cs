@@ -1,10 +1,10 @@
 using FluentValidation;
 
-namespace WorkoutService.Features.WorkoutSessions.Commands.StartSession;
+namespace WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
 
-public class StartSessionCommandValidator : AbstractValidator<StartSessionCommand>
+public class StartSessionOrchestratorValidator : AbstractValidator<StartSessionOrchestrator>
 {
-    public StartSessionCommandValidator()
+    public StartSessionOrchestratorValidator()
     {
         RuleFor(x => x.UserId)
             .GreaterThan(0).WithMessage("UserId must be greater than 0.");
