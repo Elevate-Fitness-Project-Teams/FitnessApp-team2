@@ -10,7 +10,7 @@ namespace UserProfileService.Features.Settings.UpdateSettings.UpdateUserPreferen
 public class UpdateUserPreferencesHandler : IRequestHandler<UpdateUserPreferencesCommand, Result>
 {
     private readonly IGenericRepository<UserPreferences> _repository;
-    private readonly Common.DataBase.IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork _unitOfWork;
 
     public UpdateUserPreferencesHandler(IGenericRepository<UserPreferences> repository, IUnitOfWork unitOfWork)
     {

@@ -13,6 +13,7 @@ using UserProfileService.Features.Profiles.UploadProfilePicture;
 using UserProfileService.Features.Settings.GetSettings;
 using UserProfileService.Features.Settings.UpdateSettings;
 using UserProfileService.MessageBroker;
+using UserProfileService.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+// Global exception handler — must be first to catch all exceptions
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Serve uploaded files (profile pictures, etc.) from the wwwroot/ folder
 app.UseStaticFiles();
