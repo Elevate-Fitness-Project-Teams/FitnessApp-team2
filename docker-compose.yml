@@ -7,6 +7,12 @@ services:
       - SA_PASSWORD=Youssef@salah1
     ports:
       - "1433:1433"
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Youssef@salah1" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -40,6 +46,11 @@ services:
       dockerfile: ProgressTrackingService/Dockerfile
     ports:
       - "8090:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   userprofileservice:
     image: ${DOCKER_REGISTRY-}userprofileservice

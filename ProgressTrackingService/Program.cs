@@ -1,16 +1,14 @@
 using FluentValidation;
 using MassTransit;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
-using MessageBroker.Events;
+using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
-using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,25 +96,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+
 #region ApplyPendingMigration
 
-if (app.Environment.IsDevelopment())
+using var scopeApplicationContext = app.Services.CreateScope();
+var context = scopeApplicationContext.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+try
 {
-    using var scopeApplicationContext = app.Services.CreateScope();
-    var context = scopeApplicationContext.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    try
-    {
-        await context.Database.MigrateAsync();
-    }
-    catch (Exception e)
-    {
-        var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(e, "An error occurred while migrating the database.");
-        throw;
-    }
+    await context.Database.MigrateAsync();
+}
+catch (Exception e)
+{
+    var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    logger.LogError(e, "An error occurred while migrating the database.");
+    throw;
 }
 
 #endregion
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
