@@ -1,9 +1,8 @@
-using FitnessCalculationService.Persistence;
-using Microsoft.EntityFrameworkCore;
-using FitnessCalculationService.Persistence.Repositories;
+using FitnessCalculationService.Common.Middleware;
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
 using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
-using FitnessCalculationService.Common.Middleware;
+using FitnessCalculationService.Persistence;
+using FitnessCalculationService.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -35,7 +34,6 @@ app.UseAuthorization();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-app.MapControllers();
 GetUserMetricsEndpoint.Map(app);
 GetFitnessStatsEndpoint.Map(app);
 
