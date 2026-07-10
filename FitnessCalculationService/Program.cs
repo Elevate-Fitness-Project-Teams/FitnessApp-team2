@@ -2,6 +2,7 @@ using FitnessCalculationService.Persistence;
 using Microsoft.EntityFrameworkCore;
 using FitnessCalculationService.Persistence.Repositories;
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
+using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
 using FitnessCalculationService.Common.Middleware;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,6 +37,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.MapControllers();
 GetUserMetricsEndpoint.Map(app);
+GetFitnessStatsEndpoint.Map(app);
 
 // Automatically apply any pending EF Core migrations on startup and run seeder (HasData is applied via migrations)
 using (var scope = app.Services.CreateScope())

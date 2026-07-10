@@ -78,7 +78,7 @@
 ## Phase 4: Feature Slices — Queries
 
 - [x] Create `Features/Calculations/GetUserMetrics.cs` — `GET /api/v1/fitness/metrics/{userId}`
-- [ ] Create `Features/FitnessStats/GetFitnessStats.cs` — `GET /api/v1/fitness/stats/{userId}`
+- [x] Create `Features/FitnessStats/GetFitnessStats.cs` — `GET /api/v1/fitness/stats/{userId}`
 - [ ] Create `Features/Plans/GetPlanConfigs.cs` — `GET /api/v1/fitness/plan-configs`
 - [ ] Create `Features/Plans/GetPlanById.cs` — `GET /api/v1/fitness/plans/{planId}`
 
