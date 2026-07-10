@@ -87,6 +87,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Automatically apply any pending EF Core migrations on startup

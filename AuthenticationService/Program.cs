@@ -108,6 +108,8 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddAuthorization();
+
 
 builder.Services.AddScoped<IGrpcIntegrationService, GrpcIntegrationService>();
 builder.Services.AddHttpContextAccessor();
