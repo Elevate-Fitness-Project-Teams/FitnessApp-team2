@@ -19,7 +19,8 @@ public class FitnessPlanConfigSeed : IEntityTypeConfiguration<FitnessPlanConfig>
 
                 seeds.Add(new FitnessPlanConfig
                 {
-                    Id = Guid.CreateVersion7(),
+                    // Use a deterministic GUID so EF Core doesn't detect model changes on every run
+                    Id = Guid.Parse($"11111111-1111-1111-1111-{(int)goal:D4}{(int)status:D8}"),
                     PlanId = planId,
                     Goal = goal,
                     Status = status,

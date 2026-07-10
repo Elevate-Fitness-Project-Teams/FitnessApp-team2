@@ -17,8 +17,7 @@ namespace FitnessCalculationService.Migrations
                 name: "CalculatedMetrics",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Bmr = table.Column<double>(type: "float", nullable: false),
                     Tdee = table.Column<double>(type: "float", nullable: false),
@@ -35,8 +34,7 @@ namespace FitnessCalculationService.Migrations
                 name: "FitnessPlanConfigs",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PlanId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Goal = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
@@ -52,8 +50,7 @@ namespace FitnessCalculationService.Migrations
                 name: "UserFitnessStats",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Weight = table.Column<double>(type: "float", nullable: false),
                     Height = table.Column<double>(type: "float", nullable: false),
@@ -72,8 +69,7 @@ namespace FitnessCalculationService.Migrations
                 name: "UserPlanHistories",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PlanId = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -89,10 +85,9 @@ namespace FitnessCalculationService.Migrations
                 name: "UserAssignedPlans",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    FitnessPlanConfigId = table.Column<int>(type: "int", nullable: false),
+                    FitnessPlanConfigId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     AssignedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -112,21 +107,21 @@ namespace FitnessCalculationService.Migrations
                 columns: new[] { "Id", "Description", "Goal", "Name", "PlanId", "Status" },
                 values: new object[,]
                 {
-                    { 1, "A plan designed for LoseWeight with a Weak metabolic rate.", "LoseWeight", "LoseWeight Plan - Weak", "LW-W", "Weak" },
-                    { 2, "A plan designed for LoseWeight with a Normal metabolic rate.", "LoseWeight", "LoseWeight Plan - Normal", "LW-N", "Normal" },
-                    { 3, "A plan designed for LoseWeight with a Hard metabolic rate.", "LoseWeight", "LoseWeight Plan - Hard", "LW-H", "Hard" },
-                    { 4, "A plan designed for GetFitter with a Weak metabolic rate.", "GetFitter", "GetFitter Plan - Weak", "GF-W", "Weak" },
-                    { 5, "A plan designed for GetFitter with a Normal metabolic rate.", "GetFitter", "GetFitter Plan - Normal", "GF-N", "Normal" },
-                    { 6, "A plan designed for GetFitter with a Hard metabolic rate.", "GetFitter", "GetFitter Plan - Hard", "GF-H", "Hard" },
-                    { 7, "A plan designed for GainWeight with a Weak metabolic rate.", "GainWeight", "GainWeight Plan - Weak", "GW-W", "Weak" },
-                    { 8, "A plan designed for GainWeight with a Normal metabolic rate.", "GainWeight", "GainWeight Plan - Normal", "GW-N", "Normal" },
-                    { 9, "A plan designed for GainWeight with a Hard metabolic rate.", "GainWeight", "GainWeight Plan - Hard", "GW-H", "Hard" },
-                    { 10, "A plan designed for GainMoreFlexible with a Weak metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Weak", "FL-W", "Weak" },
-                    { 11, "A plan designed for GainMoreFlexible with a Normal metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Normal", "FL-N", "Normal" },
-                    { 12, "A plan designed for GainMoreFlexible with a Hard metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Hard", "FL-H", "Hard" },
-                    { 13, "A plan designed for LearnTheBasic with a Weak metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Weak", "LB-W", "Weak" },
-                    { 14, "A plan designed for LearnTheBasic with a Normal metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Normal", "LB-N", "Normal" },
-                    { 15, "A plan designed for LearnTheBasic with a Hard metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Hard", "LB-H", "Hard" }
+                    { new Guid("11111111-1111-1111-1111-000000000000"), "A plan designed for LoseWeight with a Weak metabolic rate.", "LoseWeight", "LoseWeight Plan - Weak", "LW-W", "Weak" },
+                    { new Guid("11111111-1111-1111-1111-000000000001"), "A plan designed for LoseWeight with a Normal metabolic rate.", "LoseWeight", "LoseWeight Plan - Normal", "LW-N", "Normal" },
+                    { new Guid("11111111-1111-1111-1111-000000000002"), "A plan designed for LoseWeight with a Hard metabolic rate.", "LoseWeight", "LoseWeight Plan - Hard", "LW-H", "Hard" },
+                    { new Guid("11111111-1111-1111-1111-000100000000"), "A plan designed for GetFitter with a Weak metabolic rate.", "GetFitter", "GetFitter Plan - Weak", "GF-W", "Weak" },
+                    { new Guid("11111111-1111-1111-1111-000100000001"), "A plan designed for GetFitter with a Normal metabolic rate.", "GetFitter", "GetFitter Plan - Normal", "GF-N", "Normal" },
+                    { new Guid("11111111-1111-1111-1111-000100000002"), "A plan designed for GetFitter with a Hard metabolic rate.", "GetFitter", "GetFitter Plan - Hard", "GF-H", "Hard" },
+                    { new Guid("11111111-1111-1111-1111-000200000000"), "A plan designed for GainWeight with a Weak metabolic rate.", "GainWeight", "GainWeight Plan - Weak", "GW-W", "Weak" },
+                    { new Guid("11111111-1111-1111-1111-000200000001"), "A plan designed for GainWeight with a Normal metabolic rate.", "GainWeight", "GainWeight Plan - Normal", "GW-N", "Normal" },
+                    { new Guid("11111111-1111-1111-1111-000200000002"), "A plan designed for GainWeight with a Hard metabolic rate.", "GainWeight", "GainWeight Plan - Hard", "GW-H", "Hard" },
+                    { new Guid("11111111-1111-1111-1111-000300000000"), "A plan designed for GainMoreFlexible with a Weak metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Weak", "FL-W", "Weak" },
+                    { new Guid("11111111-1111-1111-1111-000300000001"), "A plan designed for GainMoreFlexible with a Normal metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Normal", "FL-N", "Normal" },
+                    { new Guid("11111111-1111-1111-1111-000300000002"), "A plan designed for GainMoreFlexible with a Hard metabolic rate.", "GainMoreFlexible", "GainMoreFlexible Plan - Hard", "FL-H", "Hard" },
+                    { new Guid("11111111-1111-1111-1111-000400000000"), "A plan designed for LearnTheBasic with a Weak metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Weak", "LB-W", "Weak" },
+                    { new Guid("11111111-1111-1111-1111-000400000001"), "A plan designed for LearnTheBasic with a Normal metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Normal", "LB-N", "Normal" },
+                    { new Guid("11111111-1111-1111-1111-000400000002"), "A plan designed for LearnTheBasic with a Hard metabolic rate.", "LearnTheBasic", "LearnTheBasic Plan - Hard", "LB-H", "Hard" }
                 });
 
             migrationBuilder.CreateIndex(

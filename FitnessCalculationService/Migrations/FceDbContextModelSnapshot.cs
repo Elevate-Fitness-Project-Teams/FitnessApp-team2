@@ -24,11 +24,9 @@ namespace FitnessCalculationService.Migrations
 
             modelBuilder.Entity("FitnessCalculationService.Domain.Entities.CalculatedMetrics", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Bmr")
                         .HasColumnType("float");
@@ -63,11 +61,9 @@ namespace FitnessCalculationService.Migrations
 
             modelBuilder.Entity("FitnessCalculationService.Domain.Entities.FitnessPlanConfig", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -104,7 +100,7 @@ namespace FitnessCalculationService.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1,
+                            Id = new Guid("11111111-1111-1111-1111-000000000000"),
                             Description = "A plan designed for LoseWeight with a Weak metabolic rate.",
                             Goal = "LoseWeight",
                             Name = "LoseWeight Plan - Weak",
@@ -113,7 +109,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 2,
+                            Id = new Guid("11111111-1111-1111-1111-000000000001"),
                             Description = "A plan designed for LoseWeight with a Normal metabolic rate.",
                             Goal = "LoseWeight",
                             Name = "LoseWeight Plan - Normal",
@@ -122,7 +118,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 3,
+                            Id = new Guid("11111111-1111-1111-1111-000000000002"),
                             Description = "A plan designed for LoseWeight with a Hard metabolic rate.",
                             Goal = "LoseWeight",
                             Name = "LoseWeight Plan - Hard",
@@ -131,7 +127,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 4,
+                            Id = new Guid("11111111-1111-1111-1111-000100000000"),
                             Description = "A plan designed for GetFitter with a Weak metabolic rate.",
                             Goal = "GetFitter",
                             Name = "GetFitter Plan - Weak",
@@ -140,7 +136,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 5,
+                            Id = new Guid("11111111-1111-1111-1111-000100000001"),
                             Description = "A plan designed for GetFitter with a Normal metabolic rate.",
                             Goal = "GetFitter",
                             Name = "GetFitter Plan - Normal",
@@ -149,7 +145,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 6,
+                            Id = new Guid("11111111-1111-1111-1111-000100000002"),
                             Description = "A plan designed for GetFitter with a Hard metabolic rate.",
                             Goal = "GetFitter",
                             Name = "GetFitter Plan - Hard",
@@ -158,7 +154,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 7,
+                            Id = new Guid("11111111-1111-1111-1111-000200000000"),
                             Description = "A plan designed for GainWeight with a Weak metabolic rate.",
                             Goal = "GainWeight",
                             Name = "GainWeight Plan - Weak",
@@ -167,7 +163,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 8,
+                            Id = new Guid("11111111-1111-1111-1111-000200000001"),
                             Description = "A plan designed for GainWeight with a Normal metabolic rate.",
                             Goal = "GainWeight",
                             Name = "GainWeight Plan - Normal",
@@ -176,7 +172,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 9,
+                            Id = new Guid("11111111-1111-1111-1111-000200000002"),
                             Description = "A plan designed for GainWeight with a Hard metabolic rate.",
                             Goal = "GainWeight",
                             Name = "GainWeight Plan - Hard",
@@ -185,7 +181,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 10,
+                            Id = new Guid("11111111-1111-1111-1111-000300000000"),
                             Description = "A plan designed for GainMoreFlexible with a Weak metabolic rate.",
                             Goal = "GainMoreFlexible",
                             Name = "GainMoreFlexible Plan - Weak",
@@ -194,7 +190,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 11,
+                            Id = new Guid("11111111-1111-1111-1111-000300000001"),
                             Description = "A plan designed for GainMoreFlexible with a Normal metabolic rate.",
                             Goal = "GainMoreFlexible",
                             Name = "GainMoreFlexible Plan - Normal",
@@ -203,7 +199,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 12,
+                            Id = new Guid("11111111-1111-1111-1111-000300000002"),
                             Description = "A plan designed for GainMoreFlexible with a Hard metabolic rate.",
                             Goal = "GainMoreFlexible",
                             Name = "GainMoreFlexible Plan - Hard",
@@ -212,7 +208,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 13,
+                            Id = new Guid("11111111-1111-1111-1111-000400000000"),
                             Description = "A plan designed for LearnTheBasic with a Weak metabolic rate.",
                             Goal = "LearnTheBasic",
                             Name = "LearnTheBasic Plan - Weak",
@@ -221,7 +217,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 14,
+                            Id = new Guid("11111111-1111-1111-1111-000400000001"),
                             Description = "A plan designed for LearnTheBasic with a Normal metabolic rate.",
                             Goal = "LearnTheBasic",
                             Name = "LearnTheBasic Plan - Normal",
@@ -230,7 +226,7 @@ namespace FitnessCalculationService.Migrations
                         },
                         new
                         {
-                            Id = 15,
+                            Id = new Guid("11111111-1111-1111-1111-000400000002"),
                             Description = "A plan designed for LearnTheBasic with a Hard metabolic rate.",
                             Goal = "LearnTheBasic",
                             Name = "LearnTheBasic Plan - Hard",
@@ -241,17 +237,15 @@ namespace FitnessCalculationService.Migrations
 
             modelBuilder.Entity("FitnessCalculationService.Domain.Entities.UserAssignedPlan", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("FitnessPlanConfigId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("FitnessPlanConfigId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -274,11 +268,9 @@ namespace FitnessCalculationService.Migrations
 
             modelBuilder.Entity("FitnessCalculationService.Domain.Entities.UserFitnessStats", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ActivityLevel")
                         .IsRequired()
@@ -322,11 +314,9 @@ namespace FitnessCalculationService.Migrations
 
             modelBuilder.Entity("FitnessCalculationService.Domain.Entities.UserPlanHistory", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
