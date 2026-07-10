@@ -7,6 +7,7 @@ using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
+using ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
 
@@ -130,5 +131,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapLogWorkoutEndpoint();
+app.MapViewUserProgressEndpoint();
 
 app.Run();
