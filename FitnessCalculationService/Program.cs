@@ -27,4 +27,20 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Automatically apply any pending EF Core migrations on startup and run seeder (HasData is applied via migrations)
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<FceDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while applying migrations.");
+        throw; // Rethrow the exception to prevent the application from starting if migrations fail
+    }
+}
+
 app.Run();
