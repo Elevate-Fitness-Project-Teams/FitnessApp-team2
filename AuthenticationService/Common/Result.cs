@@ -2,7 +2,7 @@ namespace AuthenticationService.Common;
 
 public class Result
 {
-    protected Result(bool isSuccess, Error error)
+    protected Result(bool isSuccess, Error error, bool businessRuleFailed = false)
     {
         if (isSuccess && error != null)
             throw new InvalidOperationException();
@@ -13,13 +13,15 @@ public class Result
         IsSuccess = isSuccess;
         Error = error!;
         Errors = new List<Error> { error! };
+        BusinessRuleFailed = businessRuleFailed;
     }
 
-    protected Result(bool isSuccess, List<Error> errors)
+    protected Result(bool isSuccess, List<Error> errors, bool businessRuleFailed = false)
     {
         IsSuccess = isSuccess;
         Errors = errors;
         Error = errors.FirstOrDefault()!;
+        BusinessRuleFailed = businessRuleFailed;
     }
 
     public bool IsSuccess { get; }
@@ -33,14 +35,14 @@ public class Result
         return new Result(true, (Error)null!);
     }
 
-    public static Result Failure(Error error)
+    public static Result Failure(Error error, bool businessRuleFailed = false)
     {
-        return new Result(false, error);
+        return new Result(false, error, businessRuleFailed);
     }
 
-    public static Result Failure(List<Error> errors)
+    public static Result Failure(List<Error> errors, bool businessRuleFailed = false)
     {
-        return new Result(false, errors);
+        return new Result(false, errors, businessRuleFailed);
     }
 }
 
@@ -48,14 +50,14 @@ public class Result<TValue> : Result
 {
     private readonly TValue? _value;
 
-    protected internal Result(TValue? value, bool isSuccess, Error error)
-        : base(isSuccess, error)
+    protected internal Result(TValue? value, bool isSuccess, Error error, bool businessRuleFailed = false)
+        : base(isSuccess, error, businessRuleFailed)
     {
         _value = value;
     }
 
-    protected internal Result(TValue? value, bool isSuccess, List<Error> errors)
-        : base(isSuccess, errors)
+    protected internal Result(TValue? value, bool isSuccess, List<Error> errors, bool businessRuleFailed = false)
+        : base(isSuccess, errors, businessRuleFailed)
     {
         _value = value;
     }
@@ -69,13 +71,13 @@ public class Result<TValue> : Result
         return new Result<TValue>(value, true, (Error)null!);
     }
 
-    public new static Result<TValue> Failure(Error error)
+    public new static Result<TValue> Failure(Error error, bool businessRuleFailed = false)
     {
-        return new Result<TValue>(default, false, error);
+        return new Result<TValue>(default, false, error, businessRuleFailed);
     }
 
-    public new static Result<TValue> Failure(List<Error> errors)
+    public new static Result<TValue> Failure(List<Error> errors, bool businessRuleFailed = false)
     {
-        return new Result<TValue>(default, false, errors);
+        return new Result<TValue>(default, false, errors, businessRuleFailed);
     }
 }

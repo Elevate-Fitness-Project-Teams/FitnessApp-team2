@@ -1,4 +1,4 @@
-namespace AuthenticationService.Common;
+namespace ProgressTrackingService.Common;
 
 public class ApiResponse<T>
 {
@@ -9,7 +9,8 @@ public class ApiResponse<T>
     public int StatusCode { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
 
-    public static ApiResponse<T> Success(T data, string message = "Operation completed successfully.", int statusCode = 200)
+    public static ApiResponse<T> Success(T data, string message = "Operation completed successfully.",
+        int statusCode = 200)
     {
         return new ApiResponse<T>
         {
@@ -20,7 +21,8 @@ public class ApiResponse<T>
         };
     }
 
-    public static ApiResponse<T> Failure(IEnumerable<string> errors, string message = "Operation failed.", int statusCode = 400)
+    public static ApiResponse<T> Failure(IEnumerable<string> errors, string message = "Operation failed.",
+        int statusCode = 400)
     {
         return new ApiResponse<T>
         {
