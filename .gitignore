@@ -45,3 +45,7 @@ appsettings.Development.json
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+# RSA Keys
+Keys/
+*.pem

@@ -1,7 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 using UserProfileService.Common.Extensions;
-using UserProfileService.Common.Filters;
+
 
 namespace UserProfileService.Features.Settings.GetSettings;
 
@@ -18,7 +18,7 @@ public static class GetSettingsEndpoint
         .WithTags("Settings")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>();
+        .RequireAuthorization();
         return app;
     }
 }

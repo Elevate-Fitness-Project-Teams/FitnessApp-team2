@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UserProfileService.Common.Extensions;
-using UserProfileService.Common.Filters;
+
 
 namespace UserProfileService.Features.Profiles.UploadProfilePicture;
 
@@ -18,7 +18,7 @@ public static class UploadProfilePictureEndpoint
         .WithTags("Profiles")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>()
+        .RequireAuthorization()
         .DisableAntiforgery();
         return app;
     }
