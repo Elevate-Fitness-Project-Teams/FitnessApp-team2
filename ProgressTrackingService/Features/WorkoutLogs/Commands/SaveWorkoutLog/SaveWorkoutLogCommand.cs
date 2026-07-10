@@ -12,7 +12,7 @@ public class SaveWorkoutLogCommand : IRequest<Result<Guid>>
     public int Duration { get; set; }
     public int CaloriesBurned { get; set; }
     public string Difficulty { get; set; } = string.Empty;
-    public string Notes { get; set; } = string.Empty;
+    public string? Notes { get; set; }
     public int Rating { get; set; }
     public List<SaveWorkoutLogExerciseDto> ExercisesCompleted { get; set; } = new();
 }
@@ -25,4 +25,3 @@ public class SaveWorkoutLogExerciseDto
     public double WeightUsed { get; set; }
     public bool Completed { get; set; }
 }
-

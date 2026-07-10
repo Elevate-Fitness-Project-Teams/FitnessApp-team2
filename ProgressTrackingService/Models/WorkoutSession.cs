@@ -8,6 +8,6 @@ public class WorkoutSession
     public string Id { get; set; } = string.Empty;
     public Guid UserId { get; set; }
     public Guid WorkoutId { get; set; }
-    public string Status { get; set; } = "Active";
+    public SessionStatus Status { get; set; } = SessionStatus.Active;
     public DateTime StartedAt { get; set; }
 }

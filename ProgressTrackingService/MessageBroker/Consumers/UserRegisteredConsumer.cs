@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Models;
 
-namespace MessageBroker.Events;
+namespace ProgressTrackingService.MessageBroker.Consumers;
 public class UserRegisteredEvent
 {
     public Guid UserId { get; set; }

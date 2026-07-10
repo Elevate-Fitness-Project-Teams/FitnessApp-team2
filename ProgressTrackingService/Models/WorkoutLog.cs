@@ -8,7 +8,7 @@ public class WorkoutLog
     public string SessionId { get; set; } = string.Empty;
     public int DurationInMinutes { get; set; }
     public int CaloriesBurned { get; set; }
-    public string Difficulty { get; set; } = string.Empty;
+    public WorkoutDifficulty Difficulty { get; set; }
     public int Rating { get; set; }
     public string? Notes { get; set; }
     public DateTime CompletedAt { get; set; }

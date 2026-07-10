@@ -1,11 +1,8 @@
-using System.Net.Http.Json;
 using MediatR;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Database;
-using ProgressTrackingService.Features.Streaks.Queries.GetStreak;
 using ProgressTrackingService.Features.Streaks.Commands.UpdateStreak;
 using ProgressTrackingService.Features.WorkoutLogs.Commands.SaveWorkoutLog;
-using ProgressTrackingService.Features.WorkoutLogs.Commands.UpdateSession;
 using ProgressTrackingService.Features.WorkoutLogs.Commands.UpdateStatistic;
 
 namespace ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
@@ -20,15 +17,17 @@ public record LogWorkoutOrchestrator(
     string Difficulty,
     string? Notes,
     int Rating,
-    List<LogWorkoutExerciseDto> ExercisesCompleted) : IRequest<Result<LogWorkoutResponse>>;
+    List<LogWorkoutExerciseDto> ExercisesCompleted) : IRequest<Result<Guid>>;
 
-public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestrator, Result<LogWorkoutResponse>>
+public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestrator, Result<Guid>>
 {
     private readonly IMediator _mediator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public LogWorkoutOrchestratorHandler(IMediator mediator, IUnitOfWork unitOfWork,
+    public LogWorkoutOrchestratorHandler(
+        IMediator mediator,
+        IUnitOfWork unitOfWork,
         IHttpClientFactory httpClientFactory)
     {
         _mediator = mediator;
@@ -36,26 +35,20 @@ public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestra
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<Result<LogWorkoutResponse>> Handle(LogWorkoutOrchestrator request,
-        CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(LogWorkoutOrchestrator request, CancellationToken cancellationToken)
     {
+        var client = _httpClientFactory.CreateClient("WorkoutService");
+        var response = await client.PostAsJsonAsync("api/v1/sessions/complete",
+            new { SessionId = request.SessionId, UserId = request.UserId }, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return Result<Guid>.Failure(Error.Failure("WORKOUT_SERVICE_ERROR",
+                "Failed to complete session in WorkoutService."));
+        }
+
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var client = _httpClientFactory.CreateClient("WorkoutService");
-            var response = await client.PostAsJsonAsync("api/v1/sessions/complete",
-                new { SessionId = request.SessionId, UserId = request.UserId }, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return Result<LogWorkoutResponse>.Failure(Error.Failure("WORKOUT_SERVICE_ERROR",
-                    "Failed to complete session in WorkoutService."));
-            }
-
-            var oldStreakResult = await _mediator.Send(new GetStreakQuery { UserId = request.UserId }, cancellationToken);
-            var oldStreak = oldStreakResult.IsSuccess ? oldStreakResult.Value : null;
-            int previousStreak = oldStreak?.CurrentStreak ?? 0;
-            DateTime? previousDate = oldStreak?.LastWorkoutDate;
-
             var saveCommand = new SaveWorkoutLogCommand
             {
                 UserId = request.UserId,
@@ -80,7 +73,7 @@ public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestra
             var saveResult = await _mediator.Send(saveCommand, cancellationToken);
             if (!saveResult.IsSuccess)
             {
-                return Result<LogWorkoutResponse>.Failure(saveResult.Error);
+                return Result<Guid>.Failure(saveResult.Error);
             }
 
             await _mediator.Send(
@@ -90,24 +83,7 @@ public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestra
             await _mediator.Send(new UpdateStreakCommand { UserId = request.UserId, CompletedAt = request.CompletedAt },
                 cancellationToken);
 
-            var newStreakResult =
-                await _mediator.Send(new GetStreakQuery { UserId = request.UserId }, cancellationToken);
-            var newStreak = newStreakResult.IsSuccess ? newStreakResult.Value : null;
-
-            var result = new LogWorkoutResponse
-            {
-                LogId = saveResult.Value,
-                CurrentStreak = newStreak?.CurrentStreak ?? 0,
-                StreakUpdated = false
-            };
-
-            if (newStreak != null && (previousDate == null || newStreak.CurrentStreak > previousStreak ||
-                                      (newStreak.CurrentStreak == 1 && previousStreak > 1)))
-            {
-                result.StreakUpdated = true;
-            }
-
-            return Result<LogWorkoutResponse>.Success(result);
+            return Result<Guid>.Success(saveResult.Value);
         }, cancellationToken);
     }
 }

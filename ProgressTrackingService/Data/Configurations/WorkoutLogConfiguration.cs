@@ -13,6 +13,8 @@ public class WorkoutLogConfiguration : IEntityTypeConfiguration<WorkoutLog>
         builder.HasIndex(x => x.UserId);
         builder.HasIndex(x => x.SessionId);
         
+        builder.Property(x => x.Difficulty).HasConversion<string>();
+        
         builder.Property(x => x.SessionId)
             .IsRequired()
             .HasMaxLength(100);

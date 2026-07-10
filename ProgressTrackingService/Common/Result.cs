@@ -4,6 +4,14 @@ namespace ProgressTrackingService.Common;
 
 public class Result
 {
+    protected Result(bool isSuccess)
+    {
+        IsSuccess = isSuccess;
+        Error = default!;
+        Errors = new List<Error>();
+        BusinessRuleFailed = false;
+    }
+
     protected Result(bool isSuccess, Error error, bool businessRuleFailed = false)
     {
         if (isSuccess && error != null)
@@ -34,7 +42,7 @@ public class Result
 
     public static Result Success()
     {
-        return new Result(true, (Error)null!);
+        return new Result(true);
     }
 
     public static Result Failure(Error error, bool businessRuleFailed = false)
@@ -51,6 +59,12 @@ public class Result
 public class Result<TValue> : Result
 {
     private readonly TValue? _value;
+
+    protected internal Result(TValue? value, bool isSuccess)
+        : base(isSuccess)
+    {
+        _value = value;
+    }
 
     protected internal Result(TValue? value, bool isSuccess, Error error, bool businessRuleFailed = false)
         : base(isSuccess, error, businessRuleFailed)
@@ -70,7 +84,7 @@ public class Result<TValue> : Result
 
     public static Result<TValue> Success(TValue value)
     {
-        return new Result<TValue>(value, true, (Error)null!);
+        return new Result<TValue>(value, true);
     }
 
     public new static Result<TValue> Failure(Error error, bool businessRuleFailed = false)

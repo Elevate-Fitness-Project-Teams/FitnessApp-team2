@@ -8,7 +8,8 @@ namespace ProgressTrackingService.Features.WorkoutLogs.Queries.GetAvailableAchie
 
 public class GetAvailableAchievementsQuery : IRequest<Result<List<GetAvailableAchievementResponse>>>
 {
-    public Guid UserId { get; set; }
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 50;
 }
 
 public class GetAvailableAchievementsHandler : IRequestHandler<GetAvailableAchievementsQuery, Result<List<GetAvailableAchievementResponse>>>
@@ -23,6 +24,8 @@ public class GetAvailableAchievementsHandler : IRequestHandler<GetAvailableAchie
     public async Task<Result<List<GetAvailableAchievementResponse>>> Handle(GetAvailableAchievementsQuery request, CancellationToken cancellationToken)
     {
         var list = await _achievementRepo.Find(a => true)
+            .Skip((request.PageNumber - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Select(a => new GetAvailableAchievementResponse
             {
                 Id = a.Id,

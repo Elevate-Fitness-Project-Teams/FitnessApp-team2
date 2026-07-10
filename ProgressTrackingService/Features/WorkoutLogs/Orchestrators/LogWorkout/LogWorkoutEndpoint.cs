@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using ProgressTrackingService.Common;
 using System.Security.Claims;
+using ProgressTrackingService.Common.Extensions;
 
 namespace ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 
@@ -46,18 +47,10 @@ public static class LogWorkoutEndpoint
 
             if (!result.IsSuccess)
             {
-                if (result.Error.Code == "VAL_REQUIRED_FIELD")
-                {
-                    return Results.BadRequest(ApiResponse<LogWorkoutResponse>.Failure(new[] { result.Error.Description ?? "Required field validation failed." }));
-                }
-                if (result.Error.Code == "RES_SESSION_NOT_FOUND")
-                {
-                    return Results.NotFound(ApiResponse<LogWorkoutResponse>.Failure(new[] { "RES_SESSION_NOT_FOUND" }));
-                }
-                return Results.BadRequest(ApiResponse<LogWorkoutResponse>.Failure(new[] { result.Error.Description ?? "An error occurred." }));
+                return result.ToHttpResult();
             }
 
-            return Results.Created($"/api/v1/progress/workouts/{result.Value.LogId}", ApiResponse<LogWorkoutResponse>.Success(result.Value));
+            return Results.Created($"/api/v1/progress/workouts/{result.Value}", ApiResponse<Guid>.Success(result.Value));
         })
         .RequireAuthorization()
         .WithName("LogWorkout")

@@ -48,8 +48,7 @@ public class GlobalExceptionHandlerMiddleware
 
             var response = ApiResponse<object>.Failure(
                 new[] { ex.Message },
-                GeneralErrors.UnauthorizedAccess,
-                401);
+                GeneralErrors.UnauthorizedAccess);
 
             var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
             {
@@ -67,8 +66,7 @@ public class GlobalExceptionHandlerMiddleware
 
             var response = ApiResponse<object>.Failure(
                 new[] { GeneralErrors.InternalServerError },
-                GeneralErrors.InternalServerError,
-                500);
+                GeneralErrors.InternalServerError);
 
             var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
             {

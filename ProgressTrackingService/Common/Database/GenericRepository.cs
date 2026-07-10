@@ -1,7 +1,6 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using ProgressTrackingService.Data;
+using System.Linq.Expressions;
 
 namespace ProgressTrackingService.Common.Database;
 
@@ -16,9 +15,9 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
         _dbSet = dbContext.Set<T>();
     }
 
-    public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<T?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
+        return await _dbSet.FindAsync(new[] { id }, cancellationToken);
     }
 
     public IQueryable<T> GetAll()
@@ -54,16 +53,20 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
 
     public void SaveInclude(T entity, params string[] includedProperties)
     {
-        var LocalEntity = _dbSet.Local.FirstOrDefault(e => ((dynamic)e).Id == ((dynamic)entity).Id);
+        var keyProperties = _dbContext.Model.FindEntityType(typeof(T))!.FindPrimaryKey()!.Properties;
+
+        var tracked = _dbSet.Local.FirstOrDefault(local =>
+            keyProperties.All(p => p.PropertyInfo!.GetValue(local)!.Equals(p.PropertyInfo!.GetValue(entity))));
+
         Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry;
 
-        if (LocalEntity == null)
+        if (tracked == null)
         {
             entry = _dbContext.Entry(entity);
         }
         else
         {
-            entry = _dbContext.ChangeTracker.Entries<T>().First(e => ((dynamic)e.Entity).Id == ((dynamic)entity).Id);
+            entry = _dbContext.Entry(tracked);
         }
 
         foreach (var property in entry.Properties)

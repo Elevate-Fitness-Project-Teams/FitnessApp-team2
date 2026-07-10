@@ -5,8 +5,12 @@ using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
 using MessageBroker.Events;
+using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,10 +41,10 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitMqConfig = builder.Configuration.GetSection("RabbitMq");
-        var host = rabbitMqConfig["Host"] ?? "rabbitmq";
+        var host = rabbitMqConfig["Host"] ?? throw new InvalidOperationException("RabbitMq:Host is not configured.");
         var virtualHost = rabbitMqConfig["VirtualHost"] ?? "/";
-        var username = rabbitMqConfig["Username"] ?? "guest";
-        var password = rabbitMqConfig["Password"] ?? "guest";
+        var username = rabbitMqConfig["Username"] ?? throw new InvalidOperationException("RabbitMq:Username is not configured.");
+        var password = rabbitMqConfig["Password"] ?? throw new InvalidOperationException("RabbitMq:Password is not configured.");
 
         cfg.Host(host, virtualHost, h =>
         {
@@ -69,21 +73,47 @@ builder.Services.AddHttpClient("WorkoutService", client =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration["Jwt:Authority"];
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
+    });
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        var origins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        policy.WithOrigins(origins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 #region ApplyPendingMigration
 
-using var scopeApplicationContext = app.Services.CreateScope();
-var context = scopeApplicationContext.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-try
+if (app.Environment.IsDevelopment())
 {
-    await context.Database.MigrateAsync();
-}
-catch (Exception e)
-{
-    var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    logger.LogError(e, "An error occurred while migrating the database.");
-    throw;
+    using var scopeApplicationContext = app.Services.CreateScope();
+    var context = scopeApplicationContext.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    try
+    {
+        await context.Database.MigrateAsync();
+    }
+    catch (Exception e)
+    {
+        var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(e, "An error occurred while migrating the database.");
+        throw;
+    }
 }
 
 #endregion
@@ -95,6 +125,9 @@ app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -27,20 +27,20 @@ public static class ResultExtensions
         return error.Type switch
         {
             ErrorType.NotFound => Results.NotFound(
-                ApiResponse<object>.Failure(errorMessages, "Resource not found.", 404)),
+                ApiResponse<object>.Failure(errorMessages, "Resource not found.")),
 
             ErrorType.Validation => Results.BadRequest(
                 ApiResponse<object>.Failure(errorMessages, "Validation failed.")),
 
             ErrorType.Conflict => Results.Conflict(
-                ApiResponse<object>.Failure(errorMessages, "Conflict.", 409)),
+                ApiResponse<object>.Failure(errorMessages, "Conflict.")),
 
             ErrorType.Unauthorized => Results.Json(
-                ApiResponse<object>.Failure(errorMessages, "Unauthorized.", 401),
+                ApiResponse<object>.Failure(errorMessages, "Unauthorized."),
                 statusCode: 401),
 
             ErrorType.Forbidden => Results.Json(
-                ApiResponse<object>.Failure(errorMessages, "Forbidden.", 403),
+                ApiResponse<object>.Failure(errorMessages, "Forbidden."),
                 statusCode: 403),
 
             _ => Results.BadRequest(
