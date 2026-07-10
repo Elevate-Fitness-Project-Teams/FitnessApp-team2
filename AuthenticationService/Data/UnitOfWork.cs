@@ -1,3 +1,4 @@
+using AuthenticationService.Common;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AuthenticationService.Data;
@@ -12,6 +13,36 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public async Task ExecuteAsync(Func<Task> action, CancellationToken cancellationToken = default)
+    {
+        await ExecuteInternalAsync(async () =>
+        {
+            await action();
+            return true;
+        }, cancellationToken);
+    }
+
+    public Task<T> ExecuteAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken = default)
+    {
+        return ExecuteInternalAsync(action, cancellationToken);
+    }
+
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_transaction is not null)
+        {
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+
+        GC.SuppressFinalize(this);
     }
 
     private async Task<T> ExecuteInternalAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken)
@@ -35,7 +66,7 @@ public class UnitOfWork : IUnitOfWork
         {
             var result = await action();
 
-            bool shouldRollback = result is AuthenticationService.Common.Result r && r.BusinessRuleFailed;
+            var shouldRollback = result is Result r && r.BusinessRuleFailed;
 
             _depth--;
 
@@ -91,35 +122,5 @@ public class UnitOfWork : IUnitOfWork
                 _savepoints.Clear();
             }
         }
-    }
-
-    public async Task ExecuteAsync(Func<Task> action, CancellationToken cancellationToken = default)
-    {
-        await ExecuteInternalAsync(async () =>
-        {
-            await action();
-            return true;
-        }, cancellationToken);
-    }
-
-    public Task<T> ExecuteAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken = default)
-    {
-        return ExecuteInternalAsync(action, cancellationToken);
-    }
-
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (_transaction is not null)
-        {
-            await _transaction.DisposeAsync();
-            _transaction = null;
-        }
-
-        GC.SuppressFinalize(this);
     }
 }

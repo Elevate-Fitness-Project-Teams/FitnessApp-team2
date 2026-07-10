@@ -1,10 +1,11 @@
-using AuthenticationService.Events;
+using AuthenticationService.Common;
 using MassTransit;
 using MediatR;
+using MessageBroker.Events;
 
 namespace AuthenticationService.Features.Auth.Commands.PublishUserRegisteredEvent;
 
-public class PublishUserRegisteredEventCommandHandler : IRequestHandler<PublishUserRegisteredEventCommand>
+public class PublishUserRegisteredEventCommandHandler : IRequestHandler<PublishUserRegisteredEventCommand, Result>
 {
     private readonly IPublishEndpoint _publishEndpoint;
 
@@ -13,7 +14,7 @@ public class PublishUserRegisteredEventCommandHandler : IRequestHandler<PublishU
         _publishEndpoint = publishEndpoint;
     }
 
-    public async Task Handle(PublishUserRegisteredEventCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(PublishUserRegisteredEventCommand request, CancellationToken cancellationToken)
     {
         var integrationEvent = new UserRegisteredIntegrationEvent
         {
@@ -26,5 +27,7 @@ public class PublishUserRegisteredEventCommandHandler : IRequestHandler<PublishU
         };
 
         await _publishEndpoint.Publish(integrationEvent, cancellationToken);
+
+        return Result.Success();
     }
 }

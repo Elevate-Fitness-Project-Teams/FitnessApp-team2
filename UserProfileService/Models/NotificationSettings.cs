@@ -2,7 +2,7 @@ namespace UserProfileService.Models
 {
     public class NotificationSettings
     {
-        public int Id { get; set; } // PK and FK -> UserProfile.Id
+        public string Id { get; set; } = string.Empty; // PK and FK -> UserProfile.Id
         public bool WorkoutReminders { get; set; } = true;
         public bool MealReminders { get; set; } = true;
         public bool AchievementAlerts { get; set; } = true;

@@ -11,13 +11,16 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     hostname: rabbitmq
+    ports:
+      - "15672:15672"
 
   authenticationservice:
     image: ${DOCKER_REGISTRY-}authenticationservice
     build:
       context: .
       dockerfile: AuthenticationService/Dockerfile
-
+    ports:
+      - "8089:8080"
   fitnesscalculationservice:
     image: ${DOCKER_REGISTRY-}fitnesscalculationservice
     build:

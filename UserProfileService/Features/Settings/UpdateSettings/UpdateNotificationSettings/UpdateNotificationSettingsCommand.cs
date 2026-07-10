@@ -4,7 +4,7 @@ using UserProfileService.Common;
 namespace UserProfileService.Features.Settings.UpdateSettings.UpdateNotificationSettings;
 
 public record UpdateNotificationSettingsCommand(
-    int UserId,
+    string UserId,
     bool? WorkoutReminders,
     bool? MealReminders,
     bool? AchievementAlerts,

@@ -1,18 +1,19 @@
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Reflection;
 using UserProfileService.Common;
 using UserProfileService.Common.Behaviors;
 using UserProfileService.Common.Database;
-using UserProfileService.Features.Profiles.ChangePassword;
+using UserProfileService.Common.DataBase;
 using UserProfileService.Features.Profiles.GetProfile;
 using UserProfileService.Features.Profiles.UpdateProfile;
 using UserProfileService.Features.Profiles.UploadProfilePicture;
 using UserProfileService.Features.Settings.GetSettings;
 using UserProfileService.Features.Settings.UpdateSettings;
+using UserProfileService.MessageBroker;
+using UserProfileService.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,49 +24,44 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-// Register all FluentValidation validators in the assembly
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+builder.Services.AddFluentValidationAutoValidation()
+    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+builder.Services.AddHttpClient();
+
+
 // Register the pipeline behavior so MediatR calls it before handlers
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
+// Add MassTransit Messaging
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+
+
 // Bind the "ServiceUrls" section from appsettings.json to the ServiceUrls class
 builder.Services.Configure<ServiceUrls>(builder.Configuration.GetSection(ServiceUrls.SectionName));
-
-// Register a typed HttpClient for ChangePasswordHandler (used to call Auth Service)
-builder.Services.AddHttpClient<ChangePasswordHandler>();
-
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "super-secret-key-that-is-at-least-32-bytes-long";
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "FitnessApp",
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "FitnessAppUsers",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
-        };
-    });
-
-builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 // Automatically apply any pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while applying migrations.");
+        throw; // Rethrow the exception to prevent the application from starting if migrations fail
+    }
 }
 
 // Configure the HTTP request pipeline.
@@ -74,19 +70,18 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Global exception handler — must be first to catch all exceptions
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+
 // Serve uploaded files (profile pictures, etc.) from the wwwroot/ folder
 app.UseStaticFiles();
-app.UseHttpsRedirection();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
-app.UseAuthentication();
-app.UseAuthorization();
-
-// Map minimal API endpoints
+// Map the endpoints for the profile features
 app.MapGetProfileEndpoint();
 app.MapUpdateProfileEndpoint();
 app.MapUploadProfilePictureEndpoint();
-app.MapChangePasswordEndpoint();
 app.MapGetSettingsEndpoint();
 app.MapUpdateSettingsEndpoint();
-
 app.Run();

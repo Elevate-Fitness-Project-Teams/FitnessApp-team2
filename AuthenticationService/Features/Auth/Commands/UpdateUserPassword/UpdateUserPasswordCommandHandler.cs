@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AuthenticationService.Features.Auth.Commands.UpdateUserPassword;
 
-public class UpdateUserPasswordCommandHandler : IRequestHandler<UpdateUserPasswordCommand, Result<bool>>
+public class UpdateUserPasswordCommandHandler : IRequestHandler<UpdateUserPasswordCommand, Result>
 {
-    private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<User> _userManager;
 
     public UpdateUserPasswordCommandHandler(UserManager<User> userManager, IUnitOfWork unitOfWork)
     {
@@ -17,12 +17,12 @@ public class UpdateUserPasswordCommandHandler : IRequestHandler<UpdateUserPasswo
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result<bool>> Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateUserPasswordCommand request, CancellationToken cancellationToken)
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
             var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null) return Result<bool>.Failure(Error.NotFound(AuthErrorCodes.UserNotFound, "User not found"));
+            if (user == null) return Result.Failure(Error.NotFound(AuthErrorCodes.UserNotFound, "User not found"));
 
             var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
             var result = await _userManager.ResetPasswordAsync(user, resetToken, request.NewPassword);
@@ -30,10 +30,10 @@ public class UpdateUserPasswordCommandHandler : IRequestHandler<UpdateUserPasswo
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => Error.Failure(e.Code, e.Description)).ToList();
-                return Result<bool>.Failure(errors);
+                return Result.Failure(errors);
             }
 
-            return Result<bool>.Success(true);
+            return Result.Success();
         }, cancellationToken);
     }
 }

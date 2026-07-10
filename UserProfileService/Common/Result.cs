@@ -11,7 +11,7 @@ public class Result
     {
         if (isSuccess && error != null)
             throw new InvalidOperationException();
-            
+
         if (!isSuccess && error == null)
             throw new InvalidOperationException();
 
@@ -19,7 +19,7 @@ public class Result
         Error = error!;
         Errors = new List<Error> { error! };
     }
-    
+
     protected Result(bool isSuccess, List<Error> errors)
     {
         IsSuccess = isSuccess;
@@ -45,7 +45,7 @@ public class Result<TValue> : Result
     {
         _value = value;
     }
-    
+
     protected internal Result(TValue? value, bool isSuccess, List<Error> errors)
         : base(isSuccess, errors)
     {

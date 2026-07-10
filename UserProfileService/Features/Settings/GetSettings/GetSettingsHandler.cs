@@ -8,50 +8,55 @@ namespace UserProfileService.Features.Settings.GetSettings;
 
 public class GetSettingsHandler : IRequestHandler<GetSettingsQuery, Result<GetSettingsResponse>>
 {
-    private readonly ApplicationDbContext _dbContext;
 
-    public GetSettingsHandler(ApplicationDbContext dbContext)
+    private readonly IGenericRepository<UserProfile> _userProfileRepository;
+
+    public GetSettingsHandler(IGenericRepository<UserProfile> userProfileRepository)
     {
-        _dbContext = dbContext;
+        _userProfileRepository = userProfileRepository;
     }
 
     public async Task<Result<GetSettingsResponse>> Handle(GetSettingsQuery request, CancellationToken cancellationToken)
     {
-        var userProfile = await _dbContext.UserProfiles
-            .Include(up => up.UserPreferences)
-            .Include(up => up.NotificationSettings)
-            .Include(up => up.PrivacySettings)
-            .FirstOrDefaultAsync(up => up.Id == request.UserId, cancellationToken);
+        var response = await _userProfileRepository.GetQueryable()
+            .Where(up => up.Id == request.UserId)
+            .Select(up => new GetSettingsResponse
+            {
+                // EF Core will automatically JOIN UserPreferences and select these specific columns
+                UserPreferences = new UserPreferencesDto
+                {
+                    Language = up.UserPreferences.Language,
+                    Theme = up.UserPreferences.Theme,
+                    WeightUnit = up.UserPreferences.WeightUnit,
+                    HeightUnit = up.UserPreferences.HeightUnit,
+                    DistanceUnit = up.UserPreferences.DistanceUnit
+                },
 
-        if (userProfile == null)
-            return Result<GetSettingsResponse>.Failure(Error.NotFound("ProfileNotFound", "User profile not found."));
+                // EF Core will automatically JOIN NotificationSettings and select these specific columns
+                NotificationSettings = new NotificationSettingsDto
+                {
+                    WorkoutReminders = up.NotificationSettings.WorkoutReminders,
+                    MealReminders = up.NotificationSettings.MealReminders,
+                    AchievementAlerts = up.NotificationSettings.AchievementAlerts,
+                    WeeklyReports = up.NotificationSettings.WeeklyReports,
+                    EmailNotifications = up.NotificationSettings.EmailNotifications,
+                    PushNotifications = up.NotificationSettings.PushNotifications
+                },
 
-        var response = new GetSettingsResponse
+                // EF Core will automatically JOIN PrivacySettings and select these specific columns
+                PrivacySettings = new PrivacySettingsDto
+                {
+                    ProfileVisibility = up.PrivacySettings.ProfileVisibility,
+                    ShowProgressToFriends = up.PrivacySettings.ShowProgressToFriends,
+                    AllowDataSharing = up.PrivacySettings.AllowDataSharing
+                }
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (response == null)
         {
-            UserPreferences = new UserPreferencesDto
-            {
-                Language = userProfile.UserPreferences.Language,
-                Theme = userProfile.UserPreferences.Theme,
-                WeightUnit = userProfile.UserPreferences.WeightUnit,
-                HeightUnit = userProfile.UserPreferences.HeightUnit,
-                DistanceUnit = userProfile.UserPreferences.DistanceUnit
-            },
-            NotificationSettings = new NotificationSettingsDto
-            {
-                WorkoutReminders = userProfile.NotificationSettings.WorkoutReminders,
-                MealReminders = userProfile.NotificationSettings.MealReminders,
-                AchievementAlerts = userProfile.NotificationSettings.AchievementAlerts,
-                WeeklyReports = userProfile.NotificationSettings.WeeklyReports,
-                EmailNotifications = userProfile.NotificationSettings.EmailNotifications,
-                PushNotifications = userProfile.NotificationSettings.PushNotifications
-            },
-            PrivacySettings = new PrivacySettingsDto
-            {
-                ProfileVisibility = userProfile.PrivacySettings.ProfileVisibility,
-                ShowProgressToFriends = userProfile.PrivacySettings.ShowProgressToFriends,
-                AllowDataSharing = userProfile.PrivacySettings.AllowDataSharing
-            }
-        };
+            return Result<GetSettingsResponse>.Failure(Error.NotFound("ProfileNotFound", "User profile not found."));
+        }
 
         return Result<GetSettingsResponse>.Success(response);
     }

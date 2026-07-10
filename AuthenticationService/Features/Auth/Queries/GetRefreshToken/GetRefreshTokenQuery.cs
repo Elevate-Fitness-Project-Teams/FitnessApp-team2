@@ -1,6 +1,7 @@
-using AuthenticationService.Data.Entities;
+using AuthenticationService.Common;
+using AuthenticationService.Models.Responses;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Queries.GetRefreshToken;
 
-public record GetRefreshTokenQuery(string Token) : IRequest<RefreshToken?>;
+public record GetRefreshTokenQuery(string Token) : IRequest<Result<RefreshTokenDto>>;

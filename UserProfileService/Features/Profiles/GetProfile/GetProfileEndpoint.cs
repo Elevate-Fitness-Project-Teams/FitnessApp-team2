@@ -1,6 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 using UserProfileService.Common.Extensions;
+using UserProfileService.Common.Filters;
 
 namespace UserProfileService.Features.Profiles.GetProfile;
 
@@ -8,15 +9,18 @@ public static class GetProfileEndpoint
 {
     public static IEndpointRouteBuilder MapGetProfileEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/v1/profiles/me", async (ClaimsPrincipal user, IMediator mediator) =>
+        app.MapGet("/api/v1/profiles", async (HttpContext httpContext, IMediator mediator) =>
         {
-            var result = await mediator.Send(new GetProfileQuery(user.GetUserId()));
+            var userId = httpContext.User.GetUserId();
+            var query = new GetProfileQuery(userId);
+            var result = await mediator.Send(query);
             return result.ToHttpResult();
         })
         .WithName("GetProfile")
         .WithTags("Profiles")
-        .RequireAuthorization();
-
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .AddEndpointFilter<VerifyTokenEndpointFilter>();
         return app;
     }
 }

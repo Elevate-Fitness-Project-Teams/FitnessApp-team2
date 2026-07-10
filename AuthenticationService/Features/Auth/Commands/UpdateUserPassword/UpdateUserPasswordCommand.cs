@@ -3,4 +3,4 @@ using MediatR;
 
 namespace AuthenticationService.Features.Auth.Commands.UpdateUserPassword;
 
-public record UpdateUserPasswordCommand(string Email, string NewPassword) : IRequest<Result<bool>>;
+public record UpdateUserPasswordCommand(string Email, string NewPassword) : IRequest<Result>;

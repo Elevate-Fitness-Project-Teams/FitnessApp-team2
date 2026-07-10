@@ -1,5 +1,6 @@
+using AuthenticationService.Common;
 using MediatR;
 
 namespace AuthenticationService.Features.Auth.Commands.LogLoginAttempt;
 
-public record LogLoginAttemptCommand(string Email, bool IsSuccess, string IpAddress) : IRequest;
+public record LogLoginAttemptCommand(string Email, bool IsSuccess, string IpAddress) : IRequest<Result>;

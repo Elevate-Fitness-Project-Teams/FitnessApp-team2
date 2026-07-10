@@ -1,8 +1,9 @@
-﻿using AuthenticationService.Data;
+﻿
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using UserProfileService.Common;
 using UserProfileService.Common.Database;
+using UserProfileService.Common.DataBase;
 using UserProfileService.Models;
 
 namespace UserProfileService.Features.Profiles.UpdateProfile;

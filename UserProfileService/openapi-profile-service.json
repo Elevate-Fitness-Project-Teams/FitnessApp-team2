@@ -1,0 +1,542 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "UserProfileService",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/api/v1/profiles": {
+      "get": {
+        "summary": "GetProfile",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": true,
+                  "message": "Operation completed successfully.",
+                  "data": {
+                    "id": "63764a87-6a94-44be-8e98-9cc9610c8a09",
+                    "firstName": "Youssef",
+                    "lastName": "Salah",
+                    "email": "josalah117@gmail.com",
+                    "phoneNumber": "+201006169015",
+                    "profilePictureUrl": "/images/profiles/63764a87-6a94-44be-8e98-9cc9610c8a09.jpg",
+                    "isPremiumCached": false,
+                    "memberSince": "2026-06-25T16:21:14.5011899Z"
+                  },
+                  "errors": [],
+                  "statusCode": 200,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Unauthorized.",
+                  "data": null,
+                  "errors": [
+                    "Unauthorized."
+                  ],
+                  "statusCode": 401,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Resource not found.",
+                  "data": null,
+                  "errors": [
+                    "User profile not found."
+                  ],
+                  "statusCode": 404,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "UpdateProfile",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "firstName": "Youssef",
+                "lastName": "Salah",
+                "email": "josalah117@gmail.com",
+                "phoneNumber": "+201006169015"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": true,
+                  "message": "Operation completed successfully.",
+                  "data": null,
+                  "errors": [],
+                  "statusCode": 200,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Unauthorized.",
+                  "data": null,
+                  "errors": [
+                    "Unauthorized."
+                  ],
+                  "statusCode": 401,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Resource not found.",
+                  "data": null,
+                  "errors": [
+                    "User profile not found."
+                  ],
+                  "statusCode": 404,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/profiles/picture": {
+      "post": {
+        "summary": "UploadProfilePicture",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "profilePicture": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The profile picture file to upload"
+                  }
+                },
+                "required": [
+                  "profilePicture"
+                ]
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": true,
+                  "message": "Operation completed successfully.",
+                  "data": "/images/profiles/63764a87-6a94-44be-8e98-9cc9610c8a09.jpg",
+                  "errors": [],
+                  "statusCode": 200,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Unauthorized.",
+                  "data": null,
+                  "errors": [
+                    "Unauthorized."
+                  ],
+                  "statusCode": 401,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Resource not found.",
+                  "data": null,
+                  "errors": [
+                    "User profile not found."
+                  ],
+                  "statusCode": 404,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/profiles/settings": {
+      "get": {
+        "summary": "GetSettings",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": true,
+                  "message": "Operation completed successfully.",
+                  "data": {
+                    "userPreferences": {
+                      "language": "en",
+                      "theme": "dark",
+                      "weightUnit": "kg",
+                      "heightUnit": "cm",
+                      "distanceUnit": "km"
+                    },
+                    "notificationSettings": {
+                      "workoutReminders": true,
+                      "mealReminders": true,
+                      "achievementAlerts": true,
+                      "weeklyReports": true,
+                      "emailNotifications": true,
+                      "pushNotifications": true
+                    },
+                    "privacySettings": {
+                      "profileVisibility": "public",
+                      "showProgressToFriends": true,
+                      "allowDataSharing": false
+                    }
+                  },
+                  "errors": [],
+                  "statusCode": 200,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Unauthorized.",
+                  "data": null,
+                  "errors": [
+                    "Unauthorized."
+                  ],
+                  "statusCode": 401,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Resource not found.",
+                  "data": null,
+                  "errors": [
+                    "User profile not found."
+                  ],
+                  "statusCode": 404,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "UpdateSettings",
+        "deprecated": false,
+        "description": "",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": {
+                "userPreferences": {
+                  "language": "en",
+                  "theme": "dark",
+                  "weightUnit": "kg",
+                  "heightUnit": "cm",
+                  "distanceUnit": "km"
+                },
+                "notificationSettings": {
+                  "workoutReminders": true,
+                  "mealReminders": false,
+                  "achievementAlerts": true,
+                  "weeklyReports": true,
+                  "emailNotifications": true,
+                  "pushNotifications": false
+                },
+                "privacySettings": {
+                  "profileVisibility": "friends",
+                  "showProgressToFriends": true,
+                  "allowDataSharing": false
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": true,
+                  "message": "Operation completed successfully.",
+                  "data": null,
+                  "errors": [],
+                  "statusCode": 200,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Validation failed.",
+                  "data": null,
+                  "errors": [
+                    "Language must be one of: en, ar, fr, es, de.",
+                    "Theme must be one of: light, dark."
+                  ],
+                  "statusCode": 400,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Unauthorized.",
+                  "data": null,
+                  "errors": [
+                    "Unauthorized."
+                  ],
+                  "statusCode": 401,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "isSuccess": false,
+                  "message": "Resource not found.",
+                  "data": null,
+                  "errors": [
+                    "User profile not found."
+                  ],
+                  "statusCode": 404,
+                  "timestamp": "2026-07-09T19:30:00.0000000Z"
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "responses": {},
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [],
+  "security": []
+}

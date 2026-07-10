@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace AuthenticationService.Data;
 
@@ -16,7 +16,7 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
 
     public async Task<T?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+        return await _dbSet.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
     }
 
     public IQueryable<T> GetAll()
@@ -48,5 +48,37 @@ public class GeneralRepo<T> : IGeneralRepo<T> where T : class
     public void Delete(T entity)
     {
         _dbSet.Remove(entity);
+    }
+
+    public void SaveInclude(T entity, params string[] includedProperties)
+    {
+        var LocalEntity = _dbSet.Local.FirstOrDefault(e => ((dynamic)e).Id == ((dynamic)entity).Id);
+        Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry;
+
+        if (LocalEntity == null)
+        {
+            entry = _dbContext.Entry(entity);
+        }
+        else
+        {
+            entry = _dbContext.ChangeTracker.Entries<T>().First(e => ((dynamic)e.Entity).Id == ((dynamic)entity).Id);
+        }
+
+        foreach (var property in entry.Properties)
+        {
+            if (property.Metadata.IsPrimaryKey())
+                continue;
+            else
+            {
+                if (includedProperties.Contains(property.Metadata.Name))
+                {
+                    property.IsModified = true;
+                }
+                else
+                {
+                    property.IsModified = false;
+                }
+            }
+        }
     }
 }
