@@ -1,5 +1,4 @@
 using MediatR;
-using System.Security.Claims;
 using UserProfileService.Common.Extensions;
 using UserProfileService.Common.Filters;
 

@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using UserProfileService.Common.Extensions;
 using UserProfileService.Common.Filters;
 
@@ -8,7 +9,7 @@ public static class UploadProfilePictureEndpoint
 {
     public static IEndpointRouteBuilder MapUploadProfilePictureEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/v1/profiles/picture", async (IFormFile profilePicture, HttpContext httpContext, IMediator mediator) =>
+        app.MapPost("/api/v1/profiles/picture", async ([FromForm] IFormFile profilePicture, HttpContext httpContext, IMediator mediator) =>
         {
             var result = await mediator.Send(new UploadProfilePictureCommand(httpContext.User.GetUserId(), profilePicture));
             return result.ToHttpResult();
@@ -17,7 +18,8 @@ public static class UploadProfilePictureEndpoint
         .WithTags("Profiles")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>();
+        .AddEndpointFilter<VerifyTokenEndpointFilter>()
+        .DisableAntiforgery();
         return app;
     }
 }

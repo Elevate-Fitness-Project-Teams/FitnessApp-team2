@@ -9,9 +9,9 @@ namespace UserProfileService.Features.Settings.GetSettings;
 public class GetSettingsHandler : IRequestHandler<GetSettingsQuery, Result<GetSettingsResponse>>
 {
 
-    private readonly GenericRepository<UserProfile> _userProfileRepository;
+    private readonly IGenericRepository<UserProfile> _userProfileRepository;
 
-    public GetSettingsHandler(ApplicationDbContext dbContext, GenericRepository<UserProfile> userProfileRepository)
+    public GetSettingsHandler(IGenericRepository<UserProfile> userProfileRepository)
     {
         _userProfileRepository = userProfileRepository;
     }

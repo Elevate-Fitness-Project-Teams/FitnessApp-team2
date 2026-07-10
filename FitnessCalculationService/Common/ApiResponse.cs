@@ -1,4 +1,4 @@
-namespace AuthenticationService.Common;
+namespace FitnessCalculationService.Common;
 
 public class ApiResponse<T>
 {
@@ -31,3 +31,4 @@ public class ApiResponse<T>
         };
     }
 }
+
