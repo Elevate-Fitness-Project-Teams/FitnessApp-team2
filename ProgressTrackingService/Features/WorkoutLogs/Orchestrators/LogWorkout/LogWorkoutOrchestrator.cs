@@ -17,7 +17,8 @@ public record LogWorkoutOrchestrator(
     string Difficulty,
     string? Notes,
     int Rating,
-    List<LogWorkoutExerciseDto> ExercisesCompleted) : IRequest<Result<Guid>>;
+    List<LogWorkoutExerciseDto> ExercisesCompleted,
+    string AccessToken) : IRequest<Result<Guid>>;
 
 public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestrator, Result<Guid>>
 {
@@ -38,6 +39,12 @@ public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestra
     public async Task<Result<Guid>> Handle(LogWorkoutOrchestrator request, CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient("WorkoutService");
+        
+        if (!string.IsNullOrEmpty(request.AccessToken))
+        {
+            client.DefaultRequestHeaders.Authorization = System.Net.Http.Headers.AuthenticationHeaderValue.Parse(request.AccessToken);
+        }
+
         var response = await client.PostAsJsonAsync("api/v1/sessions/complete",
             new { SessionId = request.SessionId, UserId = request.UserId }, cancellationToken);
 

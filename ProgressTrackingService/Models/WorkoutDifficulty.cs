@@ -2,8 +2,8 @@ namespace ProgressTrackingService.Models;
 
 public enum WorkoutDifficulty
 {
-    Easy,
-    Medium,
-    Hard,
+    Beginner,
+    Intermediate,
+    Advanced,
     Extreme
 }

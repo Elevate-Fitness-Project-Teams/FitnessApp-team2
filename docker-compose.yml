@@ -68,6 +68,7 @@ services:
     environment:
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
+      - WorkoutService__BaseUrl=http://workoutservice:8080
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:

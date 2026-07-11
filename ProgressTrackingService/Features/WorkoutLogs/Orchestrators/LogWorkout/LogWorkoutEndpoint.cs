@@ -23,6 +23,8 @@ public static class LogWorkoutEndpoint
                 return Results.Unauthorized();
             }
 
+            var authHeader = httpContext.Request.Headers.Authorization.ToString();
+
             var orchestrator = new LogWorkoutOrchestrator(
                 userId,
                 request.WorkoutId,
@@ -40,7 +42,8 @@ public static class LogWorkoutEndpoint
                     Reps = e.Reps,
                     WeightUsed = e.WeightUsed,
                     Completed = e.Completed
-                }).ToList() ?? new List<LogWorkoutExerciseDto>()
+                }).ToList() ?? new List<LogWorkoutExerciseDto>(),
+                authHeader
             );
 
             var result = await sender.Send(orchestrator);
