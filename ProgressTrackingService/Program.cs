@@ -7,8 +7,6 @@ using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
 using System.Security.Cryptography;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 using ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
@@ -98,14 +96,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             IssuerSigningKey = rsaSecurityKey,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["Jwt:Authority"];
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"]
         };
     });
