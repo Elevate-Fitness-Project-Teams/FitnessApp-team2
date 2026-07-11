@@ -2,9 +2,9 @@ namespace WorkoutService.Data.Entities;
 
 public class WorkoutExercise
 {
-    public int Id { get; set; }
-    public int WorkoutId { get; set; }
-    public int ExerciseId { get; set; }
+    public Guid Id { get; set; }
+    public Guid WorkoutId { get; set; }
+    public Guid ExerciseId { get; set; }
     public int OrderIndex { get; set; }
     public int SetsDefault { get; set; }
     public string RepsDefault { get; set; } = string.Empty;

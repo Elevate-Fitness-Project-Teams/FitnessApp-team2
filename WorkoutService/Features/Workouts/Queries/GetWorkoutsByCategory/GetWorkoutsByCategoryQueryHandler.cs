@@ -38,3 +38,4 @@ public class GetWorkoutsByCategoryQueryHandler : IRequestHandler<GetWorkoutsByCa
         return Result<IEnumerable<GetWorkoutsResponse>>.Success(workouts);
     }
 }
+

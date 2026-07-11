@@ -3,4 +3,5 @@ using WorkoutService.Common;
 
 namespace WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
 
-public record StartSessionOrchestrator(int UserId, int WorkoutId) : IRequest<Result<StartSessionResponse>>;
+public record StartSessionOrchestrator(Guid UserId, Guid WorkoutId) : IRequest<Result<StartSessionResponse>>;
+

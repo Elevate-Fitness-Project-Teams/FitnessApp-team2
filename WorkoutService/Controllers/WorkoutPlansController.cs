@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using WorkoutService.Common;
 using WorkoutService.Features.WorkoutPlans.Queries.GetWorkoutPlanById;
 using WorkoutService.Features.WorkoutPlans.Queries.GetWorkoutPlans;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WorkoutService.Controllers;
 
 [ApiController]
 [Route("api/v1/workout-plans")]
+[Authorize]
 public class WorkoutPlansController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -28,10 +30,10 @@ public class WorkoutPlansController : ControllerBase
         return Ok(ApiResponse<IEnumerable<GetWorkoutPlansResponse>>.Success(result.Value, "Workout plans fetched successfully."));
     }
 
-    [HttpGet("{planId}")]
-    public async Task<IActionResult> GetWorkoutPlanById(string planId)
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetWorkoutPlanById(Guid id)
     {
-        var result = await _mediator.Send(new GetWorkoutPlanByIdQuery(planId));
+        var result = await _mediator.Send(new GetWorkoutPlanByIdQuery(id.ToString()));
 
         if (result.IsFailure)
         {

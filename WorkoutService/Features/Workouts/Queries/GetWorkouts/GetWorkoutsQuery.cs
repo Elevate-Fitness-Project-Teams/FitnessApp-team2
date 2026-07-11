@@ -11,3 +11,4 @@ public record GetWorkoutsQuery(
     int? Duration = null,
     string? Search = null
 ) : IRequest<Result<IEnumerable<GetWorkoutsResponse>>>;
+

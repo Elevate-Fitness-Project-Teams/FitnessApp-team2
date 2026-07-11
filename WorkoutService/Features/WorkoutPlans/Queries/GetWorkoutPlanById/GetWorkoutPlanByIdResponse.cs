@@ -1,7 +1,7 @@
 namespace WorkoutService.Features.WorkoutPlans.Queries.GetWorkoutPlanById;
 
 public record GetWorkoutPlanByIdResponse(
-    int Id,
+    Guid Id,
     string ExternalPlanId,
     string Name,
     string Description,
@@ -9,3 +9,4 @@ public record GetWorkoutPlanByIdResponse(
     string Status,
     string Difficulty
 );
+

@@ -27,4 +27,4 @@ public class ApplicationDbContext : IdentityDbContext<User>
 
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
-}
+}

@@ -39,3 +39,4 @@ public class GetWorkoutPlansQueryHandler : IRequestHandler<GetWorkoutPlansQuery,
         return Result<IEnumerable<GetWorkoutPlansResponse>>.Success(plans);
     }
 }
+

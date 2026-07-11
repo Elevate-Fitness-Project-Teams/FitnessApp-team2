@@ -27,3 +27,4 @@ public class CheckWorkoutExistsQueryHandler : IRequestHandler<CheckWorkoutExists
 		return Result.Success();
 	}
 }
+

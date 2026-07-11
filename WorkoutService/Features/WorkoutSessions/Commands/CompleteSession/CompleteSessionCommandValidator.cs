@@ -10,6 +10,7 @@ public class CompleteSessionCommandValidator : AbstractValidator<CompleteSession
             .NotEmpty().WithMessage("SessionId is required.");
 
         RuleFor(x => x.UserId)
-            .GreaterThan(0).WithMessage("UserId must be greater than 0.");
+            .NotEmpty().WithMessage("UserId must be greater than 0.");
     }
 }
+

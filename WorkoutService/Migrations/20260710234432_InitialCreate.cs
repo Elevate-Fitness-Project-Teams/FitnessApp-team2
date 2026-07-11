@@ -15,8 +15,7 @@ namespace WorkoutService.Migrations
                 name: "Exercises",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     VideoUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
@@ -33,8 +32,7 @@ namespace WorkoutService.Migrations
                 name: "WorkoutPlans",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExternalPlanId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
@@ -51,9 +49,8 @@ namespace WorkoutService.Migrations
                 name: "Workouts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkoutPlanId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkoutPlanId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Category = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Difficulty = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
@@ -77,10 +74,9 @@ namespace WorkoutService.Migrations
                 name: "WorkoutExercises",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkoutId = table.Column<int>(type: "int", nullable: false),
-                    ExerciseId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ExerciseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrderIndex = table.Column<int>(type: "int", nullable: false),
                     SetsDefault = table.Column<int>(type: "int", nullable: false),
                     RepsDefault = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -108,8 +104,8 @@ namespace WorkoutService.Migrations
                 columns: table => new
                 {
                     SessionId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    WorkoutId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StartedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
                 },
