@@ -1,4 +1,4 @@
-﻿using FitnessCalculationService.Common;
+using FitnessCalculationService.Common;
 using FitnessCalculationService.Domain.Entities;
 using FitnessCalculationService.Features.CalculateFitnessMetrics.Response;
 using FitnessCalculationService.Persistence.Repositories;
@@ -22,20 +22,16 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
         {
             return await _unitOfWork.ExecuteAsync(async () =>
             {
-
-                var existingMetrics = await _metricsRepo.GetQueryable()
+                var rowsAffected = await _metricsRepo.GetQueryable()
                     .Where(x => x.UserId == request.UserId)
-                    .FirstOrDefaultAsync(cancellationToken);
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(m => m.Bmr, request.Bmr)
+                        .SetProperty(m => m.Tdee, request.Tdee)
+                        .SetProperty(m => m.CalorieTarget, request.CalorieTarget)
+                        .SetProperty(m => m.CalculatedAt, DateTime.UtcNow),
+                        cancellationToken);
 
-                if (existingMetrics != null)
-                {
-                    existingMetrics.Bmr = request.Bmr;
-                    existingMetrics.Tdee = request.Tdee;
-                    existingMetrics.CalorieTarget = request.CalorieTarget;
-                    existingMetrics.CalculatedAt = DateTime.UtcNow;
-                    _metricsRepo.Update(existingMetrics);
-                }
-                else
+                if (rowsAffected == 0)
                 {
                     var newMetrics = new CalculatedMetrics
                     {
@@ -48,6 +44,7 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                     };
                     await _metricsRepo.AddAsync(newMetrics, cancellationToken);
                 }
+
                 return Result.Success();
             });
         }    
