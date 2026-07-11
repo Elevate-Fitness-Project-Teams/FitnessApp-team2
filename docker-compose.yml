@@ -26,6 +26,8 @@ services:
     build:
       context: .
       dockerfile: FitnessCalculationService/Dockerfile
+    ports:
+      - "8091:8080"
 
   nutritionservice:
     image: ${DOCKER_REGISTRY-}nutritionservice
