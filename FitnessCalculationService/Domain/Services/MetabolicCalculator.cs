@@ -6,7 +6,7 @@ public class MetabolicCalculator : IMetabolicCalculator
 {
     public double CalculateBmr(double weight, double height, int age, Gender gender)
     {
-        // Mifflin-St Jeor Equation
+        
         double bmr = (10 * weight) + (6.25 * height) - (5 * age);
         return gender == Gender.Male ? bmr + 5 : bmr - 161;
     }
