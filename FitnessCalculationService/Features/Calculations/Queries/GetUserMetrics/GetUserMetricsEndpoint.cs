@@ -21,6 +21,7 @@ public static class GetUserMetricsEndpoint
             return Results.BadRequest(errorResponse);
         })
         .WithName("GetUserMetrics")
+        .RequireAuthorization()
         .Produces<ApiResponse<GetUserMetricsResponse>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound)
         .Produces<ApiResponse<object>>(StatusCodes.Status400BadRequest);

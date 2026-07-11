@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using NutritionService.Common;
 using NutritionService.Common.Behaviors;
 using NutritionService.Common.Database;
-using NutritionService.Grpc;
 using NutritionService.Middleware;
 using NutritionService.Services;
 using System.Security.Cryptography;
@@ -35,26 +34,17 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
-builder.Services.AddGrpcClient<CalorieTargetService.CalorieTargetServiceClient>(o =>
-{
-    o.Address = new Uri(builder.Configuration["Services:Fce:GrpcUrl"]
-                        ?? "https://localhost:5001");
-})
-.ConfigureChannel(o =>
-{
-    o.HttpHandler = new SocketsHttpHandler
-    {
-        EnableMultipleHttp2Connections = true,
-        KeepAlivePingDelay = TimeSpan.FromSeconds(30),
-        KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
-        PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan
-    };
-})
-.AddPolicyHandler(GrpcPolicies.RetryPolicy())
-.AddPolicyHandler(GrpcPolicies.CircuitBreakerPolicy());
 
-// 2. Register your application-level abstract interface wrapper
-builder.Services.AddScoped<IFceGrpcClient, FceGrpcClient>();
+// Register HttpClient for FCE service and the HTTP client wrapper
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient("FitnessCalculationService", client =>
+{
+    var baseUrl = builder.Configuration["ServiceUrls:FitnessCalculationService"]
+                  ?? "http://fitnesscalculationservice:8080";
+    client.BaseAddress = new Uri(baseUrl);
+});
+builder.Services.AddScoped<IFceHttpClient, FceHttpClient>();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

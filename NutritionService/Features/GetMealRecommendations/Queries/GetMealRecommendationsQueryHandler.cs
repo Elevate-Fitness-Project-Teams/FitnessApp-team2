@@ -13,9 +13,9 @@ namespace NutritionService.Features.GetMealRecommendations.Queries;
 public class GetMealRecommendationsQueryHandler : IRequestHandler<GetMealRecommendationsQuery, Result<MealRecommendationResponseDto>>
 {
     private readonly IGenericRepository<Meal> _mealRepo;
-    private readonly IFceGrpcClient _fceClient;
+    private readonly IFceHttpClient _fceClient;
 
-    public GetMealRecommendationsQueryHandler(IGenericRepository<Meal> mealRepo, IFceGrpcClient fceClient)
+    public GetMealRecommendationsQueryHandler(IGenericRepository<Meal> mealRepo, IFceHttpClient fceClient)
     {
         _mealRepo = mealRepo;
         _fceClient = fceClient;
@@ -25,7 +25,7 @@ public class GetMealRecommendationsQueryHandler : IRequestHandler<GetMealRecomme
     {
         var fceResult = await _fceClient.GetUserMetricsAsync(Guid.Parse(request.UserId), cancellationToken);
 
-        if (fceResult is null || !fceResult.IsCalculated)
+        if (fceResult is null)
         {
             return Result<MealRecommendationResponseDto>.Failure(
                 Error.Failure("FCE_METRICS_NOT_CALCULATED", NutritionErrors.FceMetricsNotCalculated));
