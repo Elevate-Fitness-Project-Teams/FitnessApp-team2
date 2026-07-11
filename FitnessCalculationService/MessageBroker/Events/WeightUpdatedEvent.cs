@@ -1,4 +1,4 @@
-namespace FitnessCalculationService.MessageBroker.Events;
+namespace MessageBroker.Events;
 
 public class WeightUpdatedEvent
 {

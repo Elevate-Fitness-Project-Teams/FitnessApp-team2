@@ -1,8 +1,7 @@
 using FitnessCalculationService.Domain.Entities;
-using FitnessCalculationService.MessageBroker.Events;
-using FitnessCalculationService.Persistence;
 using FitnessCalculationService.Persistence.Repositories;
 using MassTransit;
+using MessageBroker.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitnessCalculationService.MessageBroker.Consumers;

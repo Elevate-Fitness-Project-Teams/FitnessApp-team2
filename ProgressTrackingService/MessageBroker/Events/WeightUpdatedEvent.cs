@@ -1,4 +1,4 @@
-namespace ProgressTrackingService.MessageBroker.Events;
+namespace MessageBroker.Events;
 
 public class WeightUpdatedEvent
 {

@@ -1,14 +1,14 @@
 using MassTransit;
 using MediatR;
+using MessageBroker.Events;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
 using ProgressTrackingService.Features.Progress.Queries.GetPreviousWeight;
-using ProgressTrackingService.MessageBroker.Events;
 
 namespace ProgressTrackingService.Features.Progress.Orchestrators;
 
-public record LogWeightOrchestrator(Guid UserId, double Weight, DateTime Date, string? Notes) 
+public record LogWeightOrchestrator(Guid UserId, double Weight, DateTime Date, string? Notes)
     : IRequest<Result>;
 
 public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrator, Result>
@@ -31,10 +31,10 @@ public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrato
             // 1. Get previous weight
             var previousWeightResult = await _mediator.Send(new GetPreviousWeightQuery(request.UserId), cancellationToken);
             double previousWeight = previousWeightResult.Value ?? request.Weight;
-            
+
             // 2. Compute difference
-            double differenceFromPrevious = previousWeightResult.Value.HasValue 
-                ? request.Weight - previousWeight 
+            double differenceFromPrevious = previousWeightResult.Value.HasValue
+                ? request.Weight - previousWeight
                 : 0;
 
             // 3. Save weight entry
@@ -48,7 +48,7 @@ public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrato
 
             if (!saveResult.IsSuccess)
                 return Result.Failure(saveResult.Error);
-            
+
 
             // 4. Update stats
             var statsResult = await _mediator.Send(new UpdateWeightStatisticCommand
@@ -59,7 +59,7 @@ public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrato
 
             if (!statsResult.IsSuccess)
                 return Result.Failure(statsResult.Error);
-            
+
 
             // 5. Publish event via Outbox
             await _publishEndpoint.Publish(new WeightUpdatedEvent
