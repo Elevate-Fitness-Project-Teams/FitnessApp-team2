@@ -2,6 +2,7 @@ using FitnessCalculationService.Common.Behaviors;
 using FitnessCalculationService.Common.Middleware;
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
 using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
+using FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands;
 using FitnessCalculationService.Persistence;
 using FitnessCalculationService.Persistence.Repositories;
 using FluentValidation;
@@ -32,6 +33,12 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+});
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 var app = builder.Build();
 
@@ -49,6 +56,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 GetUserMetricsEndpoint.Map(app);
 GetFitnessStatsEndpoint.Map(app);
+SubmitFitnessStatsEndpoint.Map(app);
 
 // Automatically apply any pending EF Core migrations on startup and run seeder (HasData is applied via migrations)
 using (var scope = app.Services.CreateScope())
