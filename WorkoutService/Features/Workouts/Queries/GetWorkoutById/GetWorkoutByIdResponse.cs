@@ -1,9 +1,10 @@
 namespace WorkoutService.Features.Workouts.Queries.GetWorkoutById;
 
 public record GetWorkoutByIdResponse(
-    int WorkoutId,
+    Guid WorkoutId,
     string Name,
     int DurationInMinutes,
     string Difficulty,
     IEnumerable<WorkoutExerciseDto> Exercises
 );
+

@@ -12,7 +12,7 @@ using WorkoutService.Data;
 namespace WorkoutService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260629175019_InitialCreate")]
+    [Migration("20260710234432_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -27,11 +27,9 @@ namespace WorkoutService.Migrations
 
             modelBuilder.Entity("WorkoutService.Data.Entities.Exercise", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -67,11 +65,9 @@ namespace WorkoutService.Migrations
 
             modelBuilder.Entity("WorkoutService.Data.Entities.Workout", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("CaloriesBurn")
                         .HasColumnType("int");
@@ -100,8 +96,8 @@ namespace WorkoutService.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("WorkoutPlanId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutPlanId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -114,14 +110,12 @@ namespace WorkoutService.Migrations
 
             modelBuilder.Entity("WorkoutService.Data.Entities.WorkoutExercise", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("uniqueidentifier");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ExerciseId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("ExerciseId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("OrderIndex")
                         .HasColumnType("int");
@@ -136,8 +130,8 @@ namespace WorkoutService.Migrations
                     b.Property<int>("SetsDefault")
                         .HasColumnType("int");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -150,11 +144,9 @@ namespace WorkoutService.Migrations
 
             modelBuilder.Entity("WorkoutService.Data.Entities.WorkoutPlan", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -208,11 +200,11 @@ namespace WorkoutService.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("SessionId");
 

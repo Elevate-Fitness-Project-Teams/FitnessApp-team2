@@ -45,6 +45,7 @@ appsettings.Development.json
 # Docker
 .dockerignore
 docker-compose.override.yml
-/ProgressTrackingService/Elevate_Fitness_App_User_Stories.docx.pdf
-# .pem files
+
+# RSA Keys
+Keys/
 *.pem

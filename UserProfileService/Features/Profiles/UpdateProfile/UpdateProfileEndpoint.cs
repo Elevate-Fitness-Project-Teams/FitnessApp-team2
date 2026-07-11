@@ -1,6 +1,6 @@
 using MediatR;
 using UserProfileService.Common.Extensions;
-using UserProfileService.Common.Filters;
+
 
 namespace UserProfileService.Features.Profiles.UpdateProfile;
 
@@ -22,7 +22,7 @@ public static class UpdateProfileEndpoint
         .WithTags("Profiles")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>();
+        .RequireAuthorization();
         return app;
     }
 }

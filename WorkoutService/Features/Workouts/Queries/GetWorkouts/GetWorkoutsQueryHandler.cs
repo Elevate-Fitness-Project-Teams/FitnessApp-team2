@@ -57,3 +57,4 @@ public class GetWorkoutsQueryHandler : IRequestHandler<GetWorkoutsQuery, Result<
         return Result<IEnumerable<GetWorkoutsResponse>>.Success(workouts);
     }
 }
+

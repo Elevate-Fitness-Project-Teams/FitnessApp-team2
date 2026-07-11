@@ -37,3 +37,4 @@ public class GetWorkoutPlanByIdQueryHandler : IRequestHandler<GetWorkoutPlanById
 		return Result<GetWorkoutPlanByIdResponse>.Success(response);
 	}
 }
+

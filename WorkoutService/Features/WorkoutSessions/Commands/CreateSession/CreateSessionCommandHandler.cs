@@ -36,3 +36,4 @@ public class CreateSessionCommandHandler : IRequestHandler<CreateSessionCommand,
         }, cancellationToken);
     }
 }
+

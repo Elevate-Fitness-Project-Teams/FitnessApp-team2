@@ -6,6 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 using ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
@@ -73,6 +76,28 @@ builder.Services.AddHttpClient("WorkoutService", client =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// RS256 JWT validation with public key
+var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
+    ?? throw new InvalidOperationException("JWT PublicKeyPath is not configured");
+var rsa = RSA.Create();
+rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
+var rsaSecurityKey = new RsaSecurityKey(rsa)
+{
+    KeyId = builder.Configuration["Jwt:KeyId"]
+};
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            IssuerSigningKey = rsaSecurityKey,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -85,6 +110,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

@@ -7,6 +7,9 @@ using NutritionService.Common.Database;
 using NutritionService.Grpc;
 using NutritionService.Middleware;
 using NutritionService.Services;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +61,34 @@ builder.Services.AddOpenApi();
 // Bind the "ServiceUrls" section from appsettings.json to the ServiceUrls class
 builder.Services.Configure<ServiceUrls>(builder.Configuration.GetSection(ServiceUrls.SectionName));
 
+// RS256 JWT validation with public key
+var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
+    ?? throw new InvalidOperationException("JWT PublicKeyPath is not configured");
+var rsa = RSA.Create();
+rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
+var rsaSecurityKey = new RsaSecurityKey(rsa)
+{
+    KeyId = builder.Configuration["Jwt:KeyId"]
+};
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            IssuerSigningKey = rsaSecurityKey,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Automatically apply any pending EF Core migrations on startup
@@ -89,6 +120,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

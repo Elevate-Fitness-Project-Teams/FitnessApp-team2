@@ -1,7 +1,7 @@
 using MediatR;
 using System.Security.Claims;
 using UserProfileService.Common.Extensions;
-using UserProfileService.Common.Filters;
+
 
 namespace UserProfileService.Features.Profiles.GetProfile;
 
@@ -20,7 +20,7 @@ public static class GetProfileEndpoint
         .WithTags("Profiles")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>();
+        .RequireAuthorization();
         return app;
     }
 }

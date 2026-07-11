@@ -33,3 +33,4 @@ public class CompleteSessionCommandHandler : IRequestHandler<CompleteSessionComm
 		}, cancellationToken);
 	}
 }
+

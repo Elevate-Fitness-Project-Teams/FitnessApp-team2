@@ -27,11 +27,23 @@ services:
       dockerfile: AuthenticationService/Dockerfile
     ports:
       - "8089:8080"
+    environment:
+      - Jwt__PrivateKeyPath=/app/keys/auth-service-private.pem
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys:/app/keys:ro
+
   fitnesscalculationservice:
     image: ${DOCKER_REGISTRY-}fitnesscalculationservice
     build:
       context: .
       dockerfile: FitnessCalculationService/Dockerfile
+    environment:
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:
       - "8091:8080"
 
@@ -40,12 +52,24 @@ services:
     build:
       context: .
       dockerfile: NutritionService/Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
 
   progresstrackingservice:
     image: ${DOCKER_REGISTRY-}progresstrackingservice
     build:
       context: .
       dockerfile: ProgressTrackingService/Dockerfile
+    environment:
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:
       - "8090:8080"
     depends_on:
@@ -61,6 +85,11 @@ services:
       dockerfile: UserProfileService/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
 
   workoutservice:
     image: ${DOCKER_REGISTRY-}workoutservice
@@ -69,3 +98,8 @@ services:
       dockerfile: WorkoutService/Dockerfile
     ports:
       - "8085:8080"
+    environment:
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro

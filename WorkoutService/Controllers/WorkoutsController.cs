@@ -6,10 +6,13 @@ using WorkoutService.Features.Workouts.Queries.GetWorkouts;
 using WorkoutService.Features.Workouts.Queries.GetWorkoutsByCategory;
 using WorkoutService.Features.Workouts.Queries.GetWorkoutsByPlan;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace WorkoutService.Controllers;
 
 [ApiController]
 [Route("api/v1/workouts")]
+[Authorize]
 public class WorkoutsController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -31,7 +34,7 @@ public class WorkoutsController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetWorkoutById(int id)
+    public async Task<IActionResult> GetWorkoutById(Guid id)
     {
         var result = await _mediator.Send(new GetWorkoutByIdQuery(id));
 
@@ -50,7 +53,7 @@ public class WorkoutsController : ControllerBase
     }
 
     [HttpGet("by-plan/{planId}")]
-    public async Task<IActionResult> GetWorkoutsByPlan(int planId)
+    public async Task<IActionResult> GetWorkoutsByPlan(Guid planId)
     {
         var result = await _mediator.Send(new GetWorkoutsByPlanQuery(planId));
 

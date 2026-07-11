@@ -38,3 +38,4 @@ public class GetExerciseByIdQueryHandler : IRequestHandler<GetExerciseByIdQuery,
 		return Result<GetExerciseByIdResponse>.Success(response);
 	}
 }
+

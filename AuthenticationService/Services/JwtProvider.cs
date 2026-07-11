@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using AuthenticationService.Models.Responses;
 using AuthenticationService.Options;
 using Microsoft.Extensions.Options;
@@ -27,8 +26,8 @@ public class JwtProvider : IJwtProvider
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
-        var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+        var rsaKey = RsaKeyService.GetPrivateKey(_options.PrivateKeyPath, _options.KeyId);
+        var signingCredentials = new SigningCredentials(rsaKey, SecurityAlgorithms.RsaSha256);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -56,13 +55,13 @@ public class JwtProvider : IJwtProvider
     public string? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
+        var rsaKey = RsaKeyService.GetPublicKey(_options.PublicKeyPath, _options.KeyId);
 
         try
         {
             tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
-                    IssuerSigningKey = symmetricSecurityKey,
+                    IssuerSigningKey = rsaKey,
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,
@@ -82,11 +81,11 @@ public class JwtProvider : IJwtProvider
     public string? GetUserIdFromExpiredToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
+        var rsaKey = RsaKeyService.GetPublicKey(_options.PublicKeyPath, _options.KeyId);
 
         var tokenValidationParameters = new TokenValidationParameters
         {
-            IssuerSigningKey = symmetricSecurityKey,
+            IssuerSigningKey = rsaKey,
             ValidateIssuerSigningKey = true,
             ValidateIssuer = false,
             ValidateAudience = false,
@@ -98,7 +97,7 @@ public class JwtProvider : IJwtProvider
             var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out var securityToken);
 
             if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+                !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.RsaSha256,
                     StringComparison.InvariantCultureIgnoreCase))
                 return null;
 

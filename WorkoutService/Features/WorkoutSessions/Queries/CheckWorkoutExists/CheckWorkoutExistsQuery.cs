@@ -3,4 +3,5 @@ using WorkoutService.Common;
 
 namespace WorkoutService.Features.WorkoutSessions.Queries.CheckWorkoutExists;
 
-public record CheckWorkoutExistsQuery(int WorkoutId) : IRequest<Result>;
+public record CheckWorkoutExistsQuery(Guid WorkoutId) : IRequest<Result>;
+

@@ -2,6 +2,9 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using WorkoutService.Data;
 using WorkoutService.Middleware;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +28,34 @@ builder.Services.AddMediatR(cfg =>
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+// RS256 JWT validation with public key
+var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
+    ?? throw new InvalidOperationException("JWT PublicKeyPath is not configured");
+var rsa = RSA.Create();
+rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
+var rsaSecurityKey = new RsaSecurityKey(rsa)
+{
+    KeyId = builder.Configuration["Jwt:KeyId"]
+};
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            IssuerSigningKey = rsaSecurityKey,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 #region ApplyPendingMigration
 
@@ -38,6 +69,7 @@ catch (Exception e)
 {
 	var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
 	logger.LogError(e, "An error occurred while migrating the database.");
+    throw;
 }
 
 #endregion
@@ -52,6 +84,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

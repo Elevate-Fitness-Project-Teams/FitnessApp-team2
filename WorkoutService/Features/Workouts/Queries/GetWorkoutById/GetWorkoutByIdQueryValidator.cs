@@ -7,6 +7,7 @@ public class GetWorkoutByIdQueryValidator : AbstractValidator<GetWorkoutByIdQuer
     public GetWorkoutByIdQueryValidator()
     {
         RuleFor(x => x.Id)
-            .GreaterThan(0).WithMessage("Workout Id must be greater than 0.");
+            .NotEmpty().WithMessage("Workout Id must be greater than 0.");
     }
 }
+

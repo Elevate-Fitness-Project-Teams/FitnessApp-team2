@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,11 +102,13 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.SecretKey!)),
+            IssuerSigningKey = RsaKeyService.GetPublicKey(jwtSettings!.PublicKeyPath, jwtSettings.KeyId),
             ValidIssuer = jwtSettings?.Issuer,
             ValidAudience = jwtSettings?.Audience
         };
     });
+
+builder.Services.AddAuthorization();
 
 
 builder.Services.AddScoped<IGrpcIntegrationService, GrpcIntegrationService>();

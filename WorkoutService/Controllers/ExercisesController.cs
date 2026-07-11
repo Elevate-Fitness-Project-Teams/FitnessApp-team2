@@ -4,10 +4,13 @@ using WorkoutService.Common;
 using WorkoutService.Features.Exercises.Queries.GetExerciseById;
 using WorkoutService.Features.Exercises.Queries.GetExercises;
 
+using Microsoft.AspNetCore.Authorization;
+
 namespace WorkoutService.Controllers;
 
 [ApiController]
 [Route("api/v1/exercises")]
+[Authorize]
 public class ExercisesController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -29,7 +32,7 @@ public class ExercisesController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetExerciseById(int id)
+    public async Task<IActionResult> GetExerciseById(Guid id)
     {
         var result = await _mediator.Send(new GetExerciseByIdQuery(id));
 
