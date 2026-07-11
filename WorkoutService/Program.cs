@@ -69,6 +69,7 @@ catch (Exception e)
 {
 	var logger = scopeApplicationContext.ServiceProvider.GetRequiredService<ILogger<Program>>();
 	logger.LogError(e, "An error occurred while migrating the database.");
+    throw;
 }
 
 #endregion
