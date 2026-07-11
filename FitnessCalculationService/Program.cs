@@ -1,4 +1,6 @@
 using FitnessCalculationService.Common.Behaviors;
+using FitnessCalculationService.MessageBroker.Consumers;
+using MassTransit;
 using FitnessCalculationService.Common.Middleware;
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
 using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
@@ -73,6 +75,29 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IMetabolicCalculator, MetabolicCalculator>();
+
+builder.Services.AddMassTransit(x =>
+{
+    x.SetKebabCaseEndpointNameFormatter();
+    x.AddConsumer<WeightUpdatedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var rabbitMqConfig = builder.Configuration.GetSection("RabbitMq");
+        var host = rabbitMqConfig["Host"] ?? throw new InvalidOperationException("RabbitMq:Host is not configured.");
+        var virtualHost = rabbitMqConfig["VirtualHost"] ?? "/";
+        var username = rabbitMqConfig["Username"] ?? throw new InvalidOperationException("RabbitMq:Username is not configured.");
+        var password = rabbitMqConfig["Password"] ?? throw new InvalidOperationException("RabbitMq:Password is not configured.");
+
+        cfg.Host(host, virtualHost, h =>
+        {
+            h.Username(username);
+            h.Password(password);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 var app = builder.Build();
 
