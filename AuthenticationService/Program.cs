@@ -115,6 +115,8 @@ builder.Services.AddScoped<IGrpcIntegrationService, GrpcIntegrationService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -138,8 +140,10 @@ catch (Exception e)
 // Global exception handler (must be first in the pipeline)
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapOpenApi();
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 

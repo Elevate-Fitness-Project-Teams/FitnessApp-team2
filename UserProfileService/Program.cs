@@ -43,6 +43,8 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen();
+builder.Services.AddHealthChecks();
 
 // RS256 JWT validation with public key
 var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
@@ -93,11 +95,10 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapOpenApi();
+app.MapHealthChecks("/health");
 
 // Global exception handler — must be first to catch all exceptions
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
