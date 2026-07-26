@@ -47,7 +47,6 @@ builder.Services.AddScoped<IFceHttpClient, FceHttpClient>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // Bind the "ServiceUrls" section from appsettings.json to the ServiceUrls class
@@ -105,8 +104,6 @@ catch (Exception e)
 
 
 // Configure the HTTP request pipeline.
-app.UseSwagger();
-app.UseSwaggerUI();
 app.MapOpenApi();
 app.MapHealthChecks("/health");
 

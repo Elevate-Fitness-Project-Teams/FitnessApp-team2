@@ -27,7 +27,6 @@ builder.Services.AddMediatR(cfg =>
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
 // RS256 JWT validation with public key
@@ -78,8 +77,6 @@ catch (Exception e)
 
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-app.UseSwagger();
-app.UseSwaggerUI();
 app.MapOpenApi();
 app.MapHealthChecks("/health");
 
