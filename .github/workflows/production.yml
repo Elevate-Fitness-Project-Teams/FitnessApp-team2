@@ -11,7 +11,7 @@ concurrency:
 env:
   DOCKER_REGISTRY: wirosol793
   DOCKER_REPO: elevateprojects
-  BACKEND_ENV: api_fitness_team
+  BACKEND_ENV: api-fitness-app
 
 jobs:
   generate-tag:
