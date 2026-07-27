@@ -69,7 +69,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ }}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME}}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
