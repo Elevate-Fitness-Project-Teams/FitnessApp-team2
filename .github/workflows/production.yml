@@ -11,7 +11,7 @@ concurrency:
 env:
   DOCKER_REGISTRY: wirosol793
   DOCKER_REPO: elevateprojects
-  BACKEND_ENV: api-fitness-app
+  PROJECT_NAME: api-fitness-app
 
 jobs:
   generate-tag:
@@ -69,7 +69,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
+            ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ }}-${{ matrix.service }}-${{ needs.generate-tag.outputs.tag }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
@@ -90,12 +90,12 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Tag Format" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "${{ env.BACKEND_ENV }}-{service}-${{ needs.generate-tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.PROJECT_NAME }}-{service}-${{ needs.generate-tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Deployment Command" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "export BACKEND_ENV=${{ env.BACKEND_ENV }}" >> $GITHUB_STEP_SUMMARY
+          echo "export PROJECT_NAME=${{ env.PROJECT_NAME }}" >> $GITHUB_STEP_SUMMARY
           echo "export TAG=${{ needs.generate-tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Update image tags in docker-compose.production.yml to use TAG=${{ needs.generate-tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
@@ -103,18 +103,19 @@ jobs:
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### All Images Pushed" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-auth-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-profile-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-nutrition-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-workout-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-progress-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.BACKEND_ENV }}-fitnesscalc-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-auth-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-profile-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-nutrition-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-workout-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-progress-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_REPO }}:${{ env.PROJECT_NAME }}-fitnesscalc-${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Timestamp:** \`${{ needs.generate-tag.outputs.tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** \`${{ env.BACKEND_ENV }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** \`${{ env.PROJECT_NAME }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Build Status" >> $GITHUB_STEP_SUMMARY
           echo "All services built and pushed in parallel for faster execution." >> $GITHUB_STEP_SUMMARY
+          
