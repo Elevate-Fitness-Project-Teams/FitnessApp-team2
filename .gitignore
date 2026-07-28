@@ -50,3 +50,5 @@ docker-compose.override.yml
 Keys/
 *.pem
 docker-compose.production.yml
+credentials.md
+.github/.DS_Store
