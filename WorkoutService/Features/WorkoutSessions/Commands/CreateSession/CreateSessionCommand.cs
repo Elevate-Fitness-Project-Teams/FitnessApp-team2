@@ -4,4 +4,5 @@ using WorkoutService.Features.WorkoutSessions.Orchestrators.StartSession;
 
 namespace WorkoutService.Features.WorkoutSessions.Commands.CreateSession;
 
-public record CreateSessionCommand(int UserId, int WorkoutId) : IRequest<Result<StartSessionResponse>>;
+public record CreateSessionCommand(Guid UserId, Guid WorkoutId) : IRequest<Result<StartSessionResponse>>;
+

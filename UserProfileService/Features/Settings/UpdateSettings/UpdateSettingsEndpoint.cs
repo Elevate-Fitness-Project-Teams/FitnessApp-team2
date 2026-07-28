@@ -1,6 +1,6 @@
 using MediatR;
 using UserProfileService.Common.Extensions;
-using UserProfileService.Common.Filters;
+
 
 namespace UserProfileService.Features.Settings.UpdateSettings;
 
@@ -21,7 +21,7 @@ public static class UpdateSettingsEndpoint
         .WithTags("Settings")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
-        .AddEndpointFilter<VerifyTokenEndpointFilter>();
+        .RequireAuthorization();
         return app;
     }
 }

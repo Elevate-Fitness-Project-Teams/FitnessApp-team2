@@ -45,3 +45,10 @@ appsettings.Development.json
 # Docker
 .dockerignore
 docker-compose.override.yml
+
+# RSA Keys
+Keys/
+*.pem
+docker-compose.production.yml
+credentials.md
+.github/.DS_Store

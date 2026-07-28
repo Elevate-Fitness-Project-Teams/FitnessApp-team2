@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using NutritionService.Common;
 using NutritionService.Common.Behaviors;
 using NutritionService.Common.Database;
-using NutritionService.Grpc;
 using NutritionService.Middleware;
 using NutritionService.Services;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,31 +34,51 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 });
-builder.Services.AddGrpcClient<CalorieTargetService.CalorieTargetServiceClient>(o =>
-{
-    o.Address = new Uri(builder.Configuration["Services:Fce:GrpcUrl"]
-                        ?? "https://localhost:5001");
-})
-.ConfigureChannel(o =>
-{
-    o.HttpHandler = new SocketsHttpHandler
-    {
-        EnableMultipleHttp2Connections = true,
-        KeepAlivePingDelay = TimeSpan.FromSeconds(30),
-        KeepAlivePingTimeout = TimeSpan.FromSeconds(10),
-        PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan
-    };
-})
-.AddPolicyHandler(GrpcPolicies.RetryPolicy())
-.AddPolicyHandler(GrpcPolicies.CircuitBreakerPolicy());
 
-// 2. Register your application-level abstract interface wrapper
-builder.Services.AddScoped<IFceGrpcClient, FceGrpcClient>();
+// Register HttpClient for FCE service and the HTTP client wrapper
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient("FitnessCalculationService", client =>
+{
+    var baseUrl = builder.Configuration["ServiceUrls:FitnessCalculationService"]
+                  ?? "http://fitnesscalculationservice:8080";
+    client.BaseAddress = new Uri(baseUrl);
+});
+builder.Services.AddScoped<IFceHttpClient, FceHttpClient>();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 
 // Bind the "ServiceUrls" section from appsettings.json to the ServiceUrls class
 builder.Services.Configure<ServiceUrls>(builder.Configuration.GetSection(ServiceUrls.SectionName));
+
+// RS256 JWT validation with public key
+var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
+    ?? throw new InvalidOperationException("JWT PublicKeyPath is not configured");
+var rsa = RSA.Create();
+rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
+var rsaSecurityKey = new RsaSecurityKey(rsa)
+{
+    KeyId = builder.Configuration["Jwt:KeyId"]
+};
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            IssuerSigningKey = rsaSecurityKey,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"]
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -82,13 +104,13 @@ catch (Exception e)
 
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.MapOpenApi();
+app.MapHealthChecks("/health");
+
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

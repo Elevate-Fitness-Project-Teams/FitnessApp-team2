@@ -24,3 +24,4 @@ public class CheckActiveSessionQueryHandler : IRequestHandler<CheckActiveSession
 		return Result.Success();
 	}
 }
+

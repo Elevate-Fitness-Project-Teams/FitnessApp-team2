@@ -3,12 +3,7 @@ namespace FitnessCalculationService.Common;
 
 public class Result
 {
-    public bool IsSuccess { get; }
-    public bool IsFailure => !IsSuccess;
-    public Error Error { get; }
-    public List<Error> Errors { get; }
-
-    protected Result(bool isSuccess, Error error)
+    protected Result(bool isSuccess, Error error, bool businessRuleFailed = false)
     {
         if (isSuccess && error != null)
             throw new InvalidOperationException();
@@ -19,42 +14,72 @@ public class Result
         IsSuccess = isSuccess;
         Error = error!;
         Errors = new List<Error> { error! };
+        BusinessRuleFailed = businessRuleFailed;
     }
 
-    protected Result(bool isSuccess, List<Error> errors)
+    protected Result(bool isSuccess, List<Error> errors, bool businessRuleFailed = false)
     {
         IsSuccess = isSuccess;
         Errors = errors;
         Error = errors.FirstOrDefault()!;
+        BusinessRuleFailed = businessRuleFailed;
     }
 
-    public static Result Success() => new(true, (Error)null!);
-    public static Result Failure(Error error) => new(false, error);
-    public static Result Failure(List<Error> errors) => new(false, errors);
+    public bool IsSuccess { get; }
+    public bool IsFailure => !IsSuccess;
+    public bool BusinessRuleFailed { get; set; } = false;
+    public Error Error { get; }
+    public List<Error> Errors { get; }
+
+    public static Result Success()
+    {
+        return new Result(true, (Error)null!);
+    }
+
+    public static Result Failure(Error error, bool businessRuleFailed = false)
+    {
+        return new Result(false, error, businessRuleFailed);
+    }
+
+    public static Result Failure(List<Error> errors, bool businessRuleFailed = false)
+    {
+        return new Result(false, errors, businessRuleFailed);
+    }
 }
 
 public class Result<TValue> : Result
 {
     private readonly TValue? _value;
 
+    protected internal Result(TValue? value, bool isSuccess, Error error, bool businessRuleFailed = false)
+        : base(isSuccess, error, businessRuleFailed)
+    {
+        _value = value;
+    }
+
+    protected internal Result(TValue? value, bool isSuccess, List<Error> errors, bool businessRuleFailed = false)
+        : base(isSuccess, errors, businessRuleFailed)
+    {
+        _value = value;
+    }
+
     public TValue Value => IsSuccess
         ? _value!
         : throw new InvalidOperationException("The value of a failure result can not be accessed.");
 
-    protected internal Result(TValue? value, bool isSuccess, Error error)
-        : base(isSuccess, error)
+    public static Result<TValue> Success(TValue value)
     {
-        _value = value;
+        return new Result<TValue>(value, true, (Error)null!);
     }
 
-    protected internal Result(TValue? value, bool isSuccess, List<Error> errors)
-        : base(isSuccess, errors)
+    public new static Result<TValue> Failure(Error error, bool businessRuleFailed = false)
     {
-        _value = value;
+        return new Result<TValue>(default, false, error, businessRuleFailed);
     }
 
-    public static Result<TValue> Success(TValue value) => new(value, true, (Error)null!);
-    public static new Result<TValue> Failure(Error error) => new(default, false, error);
-    public static new Result<TValue> Failure(List<Error> errors) => new(default, false, errors);
+    public new static Result<TValue> Failure(List<Error> errors, bool businessRuleFailed = false)
+    {
+        return new Result<TValue>(default, false, errors, businessRuleFailed);
+    }
 }
 

@@ -44,3 +44,4 @@ public class GetWorkoutByIdQueryHandler : IRequestHandler<GetWorkoutByIdQuery, R
         return Result<GetWorkoutByIdResponse>.Success(response);
     }
 }
+

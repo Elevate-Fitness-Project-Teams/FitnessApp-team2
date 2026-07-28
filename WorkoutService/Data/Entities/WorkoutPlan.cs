@@ -2,7 +2,7 @@ namespace WorkoutService.Data.Entities;
 
 public class WorkoutPlan
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string ExternalPlanId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

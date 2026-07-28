@@ -6,7 +6,11 @@ public class JwtOptions
 {
     public const string SectionName = "Jwt";
 
-    [Required] public string SecretKey { get; set; } = string.Empty;
+    [Required] public string PrivateKeyPath { get; set; } = string.Empty;
+
+    [Required] public string PublicKeyPath { get; set; } = string.Empty;
+
+    [Required] public string KeyId { get; set; } = string.Empty;
 
     [Required] public string Issuer { get; set; } = string.Empty;
 

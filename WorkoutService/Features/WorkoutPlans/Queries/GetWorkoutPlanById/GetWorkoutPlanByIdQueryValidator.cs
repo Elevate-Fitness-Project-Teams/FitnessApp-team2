@@ -10,3 +10,4 @@ public class GetWorkoutPlanByIdQueryValidator : AbstractValidator<GetWorkoutPlan
             .NotEmpty().WithMessage("PlanId is required.");
     }
 }
+

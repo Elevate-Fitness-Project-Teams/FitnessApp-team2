@@ -7,6 +7,7 @@ public class GetWorkoutsByPlanQueryValidator : AbstractValidator<GetWorkoutsByPl
     public GetWorkoutsByPlanQueryValidator()
     {
         RuleFor(x => x.PlanId)
-            .GreaterThan(0).WithMessage("Plan Id must be greater than 0.");
+            .NotEmpty().WithMessage("Plan Id must be greater than 0.");
     }
 }
+

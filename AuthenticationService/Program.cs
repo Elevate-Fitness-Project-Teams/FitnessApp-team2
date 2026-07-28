@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -102,17 +102,20 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.SecretKey!)),
+            IssuerSigningKey = RsaKeyService.GetPublicKey(jwtSettings!.PublicKeyPath, jwtSettings.KeyId),
             ValidIssuer = jwtSettings?.Issuer,
             ValidAudience = jwtSettings?.Audience
         };
     });
+
+builder.Services.AddAuthorization();
 
 
 builder.Services.AddScoped<IGrpcIntegrationService, GrpcIntegrationService>();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -136,8 +139,8 @@ catch (Exception e)
 // Global exception handler (must be first in the pipeline)
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) app.MapOpenApi();
+app.MapOpenApi();
+app.MapHealthChecks("/health");
 
 app.UseHttpsRedirection();
 
