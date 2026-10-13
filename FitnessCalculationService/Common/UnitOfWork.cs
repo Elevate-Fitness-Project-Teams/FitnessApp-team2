@@ -1,13 +1,14 @@
-
 using FitnessCalculationService.Common;
 using FitnessCalculationService.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
+
 public class UnitOfWork : IUnitOfWork
 {
     private readonly FceDbContext _dbContext;
     private readonly Stack<string> _savepoints = new();
     private int _depth;
     private IDbContextTransaction? _transaction;
+    private bool _isAmbientTransaction;
 
     public UnitOfWork(FceDbContext dbContext)
     {
@@ -47,16 +48,32 @@ public class UnitOfWork : IUnitOfWork
     private async Task<T> ExecuteInternalAsync<T>(Func<Task<T>> action, CancellationToken cancellationToken)
     {
         var isOutermost = _depth == 0;
+        IDbContextTransaction? activeTx;
 
         if (isOutermost)
         {
-            _transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            if (_dbContext.Database.CurrentTransaction != null)
+            {
+                _isAmbientTransaction = true;
+                _transaction = null;
+                activeTx = _dbContext.Database.CurrentTransaction;
+                var savepointName = $"SP_Ambient_{_depth}_{Guid.NewGuid():N}"[..32];
+                _savepoints.Push(savepointName);
+                await activeTx.CreateSavepointAsync(savepointName, cancellationToken);
+            }
+            else
+            {
+                _isAmbientTransaction = false;
+                _transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+                activeTx = _transaction;
+            }
         }
         else
         {
-            var savepointName = $"SP_Depth{_depth}_{Guid.NewGuid().ToString("N")[..8]}";
+            activeTx = _transaction ?? _dbContext.Database.CurrentTransaction;
+            var savepointName = $"SP_Depth{_depth}_{Guid.NewGuid():N}"[..32];
             _savepoints.Push(savepointName);
-            await _transaction!.CreateSavepointAsync(savepointName, cancellationToken);
+            await activeTx!.CreateSavepointAsync(savepointName, cancellationToken);
         }
 
         _depth++;
@@ -73,12 +90,20 @@ public class UnitOfWork : IUnitOfWork
             {
                 if (_depth == 0)
                 {
-                    await _transaction!.RollbackAsync(cancellationToken);
+                    if (_isAmbientTransaction && _savepoints.Count > 0)
+                    {
+                        var savepoint = _savepoints.Pop();
+                        await activeTx!.RollbackToSavepointAsync(savepoint, cancellationToken);
+                    }
+                    else if (_transaction != null)
+                    {
+                        await _transaction.RollbackAsync(cancellationToken);
+                    }
                 }
                 else if (_savepoints.Count > 0)
                 {
                     var savepoint = _savepoints.Pop();
-                    await _transaction!.RollbackToSavepointAsync(savepoint, cancellationToken);
+                    await activeTx!.RollbackToSavepointAsync(savepoint, cancellationToken);
                 }
             }
             else
@@ -86,9 +111,16 @@ public class UnitOfWork : IUnitOfWork
                 if (_depth == 0)
                 {
                     await _dbContext.SaveChangesAsync(cancellationToken);
-                    await _transaction!.CommitAsync(cancellationToken);
+                    if (!_isAmbientTransaction && _transaction != null)
+                    {
+                        await _transaction.CommitAsync(cancellationToken);
+                    }
+                    else if (_savepoints.Count > 0)
+                    {
+                        _savepoints.Pop();
+                    }
                 }
-                else
+                else if (_savepoints.Count > 0)
                 {
                     _savepoints.Pop();
                 }
@@ -102,22 +134,34 @@ public class UnitOfWork : IUnitOfWork
 
             if (_depth == 0)
             {
-                await _transaction!.RollbackAsync(cancellationToken);
+                if (_isAmbientTransaction && _savepoints.Count > 0)
+                {
+                    var savepoint = _savepoints.Pop();
+                    await activeTx!.RollbackToSavepointAsync(savepoint, cancellationToken);
+                }
+                else if (_transaction != null)
+                {
+                    await _transaction.RollbackAsync(cancellationToken);
+                }
             }
             else if (_savepoints.Count > 0)
             {
                 var savepoint = _savepoints.Pop();
-                await _transaction!.RollbackToSavepointAsync(savepoint, cancellationToken);
+                await activeTx!.RollbackToSavepointAsync(savepoint, cancellationToken);
             }
 
             throw;
         }
         finally
         {
-            if (_depth == 0 && _transaction is not null)
+            if (_depth == 0)
             {
-                await _transaction.DisposeAsync();
-                _transaction = null;
+                if (_transaction is not null)
+                {
+                    await _transaction.DisposeAsync();
+                    _transaction = null;
+                }
+                _isAmbientTransaction = false;
                 _savepoints.Clear();
             }
         }

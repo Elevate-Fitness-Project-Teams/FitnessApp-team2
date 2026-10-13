@@ -16,6 +16,6 @@ public enum FitnessGoal
     [Description("Gain More Flexible")]
     GainMoreFlexible,
     
-    [Description("Learn The Basic")]
+    [Description("Learn the Basic")]
     LearnTheBasic
 }

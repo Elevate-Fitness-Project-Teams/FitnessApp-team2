@@ -1,43 +1,72 @@
+using System.Reflection;
+using System.Security.Cryptography;
+using FitnessCalculationService.Common;
 using FitnessCalculationService.Common.Behaviors;
-using FitnessCalculationService.MessageBroker.Consumers;
-using MassTransit;
+using FitnessCalculationService.Common.Errors;
+using FitnessCalculationService.Common.Json;
 using FitnessCalculationService.Common.Middleware;
+using FitnessCalculationService.Common.Security;
+using FitnessCalculationService.Domain.Enums;
+using FitnessCalculationService.Domain.Services;
+using FitnessCalculationService.Features.CalculateFitnessMetrics.Commands;
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
 using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
 using FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands;
-using FitnessCalculationService.Features.CalculateFitnessMetrics.Commands;
+using FitnessCalculationService.GrpcServices;
+using FitnessCalculationService.MessageBroker.Consumers;
 using FitnessCalculationService.Persistence;
 using FitnessCalculationService.Persistence.Repositories;
+using FluentValidation;
+using MassTransit;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
-using FitnessCalculationService.Domain.Services;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Cross-cutting Services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
-builder.Services.AddControllers();
-
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
-
+// Database & Unit of Work
 builder.Services.AddDbContext<FceDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+// Domain Services
+builder.Services.AddSingleton<IMetabolicCalculator, MetabolicCalculator>();
+
+// MediatR & FluentValidation Pipeline
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+});
+
+// JSON Serialization Configuration
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new EnumDescriptionConverter<FitnessGoal>());
+    options.SerializerOptions.Converters.Add(new EnumDescriptionConverter<Gender>());
+    options.SerializerOptions.Converters.Add(new EnumDescriptionConverter<ActivityLevel>());
+    options.SerializerOptions.Converters.Add(new EnumDescriptionConverter<CalorieStatus>());
+});
+
+// High-Performance gRPC for Synchronous Inter-Service Communication (e.g. NutritionService, SmartCoach)
+builder.Services.AddGrpc();
+
+// OpenAPI & Health Checks
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
-// RS256 JWT validation with public key
+// RS256 JWT Authentication with Public Key
 var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"]
     ?? throw new InvalidOperationException("JWT PublicKeyPath is not configured");
+
 var rsa = RSA.Create();
 rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
 var rsaSecurityKey = new RsaSecurityKey(rsa)
@@ -59,24 +88,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"]
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var isExpired = context.AuthenticateFailure is SecurityTokenExpiredException;
+                var errorCode = isExpired ? ErrorCodes.AuthTokenExpired : ErrorCodes.AuthTokenInvalid;
+                var message = isExpired ? "Authentication token has expired." : "Authentication token is missing or malformed.";
+
+                var failureResponse = ApiResponse<object?>.Failure(
+                    new[] { errorCode },
+                    message,
+                    StatusCodes.Status401Unauthorized);
+
+                await context.Response.WriteAsJsonAsync(failureResponse);
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
-builder.Services.AddFluentValidationAutoValidation()
-    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-});
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-});
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IMetabolicCalculator, MetabolicCalculator>();
 
+// Asynchronous Event-Driven Messaging (MassTransit + RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
     x.SetKebabCaseEndpointNameFormatter();
@@ -102,22 +139,30 @@ builder.Services.AddMassTransit(x =>
 
 var app = builder.Build();
 
+// 1. Global Exception Middleware MUST be the first middleware to capture all pipeline errors
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 app.MapOpenApi();
 app.MapHealthChecks("/health");
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseMiddleware<GlobalExceptionMiddleware>();
+// gRPC Endpoints
+app.MapGrpcService<CalorieTargetGrpcService>();
 
+// REST Endpoints
 GetUserMetricsEndpoint.Map(app);
 GetFitnessStatsEndpoint.Map(app);
 SubmitFitnessStatsEndpoint.Map(app);
 CalculateFitnessMetricsEndpoint.Map(app);
 
-// Automatically apply any pending EF Core migrations on startup and run seeder (HasData is applied via migrations)
+// Automatically apply any pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     try
@@ -128,8 +173,8 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while applying migrations.");
-        throw; // Rethrow the exception to prevent the application from starting if migrations fail
+        logger.LogError(ex, "An error occurred while applying database migrations.");
+        throw;
     }
 }
 

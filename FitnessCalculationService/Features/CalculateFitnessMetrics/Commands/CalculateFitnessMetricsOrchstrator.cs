@@ -15,8 +15,6 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
     public class CalculateFitnessMetricsOrchstratorHandler : IRequestHandler<CalculateFitnessMetricsOrchstrator, Result<CalculateFitnessMetricsResponse>>
     {
         private readonly IUnitOfWork _uow;
-        private readonly IGenericRepository<UserFitnessStats> _statsRepo;
-        private readonly IGenericRepository<CalculatedMetrics> _metricsRepo;
         private readonly IMetabolicCalculator _calculator;
         private readonly IMediator _mediator;
 
