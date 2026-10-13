@@ -1,6 +1,7 @@
+using FitnessCalculationService.Common.Errors;
 using FitnessCalculationService.Common.Exceptions;
-using FitnessCalculationService.Common;
 using FluentValidation;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
 
@@ -23,9 +24,14 @@ public class GlobalExceptionMiddleware
         {
             await _next(context);
         }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Request was cancelled by the client.");
+            context.Response.StatusCode = 499; // Client Closed Request
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred.");
+            _logger.LogError(ex, "An unhandled exception occurred: {Message}", ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
@@ -43,28 +49,47 @@ public class GlobalExceptionMiddleware
             case ValidationException validationException:
                 statusCode = (int)HttpStatusCode.BadRequest;
                 message = "Validation Failed";
-                errors = validationException.Errors.Select(e => $"VAL_ERROR: {e.ErrorMessage}").ToList();
+                errors = validationException.Errors
+                    .Select(e => !string.IsNullOrWhiteSpace(e.ErrorCode) && e.ErrorCode != e.PropertyName
+                        ? e.ErrorCode
+                        : e.ErrorMessage)
+                    .Distinct()
+                    .ToList();
                 break;
+
             case NotFoundException notFoundException:
                 statusCode = (int)HttpStatusCode.NotFound;
                 message = notFoundException.Message;
-                errors.Add(notFoundException.ErrorCode ?? "NOT_FOUND");
+                errors.Add(notFoundException.ErrorCode ?? ErrorCodes.FceStatsNotFound);
                 break;
+
             case BusinessRuleException businessRuleException:
                 statusCode = (int)HttpStatusCode.BadRequest;
                 message = businessRuleException.Message;
                 errors.Add(businessRuleException.ErrorCode ?? "BUSINESS_RULE_VIOLATION");
                 break;
+
+            case DbUpdateConcurrencyException or DbUpdateException:
+                statusCode = (int)HttpStatusCode.InternalServerError;
+                message = "A database error occurred while persisting changes.";
+                errors.Add(ErrorCodes.SrvDatabaseError);
+                break;
+
             default:
-                errors.Add("INTERNAL_SERVER_ERROR");
+                statusCode = (int)HttpStatusCode.InternalServerError;
+                message = "An unexpected server error occurred.";
+                errors.Add(ErrorCodes.SrvUnexpectedError);
                 break;
         }
 
         context.Response.StatusCode = statusCode;
 
-        var response = ApiResponse<object>.Failure(errors, message, statusCode);
+        var response = ApiResponse<object?>.Failure(errors, message, statusCode);
+        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
 
-        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         await context.Response.WriteAsync(json);
     }
 }

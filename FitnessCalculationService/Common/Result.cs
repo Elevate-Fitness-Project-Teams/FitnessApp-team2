@@ -1,4 +1,3 @@
-
 namespace FitnessCalculationService.Common;
 
 public class Result
@@ -6,22 +5,22 @@ public class Result
     protected Result(bool isSuccess, Error error, bool businessRuleFailed = false)
     {
         if (isSuccess && error != null)
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Success result cannot have an error.");
 
         if (!isSuccess && error == null)
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Failure result must have an error.");
 
         IsSuccess = isSuccess;
         Error = error!;
-        Errors = new List<Error> { error! };
+        Errors = error != null ? new List<Error> { error } : new List<Error>();
         BusinessRuleFailed = businessRuleFailed;
     }
 
     protected Result(bool isSuccess, List<Error> errors, bool businessRuleFailed = false)
     {
         IsSuccess = isSuccess;
-        Errors = errors;
-        Error = errors.FirstOrDefault()!;
+        Errors = errors ?? new List<Error>();
+        Error = Errors.FirstOrDefault()!;
         BusinessRuleFailed = businessRuleFailed;
     }
 
@@ -45,6 +44,16 @@ public class Result
     {
         return new Result(false, errors, businessRuleFailed);
     }
+
+    public static Result Rollback(Error error)
+    {
+        return new Result(false, error, businessRuleFailed: true);
+    }
+
+    public static Result Rollback(List<Error> errors)
+    {
+        return new Result(false, errors, businessRuleFailed: true);
+    }
 }
 
 public class Result<TValue> : Result
@@ -65,7 +74,7 @@ public class Result<TValue> : Result
 
     public TValue Value => IsSuccess
         ? _value!
-        : throw new InvalidOperationException("The value of a failure result can not be accessed.");
+        : throw new InvalidOperationException("The value of a failure result cannot be accessed.");
 
     public static Result<TValue> Success(TValue value)
     {
@@ -81,5 +90,14 @@ public class Result<TValue> : Result
     {
         return new Result<TValue>(default, false, errors, businessRuleFailed);
     }
-}
 
+    public new static Result<TValue> Rollback(Error error)
+    {
+        return new Result<TValue>(default, false, error, businessRuleFailed: true);
+    }
+
+    public new static Result<TValue> Rollback(List<Error> errors)
+    {
+        return new Result<TValue>(default, false, errors, businessRuleFailed: true);
+    }
+}
