@@ -34,7 +34,7 @@ public class CalorieTargetGrpcService : CalorieTargetService.CalorieTargetServic
                 return new UserMetricsResponse
                 {
                     CalorieTarget = (int)Math.Round(result.Value.CalorieTarget),
-                    Status = "Normal", // Will use actual status once populated
+                    Status = result.Value.Status,
                     IsCalculated = true
                 };
             }

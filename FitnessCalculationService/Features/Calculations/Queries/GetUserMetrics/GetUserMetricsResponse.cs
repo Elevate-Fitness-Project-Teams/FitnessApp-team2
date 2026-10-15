@@ -5,4 +5,5 @@ public record GetUserMetricsResponse(
     double Bmr, 
     double Tdee, 
     double CalorieTarget, 
+    string Status,
     DateTime CalculatedAt);

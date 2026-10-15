@@ -3,7 +3,7 @@ namespace FitnessCalculationService.Domain.Entities;
 public class UserAssignedPlan
 {
     public Guid Id { get; set; }
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public Guid FitnessPlanConfigId { get; set; }
     public bool IsActive { get; set; }
     public DateTime AssignedAt { get; set; }

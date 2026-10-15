@@ -1,23 +1,32 @@
 using FitnessCalculationService.Common;
 using FitnessCalculationService.Domain.Entities;
-using FitnessCalculationService.Features.CalculateFitnessMetrics.Response;
+using FitnessCalculationService.Domain.Enums;
 using FitnessCalculationService.Persistence.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
 {
-    public record CalculateFitnessMetricsCommand(string UserId, double Bmr, double Tdee, double CalorieTarget, string Status) : IRequest<Result>;
+    public record CalculateFitnessMetricsCommand(
+        Guid UserId, 
+        double Bmr, 
+        double Tdee, 
+        double CalorieTarget, 
+        CalorieStatus Status,
+        Guid? SourceStatsId = null
+    ) : IRequest<Result>;
 
     public class CalculateFitnessMetricsCommandHandler : IRequestHandler<CalculateFitnessMetricsCommand, Result>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<CalculatedMetrics> _metricsRepo;
+
         public CalculateFitnessMetricsCommandHandler(IUnitOfWork unitOfWork, IGenericRepository<CalculatedMetrics> metricsRepo)
         {
             _unitOfWork = unitOfWork;
             _metricsRepo = metricsRepo;
         }
+
         public async Task<Result> Handle(CalculateFitnessMetricsCommand request, CancellationToken cancellationToken)
         {
             return await _unitOfWork.ExecuteAsync(async () =>
@@ -28,6 +37,8 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                         .SetProperty(m => m.Bmr, request.Bmr)
                         .SetProperty(m => m.Tdee, request.Tdee)
                         .SetProperty(m => m.CalorieTarget, request.CalorieTarget)
+                        .SetProperty(m => m.Status, request.Status)
+                        .SetProperty(m => m.SourceStatsId, request.SourceStatsId)
                         .SetProperty(m => m.CalculatedAt, DateTime.UtcNow),
                         cancellationToken);
 
@@ -40,13 +51,15 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                         Bmr = request.Bmr,
                         Tdee = request.Tdee,
                         CalorieTarget = request.CalorieTarget,
+                        Status = request.Status,
+                        SourceStatsId = request.SourceStatsId,
                         CalculatedAt = DateTime.UtcNow
                     };
                     await _metricsRepo.AddAsync(newMetrics, cancellationToken);
                 }
 
                 return Result.Success();
-            });
+            }, cancellationToken);
         }    
     }
 }
