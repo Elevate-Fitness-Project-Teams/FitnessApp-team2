@@ -1,5 +1,5 @@
 using FitnessCalculationService.Common;
-using FitnessCalculationService.Common.Exceptions;
+using FitnessCalculationService.Common.Errors;
 using FitnessCalculationService.Domain.Entities;
 using FitnessCalculationService.Persistence.Repositories;
 using MediatR;
@@ -18,19 +18,28 @@ public class GetUserMetricsQueryHandler : IRequestHandler<GetUserMetricsQuery, R
 
     public async Task<Result<GetUserMetricsResponse>> Handle(GetUserMetricsQuery request, CancellationToken cancellationToken)
     {
+        if (!Guid.TryParse(request.UserId, out var userGuid))
+        {
+            return Result<GetUserMetricsResponse>.Failure(new Error(ErrorCodes.FceMetricsNotCalculated, $"Invalid UserId: {request.UserId}"));
+        }
+
         var metrics = await _repository.GetQueryable()
-            .Where(m => m.UserId == request.UserId)
+            .AsNoTracking()
+            .Where(m => m.UserId == userGuid)
             .Select(m => new GetUserMetricsResponse(
-                m.UserId,
+                m.UserId.ToString(),
                 m.Bmr,
                 m.Tdee,
                 m.CalorieTarget,
+                m.Status.ToString(),
                 m.CalculatedAt
             ))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (metrics == null)
-            throw new NotFoundException($"Metrics not found for user {request.UserId}", "FCE_METRICS_NOT_FOUND");
+        {
+            return Result<GetUserMetricsResponse>.Failure(new Error(ErrorCodes.FceMetricsNotCalculated, $"Metrics not calculated yet for user {request.UserId}"));
+        }
 
         return Result<GetUserMetricsResponse>.Success(metrics);
     }

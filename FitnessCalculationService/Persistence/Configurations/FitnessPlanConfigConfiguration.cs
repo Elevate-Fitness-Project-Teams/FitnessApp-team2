@@ -1,4 +1,6 @@
 using FitnessCalculationService.Domain.Entities;
+using FitnessCalculationService.Domain.Enums;
+using FitnessCalculationService.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,6 +12,7 @@ public class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPl
     {
         builder.HasKey(x => x.Id);
 
+        builder.HasIndex(x => x.PlanId).IsUnique();
         builder.HasIndex(x => new { x.Goal, x.Status }).IsUnique();
 
         builder.Property(x => x.Goal).HasConversion<string>().HasMaxLength(50);
@@ -17,5 +20,8 @@ public class FitnessPlanConfigConfiguration : IEntityTypeConfiguration<FitnessPl
         builder.Property(x => x.PlanId).HasMaxLength(20);
         builder.Property(x => x.Name).HasMaxLength(100);
         builder.Property(x => x.Description).HasMaxLength(500);
+        builder.Property(x => x.ProgramType).HasMaxLength(50);
+
+        builder.HasData(FitnessPlanConfigSeed.GetSeeds());
     }
 }

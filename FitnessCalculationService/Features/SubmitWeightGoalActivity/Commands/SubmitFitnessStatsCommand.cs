@@ -1,4 +1,4 @@
-﻿using FitnessCalculationService.Common;
+using FitnessCalculationService.Common;
 using FitnessCalculationService.Domain.Entities;
 using FitnessCalculationService.Domain.Enums;
 using FitnessCalculationService.Persistence;
@@ -8,7 +8,7 @@ using MediatR;
 namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
 {
     public record SubmitFitnessStatsCommand(
-        String UserId,
+        Guid UserId,
         double Weight,
         double Height,
         int Age,
@@ -16,15 +16,16 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
         FitnessGoal Goal,
         ActivityLevel ActivityLevel
     ) : IRequest<Result<Guid>>;
+
     public class SubmitFitnessStatsCommandHandler : IRequestHandler<SubmitFitnessStatsCommand, Result<Guid>>
     {
         private readonly IUnitOfWork _uow;
         private readonly IGenericRepository<UserFitnessStats> _repo;
 
-        public SubmitFitnessStatsCommandHandler(IUnitOfWork uow, IGenericRepository<UserFitnessStats> Repo)
+        public SubmitFitnessStatsCommandHandler(IUnitOfWork uow, IGenericRepository<UserFitnessStats> repo)
         {
             _uow = uow;
-            _repo = Repo;
+            _repo = repo;
         }
 
         public async Task<Result<Guid>> Handle(SubmitFitnessStatsCommand request, CancellationToken cancellationToken)
@@ -41,13 +42,13 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
                     Gender = request.Gender,
                     Goal = request.Goal,
                     ActivityLevel = request.ActivityLevel,
-                    RecordedAt = DateTime.UtcNow
+                    RecordedAt = DateTime.UtcNow,
+                    Source = "user"
                 };
 
                 await _repo.AddAsync(newStats, cancellationToken);
 
                 return Result<Guid>.Success(newStats.Id);
-
             }, cancellationToken);
         }
     }

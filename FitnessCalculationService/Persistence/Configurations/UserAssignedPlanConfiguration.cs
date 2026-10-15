@@ -15,7 +15,7 @@ public class UserAssignedPlanConfiguration : IEntityTypeConfiguration<UserAssign
                .HasForeignKey(x => x.FitnessPlanConfigId)
                .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(x => x.UserId).HasMaxLength(50);
+        builder.Property(x => x.UserId).IsRequired();
         builder.HasIndex(x => x.UserId).HasFilter("[IsActive] = 1").IsUnique();
     }
 }

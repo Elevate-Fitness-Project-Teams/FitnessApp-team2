@@ -25,7 +25,7 @@ public class WeightUpdatedConsumer : IConsumer<WeightUpdatedEvent>
             message.UserId, message.NewWeight);
 
         var rowsAffected = await _statsRepo.GetQueryable()
-            .Where(s => s.UserId == message.UserId.ToString())
+            .Where(s => s.UserId == message.UserId)
             .ExecuteUpdateAsync(setters => setters
                 .SetProperty(s => s.Weight, message.NewWeight),
                 context.CancellationToken);

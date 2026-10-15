@@ -10,10 +10,17 @@ public class UserPlanHistoryConfiguration : IEntityTypeConfiguration<UserPlanHis
     {
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.UserId).HasMaxLength(50);
+        builder.Property(x => x.UserId).IsRequired();
         builder.HasIndex(x => new { x.UserId, x.AssignedAt }).IsDescending(false, true);
 
-        builder.Property(x => x.PlanId).HasMaxLength(20);
-        builder.Property(x => x.Reason).HasMaxLength(255);
+        builder.Property(x => x.PlanId).HasMaxLength(20).IsRequired();
+        builder.Property(x => x.PreviousPlanId).HasMaxLength(20);
+
+        builder.Property(x => x.Goal).HasConversion<string>().HasMaxLength(50).IsRequired();
+        builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Property(x => x.PreviousStatus).HasConversion<string>().HasMaxLength(20);
+
+        builder.Property(x => x.Reason).HasMaxLength(255).IsRequired();
+        builder.Property(x => x.TriggeredBy).HasMaxLength(50).IsRequired();
     }
 }

@@ -34,9 +34,14 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
             {
                 var stats = await _mediator.Send(new GetFitnessStatsQuery(request.UserId), cancellationToken);
 
-                if (stats == null)
+                if (stats == null || !stats.IsSuccess || stats.Value == null)
                 {
                     return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_STATS_NOT_FOUND", "No UserFitnessStats row has been recorded yet."));
+                }
+
+                if (!Guid.TryParse(request.UserId, out var parsedUserId))
+                {
+                    return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_INVALID_USER_ID", "Provided UserId is not a valid GUID format."));
                 }
 
                 var genderEnum = Enum.Parse<FitnessCalculationService.Domain.Enums.Gender>(stats.Value.Gender, true);
@@ -53,16 +58,15 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                     return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_INVALID_CALCULATION", "Calculation produces a non-finite or invalid numeric result."));
                 }
 
-              var updateOrAddMetrics = await _mediator.Send(new CalculateFitnessMetricsCommand(request.UserId, bmr, tdee, calorieTarget, status.ToString()), cancellationToken);
-              if(!updateOrAddMetrics.IsSuccess)
-              {
-                  return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_METRICS_UPDATE_FAILED", "Failed to update or add calculated metrics."));
-              }
+                var updateOrAddMetrics = await _mediator.Send(new CalculateFitnessMetricsCommand(parsedUserId, bmr, tdee, calorieTarget, status), cancellationToken);
+                if (!updateOrAddMetrics.IsSuccess)
+                {
+                    return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_METRICS_UPDATE_FAILED", "Failed to update or add calculated metrics."));
+                }
 
                 var response = new CalculateFitnessMetricsResponse(bmr, tdee, calorieTarget, status.ToString());
 
                 return Result<CalculateFitnessMetricsResponse>.Success(response);
-
             }, cancellationToken);
         }
     }
