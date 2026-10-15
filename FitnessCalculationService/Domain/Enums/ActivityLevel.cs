@@ -18,6 +18,6 @@ public static class ActivityLevelExtensions
         ActivityLevel.Intermediate => 1.55,
         ActivityLevel.Advance => 1.725,
         ActivityLevel.TrueBeast => 1.9,
-        _ => 1.2
+        _ => throw new ArgumentOutOfRangeException(nameof(level), level, $"Unsupported activity level: {level}")
     };
 }
