@@ -37,19 +37,28 @@ namespace FitnessCalculationService.Migrations
                     b.Property<double>("CalorieTarget")
                         .HasColumnType("float");
 
+                    b.Property<DateTime?>("LastWeightEventAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<byte[]>("RowVersion")
                         .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<Guid?>("SourceStatsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<double>("Tdee")
                         .HasColumnType("float");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -70,10 +79,22 @@ namespace FitnessCalculationService.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<int>("EstimatedDurationWeeks")
+                        .HasColumnType("int");
+
                     b.Property<string>("Goal")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("MaxCalorie")
+                        .HasColumnType("float");
+
+                    b.Property<double>("MinCalorie")
+                        .HasColumnType("float");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -85,12 +106,23 @@ namespace FitnessCalculationService.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("ProgramType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int>("WorkoutsPerWeek")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("PlanId")
+                        .IsUnique();
 
                     b.HasIndex("Goal", "Status")
                         .IsUnique();
@@ -101,137 +133,227 @@ namespace FitnessCalculationService.Migrations
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000000000000"),
-                            Description = "A plan designed for LoseWeight with a Weak metabolic rate.",
+                            Description = "A gentle caloric deficit program focused on low-impact movement and metabolic recovery.",
+                            EstimatedDurationWeeks = 12,
                             Goal = "LoseWeight",
-                            Name = "LoseWeight Plan - Weak",
+                            IsActive = true,
+                            MaxCalorie = 1800.0,
+                            MinCalorie = 1200.0,
+                            Name = "Lose Weight Plan - Weak",
                             PlanId = "LW-W",
-                            Status = "Weak"
+                            ProgramType = "Low-Impact Cardio + Bodyweight",
+                            Status = "Weak",
+                            WorkoutsPerWeek = 3
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000000000001"),
-                            Description = "A plan designed for LoseWeight with a Normal metabolic rate.",
+                            Description = "A balanced fat-loss program combining progressive resistance training and cardiovascular work.",
+                            EstimatedDurationWeeks = 10,
                             Goal = "LoseWeight",
-                            Name = "LoseWeight Plan - Normal",
+                            IsActive = true,
+                            MaxCalorie = 2500.0,
+                            MinCalorie = 1801.0,
+                            Name = "Lose Weight Plan - Normal",
                             PlanId = "LW-N",
-                            Status = "Normal"
+                            ProgramType = "Cardio + Strength",
+                            Status = "Normal",
+                            WorkoutsPerWeek = 4
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000000000002"),
-                            Description = "A plan designed for LoseWeight with a Hard metabolic rate.",
+                            Description = "High-intensity athletic conditioning designed for maximum calorie expenditure and lean mass retention.",
+                            EstimatedDurationWeeks = 8,
                             Goal = "LoseWeight",
-                            Name = "LoseWeight Plan - Hard",
+                            IsActive = true,
+                            MaxCalorie = 4500.0,
+                            MinCalorie = 2501.0,
+                            Name = "Lose Weight Plan - Hard",
                             PlanId = "LW-H",
-                            Status = "Hard"
+                            ProgramType = "HIIT + Strength Circuits",
+                            Status = "Hard",
+                            WorkoutsPerWeek = 5
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000100000000"),
-                            Description = "A plan designed for GetFitter with a Weak metabolic rate.",
+                            Description = "Baseline aerobic and muscular conditioning to build daily physical vitality.",
+                            EstimatedDurationWeeks = 8,
                             Goal = "GetFitter",
-                            Name = "GetFitter Plan - Weak",
+                            IsActive = true,
+                            MaxCalorie = 1800.0,
+                            MinCalorie = 1200.0,
+                            Name = "Get Fitter Plan - Weak",
                             PlanId = "GF-W",
-                            Status = "Weak"
+                            ProgramType = "Full-Body Conditioning",
+                            Status = "Weak",
+                            WorkoutsPerWeek = 3
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000100000001"),
-                            Description = "A plan designed for GetFitter with a Normal metabolic rate.",
+                            Description = "Dynamic functional fitness emphasizing stamina, mobility, and core strength.",
+                            EstimatedDurationWeeks = 8,
                             Goal = "GetFitter",
-                            Name = "GetFitter Plan - Normal",
+                            IsActive = true,
+                            MaxCalorie = 2500.0,
+                            MinCalorie = 1801.0,
+                            Name = "Get Fitter Plan - Normal",
                             PlanId = "GF-N",
-                            Status = "Normal"
+                            ProgramType = "Functional Strength + Cardio",
+                            Status = "Normal",
+                            WorkoutsPerWeek = 4
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000100000002"),
-                            Description = "A plan designed for GetFitter with a Hard metabolic rate.",
+                            Description = "Comprehensive athletic performance conditioning targeting speed, power, and high work capacity.",
+                            EstimatedDurationWeeks = 6,
                             Goal = "GetFitter",
-                            Name = "GetFitter Plan - Hard",
+                            IsActive = true,
+                            MaxCalorie = 4500.0,
+                            MinCalorie = 2501.0,
+                            Name = "Get Fitter Plan - Hard",
                             PlanId = "GF-H",
-                            Status = "Hard"
+                            ProgramType = "Athletic Performance",
+                            Status = "Hard",
+                            WorkoutsPerWeek = 5
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000200000000"),
-                            Description = "A plan designed for GainWeight with a Weak metabolic rate.",
+                            Description = "Introductory hypertrophy and controlled surplus program to stimulate healthy mass accrual.",
+                            EstimatedDurationWeeks = 12,
                             Goal = "GainWeight",
-                            Name = "GainWeight Plan - Weak",
+                            IsActive = true,
+                            MaxCalorie = 1800.0,
+                            MinCalorie = 1200.0,
+                            Name = "Gain Weight Plan - Weak",
                             PlanId = "GW-W",
-                            Status = "Weak"
+                            ProgramType = "Foundational Hypertrophy",
+                            Status = "Weak",
+                            WorkoutsPerWeek = 3
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000200000001"),
-                            Description = "A plan designed for GainWeight with a Normal metabolic rate.",
+                            Description = "Standard muscle hypertrophy split with progressive overload and optimal volume distribution.",
+                            EstimatedDurationWeeks = 12,
                             Goal = "GainWeight",
-                            Name = "GainWeight Plan - Normal",
+                            IsActive = true,
+                            MaxCalorie = 2500.0,
+                            MinCalorie = 1801.0,
+                            Name = "Gain Weight Plan - Normal",
                             PlanId = "GW-N",
-                            Status = "Normal"
+                            ProgramType = "Hypertrophy Split",
+                            Status = "Normal",
+                            WorkoutsPerWeek = 4
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000200000002"),
-                            Description = "A plan designed for GainWeight with a Hard metabolic rate.",
+                            Description = "High-volume strength and muscle-building program supported by high caloric demand.",
+                            EstimatedDurationWeeks = 10,
                             Goal = "GainWeight",
-                            Name = "GainWeight Plan - Hard",
+                            IsActive = true,
+                            MaxCalorie = 4500.0,
+                            MinCalorie = 2501.0,
+                            Name = "Gain Weight Plan - Hard",
                             PlanId = "GW-H",
-                            Status = "Hard"
+                            ProgramType = "Progressive Overload Strength",
+                            Status = "Hard",
+                            WorkoutsPerWeek = 5
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000300000000"),
-                            Description = "A plan designed for GainMoreFlexible with a Weak metabolic rate.",
+                            Description = "Gentle joint mobility and active stretching routines for improved range of motion.",
+                            EstimatedDurationWeeks = 6,
                             Goal = "GainMoreFlexible",
-                            Name = "GainMoreFlexible Plan - Weak",
+                            IsActive = true,
+                            MaxCalorie = 1800.0,
+                            MinCalorie = 1200.0,
+                            Name = "Gain More Flexible Plan - Weak",
                             PlanId = "FL-W",
-                            Status = "Weak"
+                            ProgramType = "Mobility + Stretching",
+                            Status = "Weak",
+                            WorkoutsPerWeek = 3
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000300000001"),
-                            Description = "A plan designed for GainMoreFlexible with a Normal metabolic rate.",
+                            Description = "Vinyasa-inspired mobility flows combined with stability exercises for supple joints.",
+                            EstimatedDurationWeeks = 6,
                             Goal = "GainMoreFlexible",
-                            Name = "GainMoreFlexible Plan - Normal",
+                            IsActive = true,
+                            MaxCalorie = 2500.0,
+                            MinCalorie = 1801.0,
+                            Name = "Gain More Flexible Plan - Normal",
                             PlanId = "FL-N",
-                            Status = "Normal"
+                            ProgramType = "Yoga Flow + Mobility",
+                            Status = "Normal",
+                            WorkoutsPerWeek = 4
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000300000002"),
-                            Description = "A plan designed for GainMoreFlexible with a Hard metabolic rate.",
+                            Description = "Challenging flexibility training integrating dynamic strength, end-range control, and deep isometric holds.",
+                            EstimatedDurationWeeks = 8,
                             Goal = "GainMoreFlexible",
-                            Name = "GainMoreFlexible Plan - Hard",
+                            IsActive = true,
+                            MaxCalorie = 4500.0,
+                            MinCalorie = 2501.0,
+                            Name = "Gain More Flexible Plan - Hard",
                             PlanId = "FL-H",
-                            Status = "Hard"
+                            ProgramType = "Power Yoga + Pilates",
+                            Status = "Hard",
+                            WorkoutsPerWeek = 5
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000400000000"),
-                            Description = "A plan designed for LearnTheBasic with a Weak metabolic rate.",
+                            Description = "Essential fundamental movement patterns (squat, hinge, push, pull) with low physical strain.",
+                            EstimatedDurationWeeks = 4,
                             Goal = "LearnTheBasic",
-                            Name = "LearnTheBasic Plan - Weak",
+                            IsActive = true,
+                            MaxCalorie = 1800.0,
+                            MinCalorie = 1200.0,
+                            Name = "Learn the Basic Plan - Weak",
                             PlanId = "LB-W",
-                            Status = "Weak"
+                            ProgramType = "Intro Bodyweight Basics",
+                            Status = "Weak",
+                            WorkoutsPerWeek = 2
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000400000001"),
-                            Description = "A plan designed for LearnTheBasic with a Normal metabolic rate.",
+                            Description = "Comprehensive introduction to gym equipment, resistance training form, and training cadence.",
+                            EstimatedDurationWeeks = 4,
                             Goal = "LearnTheBasic",
-                            Name = "LearnTheBasic Plan - Normal",
+                            IsActive = true,
+                            MaxCalorie = 2500.0,
+                            MinCalorie = 1801.0,
+                            Name = "Learn the Basic Plan - Normal",
                             PlanId = "LB-N",
-                            Status = "Normal"
+                            ProgramType = "Fundamentals Full-Body",
+                            Status = "Normal",
+                            WorkoutsPerWeek = 3
                         },
                         new
                         {
                             Id = new Guid("11111111-1111-1111-1111-000400000002"),
-                            Description = "A plan designed for LearnTheBasic with a Hard metabolic rate.",
+                            Description = "Accelerated foundation bootcamp establishing high motor competency and general physical preparedness.",
+                            EstimatedDurationWeeks = 6,
                             Goal = "LearnTheBasic",
-                            Name = "LearnTheBasic Plan - Hard",
+                            IsActive = true,
+                            MaxCalorie = 4500.0,
+                            MinCalorie = 2501.0,
+                            Name = "Learn the Basic Plan - Hard",
                             PlanId = "LB-H",
-                            Status = "Hard"
+                            ProgramType = "Fundamentals + Conditioning",
+                            Status = "Hard",
+                            WorkoutsPerWeek = 4
                         });
                 });
 
@@ -250,10 +372,8 @@ namespace FitnessCalculationService.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -296,18 +416,24 @@ namespace FitnessCalculationService.Migrations
                     b.Property<DateTime>("RecordedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("Source")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid?>("SourceEventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<double>("Weight")
                         .HasColumnType("float");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId", "RecordedAt")
+                        .IsDescending(false, true);
 
                     b.ToTable("UserFitnessStats");
                 });
@@ -321,11 +447,30 @@ namespace FitnessCalculationService.Migrations
                     b.Property<DateTime>("AssignedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("DeactivatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<Guid?>("AssignedPlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Bmr")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CalorieTarget")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Goal")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PlanId")
                         .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PreviousPlanId")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PreviousStatus")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -334,10 +479,21 @@ namespace FitnessCalculationService.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<double>("Tdee")
+                        .HasColumnType("float");
+
+                    b.Property<string>("TriggeredBy")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
