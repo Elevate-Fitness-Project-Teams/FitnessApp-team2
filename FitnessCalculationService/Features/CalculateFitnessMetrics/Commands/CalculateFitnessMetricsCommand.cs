@@ -13,7 +13,8 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
         double Tdee, 
         double CalorieTarget, 
         CalorieStatus Status,
-        Guid? SourceStatsId = null
+        Guid? SourceStatsId = null,
+        DateTime? LastWeightEventAt = null
     ) : IRequest<Result>;
 
     public class CalculateFitnessMetricsCommandHandler : IRequestHandler<CalculateFitnessMetricsCommand, Result>
@@ -39,6 +40,7 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                         .SetProperty(m => m.CalorieTarget, request.CalorieTarget)
                         .SetProperty(m => m.Status, request.Status)
                         .SetProperty(m => m.SourceStatsId, request.SourceStatsId)
+                        .SetProperty(m => m.LastWeightEventAt, request.LastWeightEventAt)
                         .SetProperty(m => m.CalculatedAt, DateTime.UtcNow),
                         cancellationToken);
 
@@ -53,6 +55,7 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                         CalorieTarget = request.CalorieTarget,
                         Status = request.Status,
                         SourceStatsId = request.SourceStatsId,
+                        LastWeightEventAt = request.LastWeightEventAt,
                         CalculatedAt = DateTime.UtcNow
                     };
                     await _metricsRepo.AddAsync(newMetrics, cancellationToken);

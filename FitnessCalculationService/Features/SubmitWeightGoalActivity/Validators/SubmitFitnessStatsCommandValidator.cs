@@ -1,4 +1,5 @@
-﻿using FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands;
+using FitnessCalculationService.Common.Errors;
+using FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands;
 using FluentValidation;
 
 namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Validators
@@ -7,31 +8,40 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Validators
     {
         public SubmitFitnessStatsCommandValidator()
         {
-            
+            RuleFor(x => x.UserId)
+                .NotEmpty()
+                .WithErrorCode(ErrorCodes.ValRequiredField)
+                .WithMessage("UserId is required.");
+
             RuleFor(x => x.Age)
-                .InclusiveBetween(16, 100)
-                .WithMessage("VAL_INVALID_AGE");
+                .InclusiveBetween(12, 100)
+                .WithErrorCode(ErrorCodes.ValInvalidAge)
+                .WithMessage("Age must be between 12 and 100.");
 
             RuleFor(x => x.Weight)
-                .InclusiveBetween(40, 200)
-                .WithMessage("VAL_INVALID_WEIGHT");
+                .InclusiveBetween(30.0, 300.0)
+                .WithErrorCode(ErrorCodes.ValInvalidWeight)
+                .WithMessage("Weight must be between 30 and 300 kg.");
 
             RuleFor(x => x.Height)
-                .InclusiveBetween(140, 220)
-                .WithMessage("VAL_INVALID_HEIGHT");
+                .InclusiveBetween(100.0, 250.0)
+                .WithErrorCode(ErrorCodes.ValInvalidHeight)
+                .WithMessage("Height must be between 100 and 250 cm.");
 
-            
             RuleFor(x => x.Gender)
                 .IsInEnum()
-                .WithMessage("VAL_INVALID_GENDER");
+                .WithErrorCode(ErrorCodes.ValInvalidGender)
+                .WithMessage("Invalid gender specified.");
 
             RuleFor(x => x.Goal)
                 .IsInEnum()
-                .WithMessage("VAL_INVALID_GOAL");
+                .WithErrorCode(ErrorCodes.ValInvalidGoal)
+                .WithMessage("Invalid fitness goal specified.");
 
             RuleFor(x => x.ActivityLevel)
                 .IsInEnum()
-                .WithMessage("VAL_INVALID_ACTIVITY");
+                .WithErrorCode(ErrorCodes.ValInvalidActivity)
+                .WithMessage("Invalid activity level specified.");
         }
     }
 }
