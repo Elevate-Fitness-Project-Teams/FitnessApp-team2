@@ -58,20 +58,20 @@
 ## Phase 3: Feature Slices — Commands
 
 ### Slice: SaveFitnessStats
-- [ ] Create `Features/FitnessStats/SaveFitnessStats.cs`:
-  - [ ] `SaveFitnessStatsCommand` + `Response` + `Validator` + `Handler` + `Endpoint`
+- [x] Create `Features/FitnessStats/SaveFitnessStats.cs`:
+  - [x] `SaveFitnessStatsCommand` + `Response` + `Validator` + `Handler` + `Endpoint`
 
 ### Slice: CalculateMetrics
-- [ ] Create `Features/Calculations/CalculateMetrics.cs`:
-  - [ ] `CalculateMetricsCommand` + `Response` + `Handler` + `Endpoint`
+- [x] Create `Features/Calculations/CalculateMetrics.cs`:
+  - [x] `CalculateMetricsCommand` + `Response` + `Handler` + `Endpoint`
 
 ### Slice: AssignPlan
-- [ ] Create `Features/Plans/AssignPlan.cs`:
-  - [ ] `AssignPlanCommand` + `Response` + `Handler` (deactivate old → archive → assign new) + `Endpoint`
+- [x] Create `Features/Plans/AssignPlan.cs`:
+  - [x] `AssignPlanCommand` + `Response` + `Handler` (deactivate old → archive → assign new) + `Endpoint`
 
 ### Slice: RecalculateMetrics
-- [ ] Create `Features/Calculations/RecalculateMetrics.cs`:
-  - [ ] `RecalculateMetricsCommand` + `Response` + `Handler` (update weight → recalculate → conditional reassignment + idempotency check) + `Endpoint`
+- [x] Create `Features/Calculations/RecalculateMetrics.cs`:
+  - [x] `RecalculateMetricsCommand` + `Response` + `Handler` (update weight → recalculate → conditional reassignment + idempotency check) + `Endpoint`
 
 ---
 

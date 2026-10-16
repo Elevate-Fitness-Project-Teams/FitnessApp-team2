@@ -14,7 +14,9 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
         int Age,
         Gender Gender,
         FitnessGoal Goal,
-        ActivityLevel ActivityLevel
+        ActivityLevel ActivityLevel,
+        string Source = "user",
+        Guid? SourceEventId = null
     ) : IRequest<Result<Guid>>;
 
     public class SubmitFitnessStatsCommandHandler : IRequestHandler<SubmitFitnessStatsCommand, Result<Guid>>
@@ -43,7 +45,8 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
                     Goal = request.Goal,
                     ActivityLevel = request.ActivityLevel,
                     RecordedAt = DateTime.UtcNow,
-                    Source = "user"
+                    Source = request.Source,
+                    SourceEventId = request.SourceEventId
                 };
 
                 await _repo.AddAsync(newStats, cancellationToken);
