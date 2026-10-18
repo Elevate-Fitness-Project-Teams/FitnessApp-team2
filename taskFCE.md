@@ -105,11 +105,13 @@
 
 ---
 
-## Phase 6: MassTransit Consumer
-- [ ] Create `Contracts/Events/WeightUpdatedEvent.cs`
-- [ ] Create `Consumers/WeightUpdatedConsumer.cs` (`IConsumer<WeightUpdatedEvent>` → dispatches `RecalculateMetricsCommand`)
-- [ ] Verify MassTransit auto-creates queues and exchanges
-- [ ] Test consumer with a manually published message to RabbitMQ
+## Phase 6: MassTransit Consumer & Transactional Outbox
+- [x] Create wire contract `MessageBroker/Events/WeightUpdatedEvent.cs`
+- [x] Create `MessageBroker/Consumers/WeightUpdatedConsumer.cs` (`IConsumer<WeightUpdatedEvent>` → dispatches `RecalculateMetricsOrchestrator`)
+- [x] Configure MassTransit EF Core Outbox + Inbox with retry policies in `Program.cs`
+- [x] Add `AddMassTransitInboxOutbox` EF Core database migration
+- [x] Add outbound domain events (`FitnessMetricsRecalculatedEvent`, `FitnessPlanAssignedEvent`) staged inside UoW
+- [x] Verify MassTransit auto-creates queues and exchanges
 
 ---
 
