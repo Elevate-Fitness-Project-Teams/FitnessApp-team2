@@ -79,8 +79,10 @@
 
 - [x] Create `Features/Calculations/GetUserMetrics.cs` — `GET /api/v1/fitness/metrics/{userId}`
 - [x] Create `Features/FitnessStats/GetFitnessStats.cs` — `GET /api/v1/fitness/stats/{userId}`
-- [ ] Create `Features/Plans/GetPlanConfigs.cs` — `GET /api/v1/fitness/plan-configs`
-- [ ] Create `Features/Plans/GetPlanById.cs` — `GET /api/v1/fitness/plans/{planId}`
+- [x] Create `Features/Plans/GetPlanConfigs.cs` — `GET /api/v1/fitness/plan-configs`
+- [x] Create `Features/Plans/GetPlanById.cs` — `GET /api/v1/fitness/plans/{planId}`
+- [x] Create `Features/Plans/GetActivePlan.cs` — `GET /api/v1/fitness/plans/active/{userId}`
+- [x] Create `Features/Plans/GetPlanHistory.cs` — `GET /api/v1/fitness/plan-history/{userId}`
 
 ---
 
