@@ -13,6 +13,10 @@ using FitnessCalculationService.Features.Calculations.Commands.RecalculateMetric
 using FitnessCalculationService.Features.Calculations.Queries.GetUserMetrics;
 using FitnessCalculationService.Features.FitnessStats.Queries.GetFitnessStats;
 using FitnessCalculationService.Features.Plans;
+using FitnessCalculationService.Features.Plans.Queries.GetActivePlan;
+using FitnessCalculationService.Features.Plans.Queries.GetPlanById;
+using FitnessCalculationService.Features.Plans.Queries.GetPlanConfigs;
+using FitnessCalculationService.Features.Plans.Queries.GetPlanHistory;
 using FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands;
 using FitnessCalculationService.GrpcServices;
 using FitnessCalculationService.MessageBroker.Consumers;
@@ -165,6 +169,10 @@ SubmitFitnessStatsEndpoint.Map(app);
 CalculateFitnessMetricsEndpoint.Map(app);
 AssignPlanEndpoint.Map(app);
 RecalculateMetricsEndpoint.Map(app);
+GetPlanConfigsEndpoint.Map(app);
+GetPlanByIdEndpoint.Map(app);
+GetActivePlanEndpoint.Map(app);
+GetPlanHistoryEndpoint.Map(app);
 
 // Automatically apply any pending EF Core migrations on startup
 using (var scope = app.Services.CreateScope())
