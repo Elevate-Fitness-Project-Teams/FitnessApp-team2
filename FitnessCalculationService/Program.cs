@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using FitnessCalculationService.Common;
 using FitnessCalculationService.Common.Behaviors;
+using FitnessCalculationService.Common.Caching;
 using FitnessCalculationService.Common.Errors;
 using FitnessCalculationService.Common.Json;
 using FitnessCalculationService.Common.Middleware;
@@ -28,8 +29,16 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog Structured Logging Host Configuration
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // Cross-cutting Services
 builder.Services.AddHttpContextAccessor();
@@ -41,6 +50,25 @@ builder.Services.AddDbContext<FceDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+// Redis Distributed Caching Layer
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.InstanceName = "fce:";
+});
+builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+
+// CORS Configuration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 // Domain Services
 builder.Services.AddSingleton<IMetabolicCalculator, MetabolicCalculator>();
@@ -162,6 +190,9 @@ var app = builder.Build();
 // 1. Global Exception Middleware MUST be the first middleware to capture all pipeline errors
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
+// 2. Serilog Structured Request Logging
+app.UseSerilogRequestLogging();
+
 app.MapOpenApi();
 app.MapHealthChecks("/health");
 
@@ -170,6 +201,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -188,19 +220,33 @@ GetPlanByIdEndpoint.Map(app);
 GetActivePlanEndpoint.Map(app);
 GetPlanHistoryEndpoint.Map(app);
 
-// Automatically apply any pending EF Core migrations on startup
+// Automatically apply any pending EF Core migrations on startup with resilient retry
 using (var scope = app.Services.CreateScope())
 {
-    try
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<FceDbContext>();
+    var maxRetries = 5;
+    var retryDelay = TimeSpan.FromSeconds(3);
+
+    for (var attempt = 1; attempt <= maxRetries; attempt++)
     {
-        var dbContext = scope.ServiceProvider.GetRequiredService<FceDbContext>();
-        await dbContext.Database.MigrateAsync();
-    }
-    catch (Exception ex)
-    {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while applying database migrations.");
-        throw;
+        try
+        {
+            logger.LogInformation("Applying pending EF Core database migrations (Attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
+            await dbContext.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied successfully.");
+            break;
+        }
+        catch (Exception ex) when (attempt < maxRetries)
+        {
+            logger.LogWarning(ex, "Failed to apply database migrations on attempt {Attempt}. Retrying in {Delay}s...", attempt, retryDelay.TotalSeconds);
+            await Task.Delay(retryDelay);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unrecoverable error occurred while applying database migrations after {MaxRetries} attempts.", maxRetries);
+            throw;
+        }
     }
 }
 

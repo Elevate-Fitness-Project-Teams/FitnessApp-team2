@@ -18,7 +18,24 @@ services:
     image: rabbitmq:3-management
     hostname: rabbitmq
     ports:
+      - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   authenticationservice:
     image: ${DOCKER_REGISTRY-}authenticationservice
@@ -42,10 +59,20 @@ services:
     environment:
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=FitnessCalculationDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - RabbitMq__Host=rabbitmq
+      - Redis__ConnectionString=redis:6379
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:
       - "8091:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   nutritionservice:
     image: ${DOCKER_REGISTRY-}nutritionservice
