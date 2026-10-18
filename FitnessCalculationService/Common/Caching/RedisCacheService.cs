@@ -12,7 +12,8 @@ public class RedisCacheService : ICacheService
     {
         PropertyNameCaseInsensitive = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     public RedisCacheService(IDistributedCache distributedCache, ILogger<RedisCacheService> logger)
