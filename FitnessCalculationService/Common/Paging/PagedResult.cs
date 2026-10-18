@@ -1,0 +1,26 @@
+namespace FitnessCalculationService.Common.Paging;
+
+public record PagedResult<T>(
+    IReadOnlyList<T> Items,
+    int Page,
+    int PageSize,
+    int TotalCount,
+    int TotalPages,
+    bool HasNextPage,
+    bool HasPreviousPage
+)
+{
+    public static PagedResult<T> Create(IReadOnlyList<T> items, int page, int pageSize, int totalCount)
+    {
+        var totalPages = pageSize > 0 ? (int)Math.Ceiling(totalCount / (double)pageSize) : 0;
+        return new PagedResult<T>(
+            items,
+            page,
+            pageSize,
+            totalCount,
+            totalPages,
+            page < totalPages,
+            page > 1
+        );
+    }
+}
