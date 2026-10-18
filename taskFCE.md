@@ -87,21 +87,21 @@
 ---
 
 ## Phase 5: Endpoint Registration & Program.cs
-- [ ] Configure `Program.cs`:
-  - [ ] Register `FceDbContext` with EF Core
-  - [ ] Register MediatR (assembly scan)
-  - [ ] Register FluentValidation validators (assembly scan)
-  - [ ] Register `ValidationBehavior` in MediatR pipeline
-  - [ ] Register `IMetabolicCalculator` as singleton
-  - [ ] Configure MassTransit + RabbitMQ (add consumer, receive endpoint, retry policy)
-  - [ ] Configure Swagger/OpenAPI
-  - [ ] Configure CORS
-  - [ ] Configure JWT authentication
-  - [ ] Configure Serilog
-  - [ ] Add `GlobalExceptionMiddleware`
-- [ ] Map all 8 feature slice endpoints
-- [ ] Add `appsettings.json` with ConnectionStrings + RabbitMQ config
-- [ ] Verify API starts and Swagger shows all 8 endpoints
+- [x] Configure `Program.cs`:
+  - [x] Register `FceDbContext` with EF Core
+  - [x] Register MediatR (assembly scan)
+  - [x] Register FluentValidation validators (assembly scan)
+  - [x] Register `ValidationBehavior` in MediatR pipeline
+  - [x] Register `IMetabolicCalculator` as singleton
+  - [x] Configure MassTransit + RabbitMQ (add consumer, receive endpoint, retry policy)
+  - [x] Configure Swagger/OpenAPI
+  - [x] Configure CORS
+  - [x] Configure JWT authentication
+  - [x] Configure Serilog
+  - [x] Add `GlobalExceptionMiddleware`
+- [x] Map all 8 feature slice endpoints
+- [x] Add `appsettings.json` with ConnectionStrings + RabbitMQ config
+- [x] Verify API starts and Swagger shows all 8 endpoints
 
 ---
 
@@ -115,10 +115,15 @@
 
 ---
 
-## Phase 7: Polish & Hardening
-- [ ] Add response caching on `GET /metrics/{userId}`
-- [ ] Cache `FitnessPlanConfig` in memory at startup
-- [ ] Add `RowVersion` concurrency token on `CalculatedMetrics`
-- [ ] Verify all 15 seed data rows present
-- [ ] Review Swagger docs for completeness
-- [ ] Verify build: `dotnet build -c Release`
+## Phase 7: Polish, Hardening & Cross-Cutting
+- [x] Add Redis distributed caching (`Microsoft.Extensions.Caching.StackExchangeRedis`) via resilient `ICacheService` abstraction
+- [x] Update `docker-compose.yml` with `redis:7-alpine`, health check, and orchestration dependencies
+- [x] Cache-aside on `GET /metrics/{userId}` (`metrics:user:{userId}`, 5 min TTL) with post-commit invalidation in orchestrators
+- [x] Cache-aside on Plan Configurations (`plancfg:goal:{goal}:status:{status}` & `plancfg:id:{planId}`, 24h TTL)
+- [x] Configure Serilog request logging (`UseSerilogRequestLogging`) and CORS policy (`AllowAll`)
+- [x] Add resilient startup database migration retry loop (5 attempts with exponential backoff)
+- [x] Enrich all REST endpoints with OpenAPI metadata (`.WithName()`, `.WithSummary()`, `.WithDescription()`, `.WithTags()`, JWT security)
+- [x] Add ready-to-run requests for all endpoints in `FitnessCalculationService.http`
+- [x] Single-file class isolation across all DTOs and orchestrators
+- [x] Verify build: `dotnet build -c Release` (0 warnings, 0 errors)
+
