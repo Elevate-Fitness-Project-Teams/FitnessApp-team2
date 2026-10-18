@@ -23,6 +23,9 @@ public static class GetPlanConfigsEndpoint
         })
         .RequireAuthorization()
         .WithName("GetPlanConfigs")
+        .WithTags("Plans")
+        .WithSummary("List plan configurations with optional filtering and pagination")
+        .WithDescription("Retrieves all system workout plan templates filtered by goal and caloric status tier.")
         .Produces<ApiResponse<PagedResult<PlanConfigListItem>>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized);
     }

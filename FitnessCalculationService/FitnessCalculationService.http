@@ -1,6 +1,122 @@
 @FitnessCalculationService_HostAddress = http://localhost:5122
+@authToken = eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder
+@userId = 11111111-1111-1111-1111-111111111111
 
-GET {{FitnessCalculationService_HostAddress}}/weatherforecast/
+### 0. Service Health Check
+GET {{FitnessCalculationService_HostAddress}}/health
+Accept: application/json
+
+###
+
+### 1. Submit Fitness Stats (Record Physical Biometrics)
+POST {{FitnessCalculationService_HostAddress}}/api/v1/fitness/stats
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "weight": 80.0,
+  "height": 180.0,
+  "age": 28,
+  "gender": "Male",
+  "goal": "Lose Weight",
+  "activityLevel": "Moderate",
+  "recordedBy": "user"
+}
+
+###
+
+### 2. Submit Weight Goal Activity (Onboarding Alias)
+POST {{FitnessCalculationService_HostAddress}}/api/v1/fitness/weight-goal-activity
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "weight": 75.5,
+  "height": 178.0,
+  "age": 30,
+  "gender": "Female",
+  "goal": "Maintain Weight",
+  "activityLevel": "Light",
+  "recordedBy": "user"
+}
+
+###
+
+### 3. Get Latest Fitness Stats Snapshot
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/stats/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 4. Calculate Metabolic Metrics
+POST {{FitnessCalculationService_HostAddress}}/api/v1/fitness/calculate
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}"
+}
+
+###
+
+### 5. Get Calculated Metabolic Metrics (Cached in Redis)
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/metrics/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 6. Assign Matching Workout Plan
+POST {{FitnessCalculationService_HostAddress}}/api/v1/fitness/assign-plan
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userId}}",
+  "reason": "Initial program onboarding assignment"
+}
+
+###
+
+### 7. Recalculate Metrics (Weight Shift or Biometric Update)
+PUT {{FitnessCalculationService_HostAddress}}/api/v1/fitness/recalculate/{{userId}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "newWeight": 77.5,
+  "reason": "Weekly weigh-in check-in"
+}
+
+###
+
+### 8. List Plan Configurations (Filtered & Paginated)
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/plan-configs?goal=Lose%20Weight&status=Normal&page=1&pageSize=10
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 9. Get Plan Configuration by PlanId (Cached in Redis)
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/plans/LW-N
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 10. Get Active Workout Plan for User
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/plans/active/{{userId}}
+Authorization: Bearer {{authToken}}
+Accept: application/json
+
+###
+
+### 11. Get Plan Assignment History
+GET {{FitnessCalculationService_HostAddress}}/api/v1/fitness/plan-history/{{userId}}?page=1&pageSize=10
+Authorization: Bearer {{authToken}}
 Accept: application/json
 
 ###

@@ -14,14 +14,25 @@ public record GetPlanConfigByGoalStatusQuery(FitnessGoal Goal, CalorieStatus Sta
 public class GetPlanConfigByGoalStatusQueryHandler : IRequestHandler<GetPlanConfigByGoalStatusQuery, Result<PlanConfigDto>>
 {
     private readonly IGenericRepository<FitnessPlanConfig> _planRepo;
+    private readonly FitnessCalculationService.Common.Caching.ICacheService _cache;
 
-    public GetPlanConfigByGoalStatusQueryHandler(IGenericRepository<FitnessPlanConfig> planRepo)
+    public GetPlanConfigByGoalStatusQueryHandler(
+        IGenericRepository<FitnessPlanConfig> planRepo,
+        FitnessCalculationService.Common.Caching.ICacheService cache)
     {
         _planRepo = planRepo;
+        _cache = cache;
     }
 
     public async Task<Result<PlanConfigDto>> Handle(GetPlanConfigByGoalStatusQuery request, CancellationToken cancellationToken)
     {
+        var cacheKey = $"plancfg:goal:{request.Goal}:status:{request.Status}";
+        var cachedPlan = await _cache.GetAsync<PlanConfigDto>(cacheKey, cancellationToken);
+        if (cachedPlan != null)
+        {
+            return Result<PlanConfigDto>.Success(cachedPlan);
+        }
+
         var plan = await _planRepo.GetQueryable()
             .AsNoTracking()
             .Where(p => p.Goal == request.Goal && p.Status == request.Status && p.IsActive)
@@ -45,6 +56,7 @@ public class GetPlanConfigByGoalStatusQueryHandler : IRequestHandler<GetPlanConf
             return Result<PlanConfigDto>.Failure(new Error(ErrorCodes.FceNoMatchingPlan, $"No active fitness plan found matching goal '{request.Goal}' and status '{request.Status}'."));
         }
 
+        await _cache.SetAsync(cacheKey, plan, TimeSpan.FromHours(24), cancellationToken);
         return Result<PlanConfigDto>.Success(plan);
     }
 }

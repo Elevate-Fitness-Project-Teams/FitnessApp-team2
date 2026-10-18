@@ -19,6 +19,9 @@ public static class GetPlanByIdEndpoint
         })
         .RequireAuthorization()
         .WithName("GetPlanById")
+        .WithTags("Plans")
+        .WithSummary("Get plan configuration by plan identifier")
+        .WithDescription("Retrieves detailed workout plan template by its business identifier (e.g. LW-N, MW-H). Backed by Redis distributed caching with a 24-hour TTL.")
         .Produces<ApiResponse<PlanDetailResponse>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized)
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);

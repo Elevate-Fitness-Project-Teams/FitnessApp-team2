@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FitnessCalculationService.Features.Calculations.Commands.RecalculateMetrics;
 
-public record RecalculateMetricsRequest(double? NewWeight = null, string? Reason = null);
-
 public static class RecalculateMetricsEndpoint
 {
     public static void Map(IEndpointRouteBuilder app)
@@ -32,6 +30,9 @@ public static class RecalculateMetricsEndpoint
         .RequireAuthorization()
         .AddEndpointFilter(new OwnershipFilter("userId"))
         .WithName("RecalculateMetrics")
+        .WithTags("Metrics")
+        .WithSummary("Recalculate metabolic metrics and update plan")
+        .WithDescription("Recomputes user metabolic targets upon weight change. If caloric status transitions across tier boundaries, automatically deactivates prior plan and assigns new matching plan.")
         .Produces<ApiResponse<RecalculateMetricsResponse>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status400BadRequest)
         .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized)
@@ -39,3 +40,4 @@ public static class RecalculateMetricsEndpoint
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
     }
 }
+
