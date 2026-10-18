@@ -1,4 +1,5 @@
 using FitnessCalculationService.Common;
+using FitnessCalculationService.Common.Caching;
 using FitnessCalculationService.Common.Errors;
 using FitnessCalculationService.Domain.Entities;
 using FitnessCalculationService.Domain.Services;
@@ -32,6 +33,7 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
     private readonly IMediator _mediator;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<RecalculateMetricsOrchestratorHandler> _logger;
+    private readonly ICacheService _cache;
 
     public RecalculateMetricsOrchestratorHandler(
         IUnitOfWork uow,
@@ -40,7 +42,8 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
         IMetabolicCalculator calculator,
         IMediator mediator,
         IPublishEndpoint publishEndpoint,
-        ILogger<RecalculateMetricsOrchestratorHandler> logger)
+        ILogger<RecalculateMetricsOrchestratorHandler> logger,
+        ICacheService cache)
     {
         _uow = uow;
         _metricsRepo = metricsRepo;
@@ -49,6 +52,7 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
         _mediator = mediator;
         _publishEndpoint = publishEndpoint;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<Result<RecalculateMetricsResponse>> Handle(RecalculateMetricsOrchestrator request, CancellationToken cancellationToken)
@@ -263,6 +267,8 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
         {
             return Result<RecalculateMetricsResponse>.Failure(transactionResult.Error);
         }
+
+        await _cache.RemoveAsync($"metrics:user:{request.UserId}", cancellationToken);
 
         var response = new RecalculateMetricsResponse(
             request.UserId,

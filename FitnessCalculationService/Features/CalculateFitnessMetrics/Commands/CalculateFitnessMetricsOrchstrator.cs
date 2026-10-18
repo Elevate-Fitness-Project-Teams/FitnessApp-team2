@@ -1,4 +1,5 @@
 using FitnessCalculationService.Common;
+using FitnessCalculationService.Common.Caching;
 using FitnessCalculationService.Domain.Entities;
 using FitnessCalculationService.Domain.Services;
 using FitnessCalculationService.Features.CalculateFitnessMetrics.Response;
@@ -18,33 +19,36 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
         private readonly IMetabolicCalculator _calculator;
         private readonly IMediator _mediator;
         private readonly MassTransit.IPublishEndpoint _publishEndpoint;
+        private readonly ICacheService _cache;
 
         public CalculateFitnessMetricsOrchstratorHandler(
             IUnitOfWork uow, 
             IMetabolicCalculator calculator,
             IMediator mediator,
-            MassTransit.IPublishEndpoint publishEndpoint)
+            MassTransit.IPublishEndpoint publishEndpoint,
+            ICacheService cache)
         {
             _uow = uow;
             _calculator = calculator;
             _mediator = mediator;
             _publishEndpoint = publishEndpoint;
+            _cache = cache;
         }
 
         public async Task<Result<CalculateFitnessMetricsResponse>> Handle(CalculateFitnessMetricsOrchstrator request, CancellationToken cancellationToken)
         {
-            return await _uow.ExecuteAsync(async () =>
+            if (!Guid.TryParse(request.UserId, out var parsedUserId))
+            {
+                return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_INVALID_USER_ID", "Provided UserId is not a valid GUID format."));
+            }
+
+            var transactionResult = await _uow.ExecuteAsync(async () =>
             {
                 var stats = await _mediator.Send(new GetFitnessStatsQuery(request.UserId), cancellationToken);
 
                 if (stats == null || !stats.IsSuccess || stats.Value == null)
                 {
                     return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_STATS_NOT_FOUND", "No UserFitnessStats row has been recorded yet."));
-                }
-
-                if (!Guid.TryParse(request.UserId, out var parsedUserId))
-                {
-                    return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_INVALID_USER_ID", "Provided UserId is not a valid GUID format."));
                 }
 
                 var genderEnum = Enum.Parse<FitnessCalculationService.Domain.Enums.Gender>(stats.Value.Gender, true);
@@ -83,6 +87,13 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
 
                 return Result<CalculateFitnessMetricsResponse>.Success(response);
             }, cancellationToken);
+
+            if (transactionResult.IsSuccess)
+            {
+                await _cache.RemoveAsync($"metrics:user:{parsedUserId}", cancellationToken);
+            }
+
+            return transactionResult;
         }
     }
 }

@@ -12,10 +12,14 @@ public record GetPlanByIdQuery(string PlanId) : IRequest<Result<PlanDetailRespon
 public class GetPlanByIdQueryHandler : IRequestHandler<GetPlanByIdQuery, Result<PlanDetailResponse>>
 {
     private readonly IGenericRepository<FitnessPlanConfig> _planRepo;
+    private readonly FitnessCalculationService.Common.Caching.ICacheService _cache;
 
-    public GetPlanByIdQueryHandler(IGenericRepository<FitnessPlanConfig> planRepo)
+    public GetPlanByIdQueryHandler(
+        IGenericRepository<FitnessPlanConfig> planRepo,
+        FitnessCalculationService.Common.Caching.ICacheService cache)
     {
         _planRepo = planRepo;
+        _cache = cache;
     }
 
     public async Task<Result<PlanDetailResponse>> Handle(GetPlanByIdQuery request, CancellationToken cancellationToken)
@@ -23,6 +27,13 @@ public class GetPlanByIdQueryHandler : IRequestHandler<GetPlanByIdQuery, Result<
         if (string.IsNullOrWhiteSpace(request.PlanId))
         {
             return Result<PlanDetailResponse>.Failure(new Error(ErrorCodes.ValRequiredField, "PlanId is required."));
+        }
+
+        var cacheKey = $"plancfg:id:{request.PlanId.ToUpperInvariant()}";
+        var cached = await _cache.GetAsync<PlanDetailResponse>(cacheKey, cancellationToken);
+        if (cached != null)
+        {
+            return Result<PlanDetailResponse>.Success(cached);
         }
 
         var plan = await _planRepo.GetQueryable()
@@ -49,6 +60,7 @@ public class GetPlanByIdQueryHandler : IRequestHandler<GetPlanByIdQuery, Result<
             return Result<PlanDetailResponse>.Failure(new Error(ErrorCodes.ResPlanNotFound, $"Fitness plan with ID '{request.PlanId}' was not found."));
         }
 
+        await _cache.SetAsync(cacheKey, plan, TimeSpan.FromHours(24), cancellationToken);
         return Result<PlanDetailResponse>.Success(plan);
     }
 }
