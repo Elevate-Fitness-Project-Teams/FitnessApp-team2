@@ -17,15 +17,18 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
         private readonly IUnitOfWork _uow;
         private readonly IMetabolicCalculator _calculator;
         private readonly IMediator _mediator;
+        private readonly MassTransit.IPublishEndpoint _publishEndpoint;
 
         public CalculateFitnessMetricsOrchstratorHandler(
             IUnitOfWork uow, 
             IMetabolicCalculator calculator,
-            IMediator mediator)
+            IMediator mediator,
+            MassTransit.IPublishEndpoint publishEndpoint)
         {
             _uow = uow;
             _calculator = calculator;
             _mediator = mediator;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Result<CalculateFitnessMetricsResponse>> Handle(CalculateFitnessMetricsOrchstrator request, CancellationToken cancellationToken)
@@ -63,6 +66,18 @@ namespace FitnessCalculationService.Features.CalculateFitnessMetrics.Commands
                 {
                     return Result<CalculateFitnessMetricsResponse>.Failure(new Error("FCE_METRICS_UPDATE_FAILED", "Failed to update or add calculated metrics."));
                 }
+
+                // Stage outbound domain event into Transactional Outbox (EF Core Outbox)
+                await _publishEndpoint.Publish(new global::MessageBroker.Events.FitnessMetricsRecalculatedEvent
+                {
+                    UserId = parsedUserId,
+                    Bmr = bmr,
+                    Tdee = tdee,
+                    CalorieTarget = calorieTarget,
+                    Status = status.ToString(),
+                    PreviousStatus = null,
+                    CalculatedAt = DateTime.UtcNow
+                }, cancellationToken);
 
                 var response = new CalculateFitnessMetricsResponse(bmr, tdee, calorieTarget, status.ToString());
 
