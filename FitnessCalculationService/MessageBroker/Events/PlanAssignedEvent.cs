@@ -1,5 +1,10 @@
 namespace MessageBroker.Events;
 
+/// <summary>
+/// Published whenever a user is assigned or reassigned to a fitness plan.
+/// Consumed by WorkoutService, SmartCoach, and HomeFeed.
+/// Wire contract across microservices - DO NOT RENAME.
+/// </summary>
 public class PlanAssignedEvent
 {
     public Guid UserId { get; set; }
