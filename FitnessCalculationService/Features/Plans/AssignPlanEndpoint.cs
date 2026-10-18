@@ -1,13 +1,12 @@
 using FitnessCalculationService.Common;
 using FitnessCalculationService.Common.Http;
 using FitnessCalculationService.Common.Security;
+using FitnessCalculationService.Features.Plans.DTOs;
 using FitnessCalculationService.Features.Plans.Orchestrators;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FitnessCalculationService.Features.Plans;
-
-public record AssignPlanRequest(Guid? UserId = null, string? Reason = null);
 
 public static class AssignPlanEndpoint
 {
@@ -30,6 +29,9 @@ public static class AssignPlanEndpoint
         .RequireAuthorization()
         .AddEndpointFilter(new OwnershipFilter("userId"))
         .WithName("AssignPlan")
+        .WithTags("Plans")
+        .WithSummary("Assign active workout plan to user")
+        .WithDescription("Evaluates user fitness goal and caloric status tier, deactivates any existing active plan, assigns the matching plan configuration, records plan history, and emits domain events.")
         .Produces<ApiResponse<AssignPlanResponse>>(StatusCodes.Status200OK)
         .Produces<ApiResponse<object>>(StatusCodes.Status400BadRequest)
         .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized)
@@ -37,3 +39,4 @@ public static class AssignPlanEndpoint
         .Produces<ApiResponse<object>>(StatusCodes.Status404NotFound);
     }
 }
+

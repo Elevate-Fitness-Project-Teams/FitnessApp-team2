@@ -27,6 +27,9 @@ public static class GetPlanHistoryEndpoint
             .RequireAuthorization()
             .AddEndpointFilter(new OwnershipFilter("userId"))
             .WithName("GetPlanHistory")
+            .WithTags("Plans")
+            .WithSummary("Get plan assignment audit history for a user")
+            .WithDescription("Returns paginated chronological history of all plan assignments, reassignment reasons, and metabolic snapshots.")
             .Produces<ApiResponse<PagedResult<PlanHistoryItemResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse<object>>(StatusCodes.Status403Forbidden);
@@ -35,6 +38,9 @@ public static class GetPlanHistoryEndpoint
             .RequireAuthorization()
             .AddEndpointFilter(new OwnershipFilter("userId"))
             .WithName("GetPlansHistory")
+            .WithTags("Plans")
+            .WithSummary("Get plan assignment audit history for a user (alias)")
+            .WithDescription("Alternative route to query user's plan assignment history log.")
             .Produces<ApiResponse<PagedResult<PlanHistoryItemResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse<object>>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse<object>>(StatusCodes.Status403Forbidden);
