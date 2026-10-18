@@ -122,28 +122,29 @@ public class AssignPlanOrchestratorHandler : IRequestHandler<AssignPlanOrchestra
                 return Result.Rollback(historyResult.Error ?? new Error("FCE_HISTORY_FAILED", "Failed to record plan assignment history."));
             }
 
-            return Result.Success();
-        }, cancellationToken);
+            // 6. Stage domain events in Transactional Outbox (persisted atomically with UoW commit)
+            await _publishEndpoint.Publish(new FitnessPlanAssignedEvent
+            {
+                UserId = request.UserId,
+                PlanId = planConfig.PlanId,
+                PreviousPlanId = activePlan?.PlanId,
+                Reason = effectiveReason,
+                AssignedAt = DateTime.UtcNow
+            }, cancellationToken);
 
-        if (!transactionResult.IsSuccess)
-        {
-            return Result<AssignPlanResponse>.Failure(transactionResult.Error);
-        }
-
-        // 6. Publish PlanAssignedEvent over RabbitMQ
-        try
-        {
             await _publishEndpoint.Publish(new PlanAssignedEvent
             {
                 UserId = request.UserId,
                 PlanId = planConfig.PlanId,
                 AssignedAt = DateTime.UtcNow
             }, cancellationToken);
-        }
-        catch (Exception ex)
+
+            return Result.Success();
+        }, cancellationToken);
+
+        if (!transactionResult.IsSuccess)
         {
-            _logger.LogError(ex, "Failed to publish PlanAssignedEvent for User {UserId} and Plan {PlanId}", request.UserId, planConfig.PlanId);
-            // We do not roll back the database transaction if event publishing fails; Outbox/retry handles it.
+            return Result<AssignPlanResponse>.Failure(transactionResult.Error);
         }
 
         var response = new AssignPlanResponse(

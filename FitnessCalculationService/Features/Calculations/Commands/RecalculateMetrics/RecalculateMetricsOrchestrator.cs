@@ -124,6 +124,7 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
 
         string? assignedPlanId = null;
         string? assignedPlanName = null;
+        string? previousPlanId = null;
         bool planReassigned = false;
 
         // 5. Execute atomic database update using Unit of Work
@@ -184,6 +185,7 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
 
                 var activePlanResult = await _mediator.Send(new GetActiveAssignedPlanQuery(request.UserId), cancellationToken);
                 var activePlan = activePlanResult.Value;
+                previousPlanId = activePlan?.PlanId;
 
                 // Deactivate old active plan
                 var deactivateResult = await _mediator.Send(new DeactivateActivePlanCommand(request.UserId), cancellationToken);
@@ -223,19 +225,29 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
                 planReassigned = true;
             }
 
-            return Result.Success();
-        }, cancellationToken);
-
-        if (!transactionResult.IsSuccess)
-        {
-            return Result<RecalculateMetricsResponse>.Failure(transactionResult.Error);
-        }
-
-        // 6. If plan was reassigned, broadcast PlanAssignedEvent
-        if (planReassigned && !string.IsNullOrWhiteSpace(assignedPlanId))
-        {
-            try
+            // 6. Stage domain events in Transactional Outbox (persisted atomically with UoW commit)
+            await _publishEndpoint.Publish(new FitnessMetricsRecalculatedEvent
             {
+                UserId = request.UserId,
+                Bmr = metabolicResult.Bmr,
+                Tdee = metabolicResult.Tdee,
+                CalorieTarget = metabolicResult.CalorieTarget,
+                Status = newStatus.ToString(),
+                PreviousStatus = previousStatus.ToString(),
+                CalculatedAt = DateTime.UtcNow
+            }, cancellationToken);
+
+            if (planReassigned && !string.IsNullOrWhiteSpace(assignedPlanId))
+            {
+                await _publishEndpoint.Publish(new FitnessPlanAssignedEvent
+                {
+                    UserId = request.UserId,
+                    PlanId = assignedPlanId,
+                    PreviousPlanId = previousPlanId,
+                    Reason = request.Reason ?? $"Weight update shifted status from {previousStatus} to {newStatus}",
+                    AssignedAt = DateTime.UtcNow
+                }, cancellationToken);
+
                 await _publishEndpoint.Publish(new PlanAssignedEvent
                 {
                     UserId = request.UserId,
@@ -243,10 +255,13 @@ public class RecalculateMetricsOrchestratorHandler : IRequestHandler<Recalculate
                     AssignedAt = DateTime.UtcNow
                 }, cancellationToken);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to publish PlanAssignedEvent during recalculation for User {UserId}", request.UserId);
-            }
+
+            return Result.Success();
+        }, cancellationToken);
+
+        if (!transactionResult.IsSuccess)
+        {
+            return Result<RecalculateMetricsResponse>.Failure(transactionResult.Error);
         }
 
         var response = new RecalculateMetricsResponse(

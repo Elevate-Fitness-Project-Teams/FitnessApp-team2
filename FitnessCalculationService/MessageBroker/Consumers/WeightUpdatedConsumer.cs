@@ -19,6 +19,13 @@ public class WeightUpdatedConsumer : IConsumer<WeightUpdatedEvent>
     public async Task Consume(ConsumeContext<WeightUpdatedEvent> context)
     {
         var message = context.Message;
+        using var scope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["UserId"] = message.UserId,
+            ["MessageId"] = context.MessageId ?? Guid.Empty,
+            ["CorrelationId"] = context.CorrelationId ?? Guid.Empty
+        });
+
         _logger.LogInformation(
             "Received WeightUpdatedEvent for User {UserId} with NewWeight {NewWeight} recorded at {RecordedAt}",
             message.UserId, message.NewWeight, message.RecordedAt);
@@ -36,8 +43,11 @@ public class WeightUpdatedConsumer : IConsumer<WeightUpdatedEvent>
 
         if (!result.IsSuccess)
         {
+            // Business outcome failures (e.g. FCE_METRICS_NOT_CALCULATED, VAL_INVALID_WEIGHT, FCE_STATS_NOT_FOUND)
+            // are acknowledged without retry since identical payloads will produce the same outcome.
+            // Unhandled infrastructure exceptions bubble up to trigger MassTransit's exponential retry policy.
             _logger.LogWarning(
-                "Recalculation via WeightUpdatedEvent failed for User {UserId}: {Code} - {Message}",
+                "Recalculation via WeightUpdatedEvent acknowledged with business outcome for User {UserId}: {Code} - {Message}",
                 message.UserId, result.Error?.Code, result.Error?.Message);
         }
         else
