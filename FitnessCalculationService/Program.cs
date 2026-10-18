@@ -119,11 +119,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// Asynchronous Event-Driven Messaging (MassTransit + RabbitMQ)
+// Asynchronous Event-Driven Messaging (MassTransit + RabbitMQ + Transactional Outbox/Inbox)
 builder.Services.AddMassTransit(x =>
 {
     x.SetKebabCaseEndpointNameFormatter();
     x.AddConsumer<WeightUpdatedConsumer>();
+
+    x.AddEntityFrameworkOutbox<FceDbContext>(o =>
+    {
+        o.UseSqlServer();
+        o.UseBusOutbox();
+        o.QueryDelay = TimeSpan.FromSeconds(5);
+        o.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
+    });
+
+    x.AddConfigureEndpointsCallback((ctx, name, cfg) =>
+    {
+        cfg.UseMessageRetry(r => r.Exponential(5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2)));
+        cfg.UseEntityFrameworkOutbox<FceDbContext>(ctx);
+    });
 
     x.UsingRabbitMq((context, cfg) =>
     {
