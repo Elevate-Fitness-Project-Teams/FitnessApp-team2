@@ -127,3 +127,14 @@
 - [x] Single-file class isolation across all DTOs and orchestrators
 - [x] Verify build: `dotnet build -c Release` (0 warnings, 0 errors)
 
+---
+
+## Phase 8: Verification & Acceptance
+- [x] Create comprehensive in-service unit test suite under `FitnessCalculationService/Tests/`:
+  - [x] Domain engine tests (`MetabolicCalculatorBmrTests`, `MetabolicCalculatorTdeeTests`, `MetabolicCalculatorTargetTests`, `MetabolicCalculatorStatusTests`, `MetabolicCalculatorWorkedExampleTests`)
+  - [x] CQRS Command validator tests (`SubmitFitnessStatsCommandValidatorTests`, `CalculateFitnessMetricsCommandValidatorTests`, `CreateAssignedPlanCommandValidatorTests`, `DeactivateActivePlanCommandValidatorTests`, `AppendPlanHistoryCommandValidatorTests`, `RecalculateMetricsOrchestratorValidatorTests`)
+  - [x] Redis caching tests (`RedisCacheServiceTests`, `TestDistributedCache`, `FaultyDistributedCache`)
+- [x] Verify all 53 unit tests pass (`dotnet test`)
+- [x] Verify complete solution build gate (`dotnet build FitnessApp.slnx -c Release` with 0 errors)
+
+
