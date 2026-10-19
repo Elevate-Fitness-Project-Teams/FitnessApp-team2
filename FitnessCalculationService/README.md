@@ -2,7 +2,7 @@
 
 > **Microservice:** `FitnessCalculationService`  
 > **Framework:** .NET 9.0 (ASP.NET Core Web API + gRPC)  
-> **Architecture Pattern:** CQRS with Orchestrators & Unit of Work (Transaction Savepoints)  
+> **Architecture Pattern:** CQRS with Orchestrators & Unit of Work (Transaction Savepoints) & Vertical Slicing   
 > **Data & Messaging:** SQL Server 2022 (EF Core 9) + MassTransit 8.5 (RabbitMQ) + Redis 7 (StackExchange)  
 > **Security:** RS256 Asymmetric JWT Authentication with Custom Claims & Resource Ownership Validation  
 
