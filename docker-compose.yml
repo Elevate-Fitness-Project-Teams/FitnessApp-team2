@@ -131,3 +131,24 @@ services:
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+
+  apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: ApiGateway/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+    depends_on:
+      - authenticationservice
+      - fitnesscalculationservice
+      - nutritionservice
+      - progresstrackingservice
+      - userprofileservice
+      - workoutservice
