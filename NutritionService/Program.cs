@@ -46,7 +46,42 @@ builder.Services.AddHttpClient("FitnessCalculationService", client =>
 builder.Services.AddScoped<IFceHttpClient, FceHttpClient>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        var scheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "Enter JWT Bearer token format: Bearer {token}",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        };
+
+        document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
+        document.Components.SecuritySchemes.Add("Bearer", scheme);
+
+        var requirement = new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        };
+
+        document.SecurityRequirements.Add(requirement);
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddHealthChecks();
 
 // Bind the "ServiceUrls" section from appsettings.json to the ServiceUrls class
@@ -97,18 +132,28 @@ catch (Exception e)
     logger.LogError(e, "An error occurred while migrating the database.");
 }
 
+// Seed baseline nutrition recipes and meal plans for development and testing
+await NutritionDbSeeder.SeedAsync(app.Services);
+
 #endregion
-
-
-
-
 
 // Configure the HTTP request pipeline.
 app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    options.RoutePrefix = "swagger";
+});
+app.MapGet("/", () => Results.Redirect("/swagger"));
+
 app.MapHealthChecks("/health");
 
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-app.UseHttpsRedirection();
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();
