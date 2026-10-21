@@ -94,7 +94,42 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddGrpc();
 
 // OpenAPI & Health Checks
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        var scheme = new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Description = "Enter JWT Bearer token format: Bearer {token}",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT"
+        };
+
+        document.Components ??= new Microsoft.OpenApi.Models.OpenApiComponents();
+        document.Components.SecuritySchemes.Add("Bearer", scheme);
+
+        var requirement = new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        };
+
+        document.SecurityRequirements.Add(requirement);
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddHealthChecks();
 
 // RS256 JWT Authentication with Public Key
@@ -194,6 +229,12 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseSerilogRequestLogging();
 
 app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    options.RoutePrefix = "swagger";
+});
+app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapHealthChecks("/health");
 
 if (!app.Environment.IsDevelopment())
@@ -235,6 +276,9 @@ using (var scope = app.Services.CreateScope())
             logger.LogInformation("Applying pending EF Core database migrations (Attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
             await dbContext.Database.MigrateAsync();
             logger.LogInformation("Database migrations applied successfully.");
+
+            // Seed baseline test stats and active plan for development and testing
+            await FitnessCalculationService.Persistence.Seed.FitnessCalculationDbSeeder.SeedAsync(app.Services);
             break;
         }
         catch (Exception ex) when (attempt < maxRetries)
