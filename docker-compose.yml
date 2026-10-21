@@ -45,11 +45,22 @@ services:
     ports:
       - "8089:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthenticationDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
       - Jwt__PrivateKeyPath=/app/keys/auth-service-private.pem
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys:/app/keys:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   fitnesscalculationservice:
     image: ${DOCKER_REGISTRY-}fitnesscalculationservice
@@ -57,11 +68,12 @@ services:
       context: .
       dockerfile: FitnessCalculationService/Dockerfile
     environment:
-      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
-      - Jwt__KeyId=elevate-fitness-key-1
+      - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=FitnessCalculationDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
       - RabbitMq__Host=rabbitmq
       - Redis__ConnectionString=redis:6379
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:
@@ -82,10 +94,16 @@ services:
     ports:
       - "8081:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=NutritionDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - ServiceUrls__FitnessCalculationService=http://fitnesscalculationservice:8080
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
 
   progresstrackingservice:
     image: ${DOCKER_REGISTRY-}progresstrackingservice
@@ -93,9 +111,15 @@ services:
       context: .
       dockerfile: ProgressTrackingService/Dockerfile
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=ProgressTrackingDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+      - WorkoutService__BaseUrl=http://workoutservice:8080
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
-      - WorkoutService__BaseUrl=http://workoutservice:8080
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     ports:
@@ -114,10 +138,21 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=UserProfileDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__VirtualHost=/
+      - RabbitMQ__Username=guest
+      - RabbitMQ__Password=guest
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
 
   workoutservice:
     image: ${DOCKER_REGISTRY-}workoutservice
@@ -127,10 +162,15 @@ services:
     ports:
       - "8085:8080"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=WorkoutDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+    depends_on:
+      sqlserver:
+        condition: service_healthy
 
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
