@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Database;
+using ProgressTrackingService.Common.Errors;
 using ProgressTrackingService.Models;
 
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
@@ -32,7 +33,8 @@ public class GetUserStatisticsQueryHandler : IRequestHandler<GetUserStatisticsQu
             
         if (result is null)
         {
-            return Result<UserStatisticDto?>.Failure(Error.NotFound("USER_STATISTICS_NOT_FOUND", "User statistics not found"));
+            return Result<UserStatisticDto?>.Failure(
+                Error.NotFound(ProgressErrors.ResUserNotFound, "User statistics not found."));
         }
             
         return Result<UserStatisticDto?>.Success(result);

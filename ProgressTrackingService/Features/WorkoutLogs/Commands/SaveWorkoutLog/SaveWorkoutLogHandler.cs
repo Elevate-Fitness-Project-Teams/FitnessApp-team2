@@ -25,7 +25,9 @@ public class SaveWorkoutLogHandler : IRequestHandler<SaveWorkoutLogCommand, Resu
             CompletedAt = request.CompletedAt,
             DurationInMinutes = request.Duration,
             CaloriesBurned = request.CaloriesBurned,
-            Difficulty = Enum.Parse<WorkoutDifficulty>(request.Difficulty, true),
+            Difficulty = Enum.TryParse<WorkoutDifficulty>(request.Difficulty, true, out var parsedDifficulty)
+                ? parsedDifficulty
+                : WorkoutDifficulty.Beginner,
             Notes = request.Notes,
             Rating = request.Rating,
             Exercises = request.ExercisesCompleted.Select(e => new WorkoutLogExercise

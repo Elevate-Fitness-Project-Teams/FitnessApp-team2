@@ -84,7 +84,12 @@ public class LogWorkoutOrchestratorHandler : IRequestHandler<LogWorkoutOrchestra
             }
 
             await _mediator.Send(
-                new UpdateStatisticCommand { UserId = request.UserId, CaloriesBurned = request.CaloriesBurned },
+                new UpdateStatisticCommand
+                {
+                    UserId = request.UserId,
+                    CaloriesBurned = request.CaloriesBurned,
+                    DurationInMinutes = request.Duration
+                },
                 cancellationToken);
 
             await _mediator.Send(new UpdateStreakCommand { UserId = request.UserId, CompletedAt = request.CompletedAt },

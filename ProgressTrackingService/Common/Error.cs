@@ -7,7 +7,8 @@ public enum ErrorType
     NotFound,
     Conflict,
     Unauthorized,
-    Forbidden
+    Forbidden,
+    Unavailable
 }
 
 public class Error
@@ -41,5 +42,20 @@ public class Error
     public static Error Conflict(string code, string description)
     {
         return new Error(code, description, ErrorType.Conflict);
+    }
+
+    public static Error Unauthorized(string code, string description)
+    {
+        return new Error(code, description, ErrorType.Unauthorized);
+    }
+
+    public static Error Forbidden(string code, string description)
+    {
+        return new Error(code, description, ErrorType.Forbidden);
+    }
+
+    public static Error Unavailable(string code, string description)
+    {
+        return new Error(code, description, ErrorType.Unavailable);
     }
 }

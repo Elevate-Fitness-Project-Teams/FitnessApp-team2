@@ -9,11 +9,14 @@ public class StreakConfiguration : IEntityTypeConfiguration<Streak>
     public void Configure(EntityTypeBuilder<Streak> builder)
     {
         builder.HasKey(x => x.UserId);
-        
+
         builder.Property(x => x.CurrentStreak)
             .HasDefaultValue(0);
-            
+
         builder.Property(x => x.LongestStreak)
             .HasDefaultValue(0);
+
+        builder.Property(x => x.RowVersion)
+            .IsRowVersion();
     }
 }

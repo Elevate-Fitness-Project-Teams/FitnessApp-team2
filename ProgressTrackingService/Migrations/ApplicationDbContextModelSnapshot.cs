@@ -17,7 +17,7 @@ namespace ProgressTrackingService.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.0")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -198,6 +198,16 @@ namespace ProgressTrackingService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CriteriaType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -213,10 +223,13 @@ namespace ProgressTrackingService.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<double>("Threshold")
+                        .HasColumnType("float");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Achievements");
                 });
@@ -277,6 +290,11 @@ namespace ProgressTrackingService.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.HasKey("UserId");
 
                     b.ToTable("Streaks");
@@ -303,7 +321,27 @@ namespace ProgressTrackingService.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("UserId", "AchievementId")
+                        .IsUnique();
+
                     b.ToTable("UserAchievements");
+                });
+
+            modelBuilder.Entity("ProgressTrackingService.Models.UserBiometrics", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("HeightCm")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("UserBiometrics");
                 });
 
             modelBuilder.Entity("ProgressTrackingService.Models.UserStatistic", b =>
@@ -312,7 +350,22 @@ namespace ProgressTrackingService.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<double>("CurrentWeight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(0.0);
+
+                    b.Property<double>("InitialWeight")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(0.0);
+
                     b.Property<int>("TotalCaloriesBurned")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("TotalMinutes")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
@@ -358,6 +411,8 @@ namespace ProgressTrackingService.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("UserId", "Date");
+
                     b.ToTable("WeightHistories");
                 });
 
@@ -400,9 +455,12 @@ namespace ProgressTrackingService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SessionId");
+                    b.HasIndex("SessionId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "CompletedAt");
 
                     b.ToTable("WorkoutLogs");
                 });
@@ -436,29 +494,6 @@ namespace ProgressTrackingService.Migrations
                     b.HasIndex("WorkoutLogId");
 
                     b.ToTable("WorkoutLogExercises");
-                });
-
-            modelBuilder.Entity("ProgressTrackingService.Models.WorkoutSession", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("WorkoutId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WorkoutSessions");
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>

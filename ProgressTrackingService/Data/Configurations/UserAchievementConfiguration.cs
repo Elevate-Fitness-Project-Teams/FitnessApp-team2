@@ -9,9 +9,12 @@ public class UserAchievementConfiguration : IEntityTypeConfiguration<UserAchieve
     public void Configure(EntityTypeBuilder<UserAchievement> builder)
     {
         builder.HasKey(x => x.Id);
-        
+
         builder.HasIndex(x => x.UserId);
-        
+
+        builder.HasIndex(x => new { x.UserId, x.AchievementId })
+            .IsUnique();
+
         builder.HasOne(x => x.Achievement)
             .WithMany()
             .HasForeignKey(x => x.AchievementId)

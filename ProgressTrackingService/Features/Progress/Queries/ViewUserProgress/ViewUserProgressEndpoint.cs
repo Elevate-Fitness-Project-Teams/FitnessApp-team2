@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProgressTrackingService.Common;
+using ProgressTrackingService.Common.Errors;
 using ProgressTrackingService.Common.Extensions;
 using System.Security.Claims;
 
@@ -20,28 +21,23 @@ public static class ViewUserProgressEndpoint
             var callerIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(callerIdStr) || !Guid.TryParse(callerIdStr, out var callerId))
             {
-                return Results.Unauthorized();
+                return Results.Json(
+                    ApiResponse<object?>.Failure(new[] { ProgressErrors.AuthTokenInvalid }, "Unauthorized.", 401),
+                    statusCode: 401);
             }
 
-            // Since only the user can view their own progress, let's enforce authorization (caller == userId)
-            // Or if an admin role exists. For now, assuming caller must match userId for basic auth logic.
-            // If the criteria implies any authenticated user can view, we just proceed.
-            // The story says: "Role: Authenticated. Given userId exists and the caller is authorized to view it."
-            // So we'll enforce callerId == userId for authorization.
-            if (callerId != userId)
+            var isAdmin = httpContext.User.IsInRole("Admin");
+            if (callerId != userId && !isAdmin)
             {
-                return Results.Forbid();
+                return Results.Json(
+                    ApiResponse<object?>.Failure(new[] { ProgressErrors.PermForbidden }, "You are not authorized to view this user's progress.", 403),
+                    statusCode: 403);
             }
 
             var query = new ViewUserProgressOrchestrator(userId);
             var result = await sender.Send(query);
 
-            if (!result.IsSuccess)
-            {
-                return result.ToHttpResult();
-            }
-
-            return Results.Ok(ApiResponse<ViewUserProgressResponse>.Success(result.Value));
+            return result.ToHttpResult();
         })
         .RequireAuthorization()
         .WithName("ViewUserProgress")
