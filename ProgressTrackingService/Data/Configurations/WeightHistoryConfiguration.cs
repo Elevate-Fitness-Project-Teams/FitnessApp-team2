@@ -9,9 +9,11 @@ public class WeightHistoryConfiguration : IEntityTypeConfiguration<WeightHistory
     public void Configure(EntityTypeBuilder<WeightHistory> builder)
     {
         builder.HasKey(x => x.Id);
-        
+
         builder.HasIndex(x => x.UserId);
-        
+
+        builder.HasIndex(x => new { x.UserId, x.Date });
+
         builder.Property(x => x.Notes)
             .HasMaxLength(500);
     }

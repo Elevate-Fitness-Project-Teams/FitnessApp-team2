@@ -9,4 +9,5 @@ public class Streak
     public int CurrentStreak { get; set; }
     public int LongestStreak { get; set; }
     public DateTime? LastWorkoutDate { get; set; }
+    public byte[]? RowVersion { get; set; }
 }

@@ -11,7 +11,6 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<WorkoutSession> WorkoutSessions => Set<WorkoutSession>();
     public DbSet<WorkoutLog> WorkoutLogs => Set<WorkoutLog>();
     public DbSet<WorkoutLogExercise> WorkoutLogExercises => Set<WorkoutLogExercise>();
     public DbSet<WeightHistory> WeightHistories => Set<WeightHistory>();
@@ -20,6 +19,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
     public DbSet<Streak> Streaks => Set<Streak>();
     public DbSet<UserStatistic> UserStatistics => Set<UserStatistic>();
+    public DbSet<UserBiometrics> UserBiometrics => Set<UserBiometrics>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
