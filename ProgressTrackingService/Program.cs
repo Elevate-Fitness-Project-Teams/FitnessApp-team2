@@ -73,6 +73,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "pts:";
 });
 builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+builder.Services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
 builder.Services.AddHttpClient("WorkoutService", client =>
 {
