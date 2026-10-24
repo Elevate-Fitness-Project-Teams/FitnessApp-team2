@@ -118,6 +118,7 @@ services:
       - RabbitMq__Username=guest
       - RabbitMq__Password=guest
       - WorkoutService__BaseUrl=http://workoutservice:8080
+      - Redis__ConnectionString=redis:6379
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
     volumes:
@@ -129,6 +130,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+      redis:
+        condition: service_healthy
 
   userprofileservice:
     image: ${DOCKER_REGISTRY-}userprofileservice

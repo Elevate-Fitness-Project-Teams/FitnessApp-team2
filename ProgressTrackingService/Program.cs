@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Common.Behaviors;
+using ProgressTrackingService.Common.Caching;
 using ProgressTrackingService.Common.Database;
 using ProgressTrackingService.Data;
 using System.Security.Cryptography;
@@ -64,6 +65,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGeneralRepo<>), typeof(GeneralRepo<>));
+
+// Redis Distributed Caching Layer
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.InstanceName = "pts:";
+});
+builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+builder.Services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
 builder.Services.AddHttpClient("WorkoutService", client =>
 {
