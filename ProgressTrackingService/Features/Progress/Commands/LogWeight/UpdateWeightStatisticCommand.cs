@@ -6,11 +6,7 @@ using ProgressTrackingService.Models;
 
 namespace ProgressTrackingService.Features.Progress.Commands.LogWeight;
 
-public class UpdateWeightStatisticCommand : IRequest<Result>
-{
-    public Guid UserId { get; set; }
-    public double WeightDifference { get; set; }
-}
+public record UpdateWeightStatisticCommand(Guid UserId, double InitialWeight, double CurrentWeight) : IRequest<Result>;
 
 public class UpdateWeightStatisticHandler : IRequestHandler<UpdateWeightStatisticCommand, Result>
 {
@@ -25,39 +21,34 @@ public class UpdateWeightStatisticHandler : IRequestHandler<UpdateWeightStatisti
 
     public async Task<Result> Handle(UpdateWeightStatisticCommand request, CancellationToken cancellationToken)
     {
-        return await _unitOfWork.ExecuteAsync(async() =>
+        return await _unitOfWork.ExecuteAsync(async () =>
         {
-			var currentWeightLost = await _statisticRepo.Find(s => s.UserId == request.UserId)
-		   .Select(s => (double?)s.TotalWeightLost)
-		   .FirstOrDefaultAsync(cancellationToken);
+            var totalLost = Math.Max(0.0, Math.Round(request.InitialWeight - request.CurrentWeight, 2));
 
-			double newTotalWeightLost = 0;
+            var updated = await _statisticRepo.Find(s => s.UserId == request.UserId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(p => p.InitialWeight, request.InitialWeight)
+                    .SetProperty(p => p.CurrentWeight, request.CurrentWeight)
+                    .SetProperty(p => p.TotalWeightLost, totalLost)
+                    .SetProperty(p => p.UpdatedAt, DateTime.UtcNow), cancellationToken);
 
-			if (currentWeightLost.HasValue)
-			{
-				newTotalWeightLost = currentWeightLost.Value - request.WeightDifference;
-				await _statisticRepo.Find(s => s.UserId == request.UserId)
-					.ExecuteUpdateAsync(s => s
-						.SetProperty(p => p.TotalWeightLost, newTotalWeightLost)
-						.SetProperty(p => p.UpdatedAt, DateTime.UtcNow), cancellationToken);
-			}
-			else
-			{
-				newTotalWeightLost = request.WeightDifference < 0 ? Math.Abs(request.WeightDifference) : 0;
-				var stats = new UserStatistic
-				{
-					UserId = request.UserId,
-					TotalWorkouts = 0,
-					TotalCaloriesBurned = 0,
-					TotalWeightLost = newTotalWeightLost,
-					UpdatedAt = DateTime.UtcNow
-				};
-				await _statisticRepo.AddAsync(stats, cancellationToken);
-			}
+            if (updated == 0)
+            {
+                var stats = new UserStatistic
+                {
+                    UserId = request.UserId,
+                    TotalWorkouts = 0,
+                    TotalCaloriesBurned = 0,
+                    TotalMinutes = 0,
+                    InitialWeight = request.InitialWeight,
+                    CurrentWeight = request.CurrentWeight,
+                    TotalWeightLost = totalLost,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                await _statisticRepo.AddAsync(stats, cancellationToken);
+            }
 
-			return Result.Success();
-
-		},cancellationToken);
-       
+            return Result.Success();
+        }, cancellationToken);
     }
 }

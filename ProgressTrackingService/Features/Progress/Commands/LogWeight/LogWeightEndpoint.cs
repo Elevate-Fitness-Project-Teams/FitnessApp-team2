@@ -38,7 +38,9 @@ public static class LogWeightEndpoint
 				return result.ToHttpResult();
 			}
 
-			return result.ToHttpResult();
+			return Results.Created(
+				$"/api/v1/progress/weight/{result.Value.Id}",
+				ApiResponse<LogWeightResponse>.Success(result.Value));
 		})
 		.RequireAuthorization()
 		.WithName("LogWeight")

@@ -20,8 +20,14 @@ public class LogWeightOrchestratorValidator : AbstractValidator<LogWeightOrchest
         RuleFor(x => x.Date)
             .NotEmpty()
             .WithErrorCode(ProgressErrors.ValRequiredField)
-            .Must(date => date <= DateTime.UtcNow.AddMinutes(5))
+            .Must(date => date >= new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc) && date <= DateTime.UtcNow.AddMinutes(5))
             .WithErrorCode(ProgressErrors.ValInvalidDate)
-            .WithMessage("Date cannot be in the future.");
+            .WithMessage("Date must be between year 2000 and present.");
+
+        RuleFor(x => x.Notes)
+            .MaximumLength(500)
+            .When(x => !string.IsNullOrEmpty(x.Notes))
+            .WithErrorCode(ProgressErrors.ValRequiredField)
+            .WithMessage("Notes cannot exceed 500 characters.");
     }
 }

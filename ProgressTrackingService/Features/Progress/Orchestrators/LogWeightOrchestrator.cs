@@ -2,74 +2,111 @@ using MassTransit;
 using MediatR;
 using MessageBroker.Events;
 using ProgressTrackingService.Common;
-using ProgressTrackingService.Common.Database;
+using ProgressTrackingService.Common.Caching;
+using ProgressTrackingService.Common.Domain;
+using ProgressTrackingService.Features.Achievements.Orchestrators.EvaluateAchievements;
+using ProgressTrackingService.Features.Biometrics.Queries.GetUserHeight;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
-using ProgressTrackingService.Features.Progress.Queries.GetPreviousWeight;
+using ProgressTrackingService.Features.Progress.Queries.GetWeightBeforeDate;
+using ProgressTrackingService.Features.Progress.Queries.GetWeightBounds;
 
 namespace ProgressTrackingService.Features.Progress.Orchestrators;
 
 public record LogWeightOrchestrator(Guid UserId, double Weight, DateTime Date, string? Notes)
-    : IRequest<Result>;
+    : IRequest<Result<LogWeightResponse>>;
 
-public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrator, Result>
+public class LogWeightOrchestratorHandler : IRequestHandler<LogWeightOrchestrator, Result<LogWeightResponse>>
 {
     private readonly IMediator _mediator;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICacheInvalidator _cacheInvalidator;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly ILogger<LogWeightOrchestratorHandler> _logger;
 
-    public LogWeightOrchestratorHandler(IMediator mediator, IUnitOfWork unitOfWork, IPublishEndpoint publishEndpoint)
+    public LogWeightOrchestratorHandler(
+        IMediator mediator,
+        ICacheInvalidator cacheInvalidator,
+        IPublishEndpoint publishEndpoint,
+        ILogger<LogWeightOrchestratorHandler> logger)
     {
         _mediator = mediator;
-        _unitOfWork = unitOfWork;
+        _cacheInvalidator = cacheInvalidator;
         _publishEndpoint = publishEndpoint;
+        _logger = logger;
     }
 
-    public async Task<Result> Handle(LogWeightOrchestrator request, CancellationToken cancellationToken)
+    public async Task<Result<LogWeightResponse>> Handle(LogWeightOrchestrator request, CancellationToken cancellationToken)
     {
-        return await _unitOfWork.ExecuteAsync(async () =>
+        // 1. Get previous weight chronologically before this entry's date
+        var prevWeightResult = await _mediator.Send(
+            new GetWeightBeforeDateQuery(request.UserId, request.Date),
+            cancellationToken);
+
+        var previousWeight = prevWeightResult.Value;
+        var diffFromPrevious = previousWeight.HasValue
+            ? Math.Round(request.Weight - previousWeight.Value, 2)
+            : 0.0;
+
+        // 2. Save weight entry
+        var saveResult = await _mediator.Send(new SaveWeightEntryCommand
         {
-            // 1. Get previous weight
-            var previousWeightResult = await _mediator.Send(new GetPreviousWeightQuery(request.UserId), cancellationToken);
-            double previousWeight = previousWeightResult.Value ?? request.Weight;
+            UserId = request.UserId,
+            Weight = request.Weight,
+            Date = request.Date,
+            Notes = request.Notes
+        }, cancellationToken);
 
-            // 2. Compute difference
-            double differenceFromPrevious = previousWeightResult.Value.HasValue
-                ? request.Weight - previousWeight
-                : 0;
+        if (!saveResult.IsSuccess)
+        {
+            return Result.Failure<LogWeightResponse>(saveResult.Error);
+        }
 
-            // 3. Save weight entry
-            var saveResult = await _mediator.Send(new SaveWeightEntryCommand
-            {
-                UserId = request.UserId,
-                Weight = request.Weight,
-                Date = request.Date,
-                Notes = request.Notes
-            }, cancellationToken);
+        // 3. Compute weight bounds (initial, latest, isLatest)
+        var boundsResult = await _mediator.Send(
+            new GetWeightBoundsQuery(request.UserId, request.Date),
+            cancellationToken);
 
-            if (!saveResult.IsSuccess)
-                return Result.Failure(saveResult.Error);
+        var bounds = boundsResult.Value;
 
+        // 4. Update user statistics
+        await _mediator.Send(
+            new UpdateWeightStatisticCommand(request.UserId, bounds.InitialWeight, bounds.LatestWeight),
+            cancellationToken);
 
-            // 4. Update stats
-            var statsResult = await _mediator.Send(new UpdateWeightStatisticCommand
-            {
-                UserId = request.UserId,
-                WeightDifference = differenceFromPrevious
-            }, cancellationToken);
+        // 5. Evaluate achievements (e.g. WEIGHT_LOST_1, WEIGHT_LOST_5)
+        await _mediator.Send(
+            new EvaluateAchievementsOrchestrator(request.UserId, request.Date),
+            cancellationToken);
 
-            if (!statsResult.IsSuccess)
-                return Result.Failure(statsResult.Error);
-
-
-            // 5. Publish event via Outbox
+        // 6. If this entry is chronologically the latest, publish WeightUpdatedEvent to FCE
+        if (bounds.IsNewEntryLatest)
+        {
             await _publishEndpoint.Publish(new WeightUpdatedEvent
             {
                 UserId = request.UserId,
                 NewWeight = request.Weight,
                 RecordedAt = request.Date
             }, cancellationToken);
+        }
 
-            return Result.Success();
-        }, cancellationToken);
+        // 7. Get user height to derive BMI
+        var heightResult = await _mediator.Send(new GetUserHeightQuery(request.UserId), cancellationToken);
+        var bmi = BmiCalculator.Calculate(request.Weight, heightResult.Value);
+
+        var totalWeightLost = Math.Max(0.0, Math.Round(bounds.InitialWeight - bounds.LatestWeight, 2));
+
+        // 8. Post-commit cache invalidation
+        await _cacheInvalidator.InvalidateUserAsync(request.UserId, cancellationToken);
+
+        var response = new LogWeightResponse(
+            saveResult.Value,
+            request.Weight,
+            bmi,
+            diffFromPrevious,
+            totalWeightLost);
+
+        _logger.LogInformation("Weight logged successfully for user {UserId}: {Weight} kg, diff={Diff}, lost={Lost}",
+            request.UserId, request.Weight, diffFromPrevious, totalWeightLost);
+
+        return Result.Success(response);
     }
 }
