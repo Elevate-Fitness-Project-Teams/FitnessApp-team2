@@ -15,7 +15,7 @@ public static class LogWorkoutEndpoint
         app.MapPost("/api/v1/progress/workouts", async (
             [FromBody] LogWorkoutRequest request,
             HttpContext httpContext,
-            ISender sender) =>
+            IMediator mediator) =>
         {
             var userIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
@@ -46,7 +46,7 @@ public static class LogWorkoutEndpoint
                 authHeader
             );
 
-            var result = await sender.Send(orchestrator);
+            var result = await mediator.Send(orchestrator);
 
             if (!result.IsSuccess)
             {

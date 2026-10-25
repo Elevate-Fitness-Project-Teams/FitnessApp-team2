@@ -16,7 +16,7 @@ public static class ViewUserProgressEndpoint
         app.MapGet("/api/v1/progress/{userId:guid}", async (
             [FromRoute] Guid userId,
             HttpContext httpContext,
-            ISender sender) =>
+            IMediator mediator) =>
         {
             var callerIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(callerIdStr) || !Guid.TryParse(callerIdStr, out var callerId))
@@ -35,7 +35,7 @@ public static class ViewUserProgressEndpoint
             }
 
             var query = new ViewUserProgressOrchestrator(userId);
-            var result = await sender.Send(query);
+            var result = await mediator.Send(query);
 
             return result.ToHttpResult();
         })
