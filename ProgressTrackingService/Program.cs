@@ -33,6 +33,7 @@ builder.Services.AddMassTransit(x =>
 {
     x.SetKebabCaseEndpointNameFormatter();
     x.AddConsumer<UserRegisteredConsumer>();
+    x.AddConsumer<FitnessStatsSubmittedConsumer>();
 
     x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
     {
