@@ -5,6 +5,7 @@ using MediatR;
 using ProgressTrackingService.Common;
 using System.Security.Claims;
 using ProgressTrackingService.Common.Extensions;
+using ProgressTrackingService.Common.Security;
 using ProgressTrackingService.Features.WorkoutLogs.DTOs;
 
 namespace ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
@@ -18,14 +19,14 @@ public static class LogWorkoutEndpoint
             HttpContext httpContext,
             IMediator mediator) =>
         {
-            var userIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
+            var userId = httpContext.GetUserId();
+            if (!userId.HasValue)
             {
                 return Results.Unauthorized();
             }
 
             var orchestrator = new LogWorkoutOrchestrator(
-                userId,
+                userId.Value,
                 request.WorkoutId,
                 request.SessionId,
                 request.CompletedAt,
