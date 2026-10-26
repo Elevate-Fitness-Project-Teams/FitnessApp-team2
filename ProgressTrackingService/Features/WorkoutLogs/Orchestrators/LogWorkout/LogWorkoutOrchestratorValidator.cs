@@ -51,5 +51,23 @@ public class LogWorkoutOrchestratorValidator : AbstractValidator<LogWorkoutOrche
             .Must(date => date <= DateTime.UtcNow.AddMinutes(5))
             .WithErrorCode(ProgressErrors.ValInvalidDate)
             .WithMessage("CompletedAt cannot be in the future.");
+
+        RuleForEach(x => x.ExercisesCompleted).ChildRules(ex =>
+        {
+            ex.RuleFor(e => e.ExerciseId)
+                .NotEmpty()
+                .WithErrorCode(ProgressErrors.ValRequiredField)
+                .WithMessage("ExerciseId is required.");
+
+            ex.RuleFor(e => e.Sets)
+                .GreaterThanOrEqualTo(0)
+                .WithErrorCode(ProgressErrors.ValRequiredField)
+                .WithMessage("Sets must be non-negative.");
+
+            ex.RuleFor(e => e.Reps)
+                .GreaterThanOrEqualTo(0)
+                .WithErrorCode(ProgressErrors.ValRequiredField)
+                .WithMessage("Reps must be non-negative.");
+        });
     }
 }
