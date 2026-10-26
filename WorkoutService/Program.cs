@@ -25,6 +25,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(WorkoutService.Common.Behaviors.ValidationBehavior<,>));
 });
 
+builder.Services.AddGrpc();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>
 {
@@ -134,6 +136,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<WorkoutService.GrpcServices.WorkoutSessionGrpcServiceImpl>();
 
 app.Run();
 

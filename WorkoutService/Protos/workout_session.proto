@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package workout;
+option csharp_namespace = "WorkoutService.Grpc";
+
+service WorkoutSessionGrpcService {
+  rpc CompleteSession (CompleteSessionGrpcRequest) returns (CompleteSessionGrpcResponse);
+}
+
+message CompleteSessionGrpcRequest {
+  string session_id = 1;
+  string user_id = 2;
+}
+
+message CompleteSessionGrpcResponse {
+  bool is_success = 1;
+  string error_code = 2;
+  string error_message = 3;
+}
