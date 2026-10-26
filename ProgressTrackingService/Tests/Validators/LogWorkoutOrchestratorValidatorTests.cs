@@ -21,8 +21,7 @@ public class LogWorkoutOrchestratorValidatorTests
             "Intermediate",
             "Great workout",
             4,
-            new List<LogWorkoutExerciseDto>(),
-            "Bearer token"
+            new List<LogWorkoutExerciseDto>()
         );
 
         var result = _validator.Validate(command);
@@ -43,8 +42,7 @@ public class LogWorkoutOrchestratorValidatorTests
             "Intermediate",
             null,
             4,
-            new List<LogWorkoutExerciseDto>(),
-            ""
+            new List<LogWorkoutExerciseDto>()
         );
 
         var result = _validator.Validate(command);
@@ -66,8 +64,7 @@ public class LogWorkoutOrchestratorValidatorTests
             "SuperSaiyanMode", // Not a valid enum
             null,
             4,
-            new List<LogWorkoutExerciseDto>(),
-            ""
+            new List<LogWorkoutExerciseDto>()
         );
 
         var result = _validator.Validate(command);
@@ -91,8 +88,7 @@ public class LogWorkoutOrchestratorValidatorTests
             "Beginner",
             null,
             rating,
-            new List<LogWorkoutExerciseDto>(),
-            ""
+            new List<LogWorkoutExerciseDto>()
         );
 
         var result = _validator.Validate(command);
@@ -114,8 +110,7 @@ public class LogWorkoutOrchestratorValidatorTests
             "Beginner",
             null,
             4,
-            new List<LogWorkoutExerciseDto>(),
-            ""
+            new List<LogWorkoutExerciseDto>()
         );
 
         var result = _validator.Validate(command);

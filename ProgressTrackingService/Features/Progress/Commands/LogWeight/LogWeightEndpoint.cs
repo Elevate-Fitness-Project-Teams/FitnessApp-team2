@@ -16,7 +16,7 @@ public static class LogWeightEndpoint
 		_ = app.MapPost("/api/v1/progress/weight", async (
 			[FromBody] LogWeightRequest request,
 			HttpContext httpContext,
-			ISender sender) =>
+			IMediator mediator) =>
 		{
 			var userIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
@@ -31,14 +31,16 @@ public static class LogWeightEndpoint
 				request.Notes
 			);
 
-			var result = await sender.Send(orchestrator);
+			var result = await mediator.Send(orchestrator);
 
 			if (!result.IsSuccess)
 			{
 				return result.ToHttpResult();
 			}
 
-			return result.ToHttpResult();
+			return Results.Created(
+				$"/api/v1/progress/weight/{result.Value.Id}",
+				ApiResponse<LogWeightResponse>.Success(result.Value));
 		})
 		.RequireAuthorization()
 		.WithName("LogWeight")

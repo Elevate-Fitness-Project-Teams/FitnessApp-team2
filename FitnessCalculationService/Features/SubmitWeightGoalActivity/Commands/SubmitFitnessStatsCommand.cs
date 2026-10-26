@@ -4,6 +4,7 @@ using FitnessCalculationService.Domain.Enums;
 using FitnessCalculationService.Persistence;
 using FitnessCalculationService.Persistence.Repositories;
 using MediatR;
+using MessageBroker.Events;
 
 namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
 {
@@ -23,11 +24,16 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
     {
         private readonly IUnitOfWork _uow;
         private readonly IGenericRepository<UserFitnessStats> _repo;
+        private readonly MassTransit.IPublishEndpoint _publishEndpoint;
 
-        public SubmitFitnessStatsCommandHandler(IUnitOfWork uow, IGenericRepository<UserFitnessStats> repo)
+        public SubmitFitnessStatsCommandHandler(
+            IUnitOfWork uow,
+            IGenericRepository<UserFitnessStats> repo,
+            MassTransit.IPublishEndpoint publishEndpoint)
         {
             _uow = uow;
             _repo = repo;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<Result<Guid>> Handle(SubmitFitnessStatsCommand request, CancellationToken cancellationToken)
@@ -50,6 +56,14 @@ namespace FitnessCalculationService.Features.SubmitWeightGoalActivity.Commands
                 };
 
                 await _repo.AddAsync(newStats, cancellationToken);
+
+                await _publishEndpoint.Publish(new FitnessStatsSubmittedEvent
+                {
+                    UserId = request.UserId,
+                    HeightCm = request.Height,
+                    WeightKg = request.Weight,
+                    RecordedAt = newStats.RecordedAt
+                }, cancellationToken);
 
                 return Result<Guid>.Success(newStats.Id);
             }, cancellationToken);

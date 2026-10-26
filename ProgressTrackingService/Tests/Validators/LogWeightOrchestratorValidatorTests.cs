@@ -57,4 +57,36 @@ public class LogWeightOrchestratorValidatorTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.ErrorCode == ProgressErrors.ValInvalidDate);
     }
+
+    [Fact]
+    public void Validate_WhenDateBeforeYear2000_FailsWithValInvalidDate()
+    {
+        var command = new LogWeightOrchestrator(
+            Guid.NewGuid(),
+            75.0,
+            new DateTime(1999, 12, 31, 0, 0, 0, DateTimeKind.Utc),
+            null
+        );
+
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorCode == ProgressErrors.ValInvalidDate);
+    }
+
+    [Fact]
+    public void Validate_WhenNotesExceed500Chars_FailsValidation()
+    {
+        var command = new LogWeightOrchestrator(
+            Guid.NewGuid(),
+            75.0,
+            DateTime.UtcNow.AddHours(-1),
+            new string('A', 501)
+        );
+
+        var result = _validator.Validate(command);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.ErrorCode == ProgressErrors.ValRequiredField);
+    }
 }

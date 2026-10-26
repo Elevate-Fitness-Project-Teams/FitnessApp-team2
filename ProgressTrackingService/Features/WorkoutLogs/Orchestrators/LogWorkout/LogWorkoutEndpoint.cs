@@ -5,6 +5,7 @@ using MediatR;
 using ProgressTrackingService.Common;
 using System.Security.Claims;
 using ProgressTrackingService.Common.Extensions;
+using ProgressTrackingService.Features.WorkoutLogs.DTOs;
 
 namespace ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 
@@ -15,15 +16,13 @@ public static class LogWorkoutEndpoint
         app.MapPost("/api/v1/progress/workouts", async (
             [FromBody] LogWorkoutRequest request,
             HttpContext httpContext,
-            ISender sender) =>
+            IMediator mediator) =>
         {
             var userIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
             {
                 return Results.Unauthorized();
             }
-
-            var authHeader = httpContext.Request.Headers.Authorization.ToString();
 
             var orchestrator = new LogWorkoutOrchestrator(
                 userId,
@@ -42,18 +41,19 @@ public static class LogWorkoutEndpoint
                     Reps = e.Reps,
                     WeightUsed = e.WeightUsed,
                     Completed = e.Completed
-                }).ToList() ?? new List<LogWorkoutExerciseDto>(),
-                authHeader
+                }).ToList() ?? new List<LogWorkoutExerciseDto>()
             );
 
-            var result = await sender.Send(orchestrator);
+            var result = await mediator.Send(orchestrator);
 
             if (!result.IsSuccess)
             {
                 return result.ToHttpResult();
             }
 
-            return Results.Created($"/api/v1/progress/workouts/{result.Value}", ApiResponse<Guid>.Success(result.Value));
+            return Results.Created(
+                $"/api/v1/progress/workouts/{result.Value.LogId}",
+                ApiResponse<LogWorkoutResponse>.Success(result.Value));
         })
         .RequireAuthorization()
         .WithName("LogWorkout")

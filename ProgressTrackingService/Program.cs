@@ -6,6 +6,8 @@ using Microsoft.IdentityModel.Tokens;
 using ProgressTrackingService.Common.Behaviors;
 using ProgressTrackingService.Common.Caching;
 using ProgressTrackingService.Common.Database;
+using ProgressTrackingService.Common.Grpc;
+using ProgressTrackingService.Grpc;
 using ProgressTrackingService.Data;
 using System.Security.Cryptography;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
@@ -33,6 +35,7 @@ builder.Services.AddMassTransit(x =>
 {
     x.SetKebabCaseEndpointNameFormatter();
     x.AddConsumer<UserRegisteredConsumer>();
+    x.AddConsumer<FitnessStatsSubmittedConsumer>();
 
     x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
     {
@@ -75,11 +78,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 builder.Services.AddSingleton<ICacheInvalidator, CacheInvalidator>();
 
-builder.Services.AddHttpClient("WorkoutService", client =>
+builder.Services.AddGrpcClient<WorkoutSessionGrpcService.WorkoutSessionGrpcServiceClient>(o =>
 {
-    var baseUrl = builder.Configuration["WorkoutService:BaseUrl"] ?? "http://workoutservice";
-    client.BaseAddress = new Uri(baseUrl);
+    var url = builder.Configuration["GrpcUrls:WorkoutService"] ?? "http://workoutservice:8080";
+    o.Address = new Uri(url);
 });
+builder.Services.AddScoped<IWorkoutSessionClient, WorkoutSessionGrpcClient>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi(options =>

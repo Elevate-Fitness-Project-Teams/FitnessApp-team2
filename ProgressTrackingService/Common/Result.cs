@@ -45,14 +45,29 @@ public class Result
         return new Result(true);
     }
 
+    public static Result<T> Success<T>(T value)
+    {
+        return Result<T>.Success(value);
+    }
+
     public static Result Failure(Error error, bool businessRuleFailed = false)
     {
         return new Result(false, error, businessRuleFailed);
     }
 
+    public static Result<T> Failure<T>(Error error, bool businessRuleFailed = false)
+    {
+        return Result<T>.Failure(error, businessRuleFailed);
+    }
+
     public static Result Failure(List<Error> errors, bool businessRuleFailed = false)
     {
         return new Result(false, errors, businessRuleFailed);
+    }
+
+    public static Result<T> Failure<T>(List<Error> errors, bool businessRuleFailed = false)
+    {
+        return Result<T>.Failure(errors, businessRuleFailed);
     }
 }
 
