@@ -1,7 +1,7 @@
 using MediatR;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Errors;
-
+using ProgressTrackingService.Features.Progress.Queries.GetProgressStats;
 using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
 
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
@@ -25,18 +25,18 @@ public class ViewUserProgressOrchestratorHandler : IRequestHandler<ViewUserProgr
             return Result<ViewUserProgressResponse>.Failure(Error.NotFound(ProgressErrors.ResUserNotFound, "User not found"));
         }
 
-        var userStatsResult = await _mediator.Send(new GetUserStatisticsQuery(request.UserId), cancellationToken);
-        if (!userStatsResult.IsSuccess || userStatsResult.Value == null)
+        var progressStatsResult = await _mediator.Send(new GetProgressStatsQuery(request.UserId), cancellationToken);
+        if (!progressStatsResult.IsSuccess)
         {
-            return Result<ViewUserProgressResponse>.Failure(userStatsResult.Error ?? Error.NotFound(ProgressErrors.ResUserNotFound, "User statistics not found."));
+            return Result<ViewUserProgressResponse>.Failure(progressStatsResult.Error);
         }
 
-        var workoutLogsResult = await _mediator.Send(new GetWorkoutLogsQuery(request.UserId), cancellationToken);
+        var workoutLogsResult = await _mediator.Send(new GetWorkoutLogsQuery(request.UserId, Limit: 10), cancellationToken);
         var weightHistoryResult = await _mediator.Send(new GetWeightHistoryQuery(request.UserId, Page: 1, PageSize: 30), cancellationToken);
 
         var response = new ViewUserProgressResponse
         {
-            Statistics = userStatsResult.Value,
+            Statistics = progressStatsResult.Value,
             WorkoutLogs = (workoutLogsResult.IsSuccess && workoutLogsResult.Value != null)
                 ? workoutLogsResult.Value
                 : new List<WorkoutLogDto>(),

@@ -1,3 +1,4 @@
+using ProgressTrackingService.Features.Progress.Queries.GetProgressStats;
 using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
 using ProgressTrackingService.Models;
 
@@ -5,7 +6,7 @@ namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 
 public class ViewUserProgressResponse
 {
-    public UserStatisticDto Statistics { get; set; } = new();
+    public ProgressStatsDto Statistics { get; set; } = new();
     public List<WorkoutLogDto> WorkoutLogs { get; set; } = new();
     public List<WeightHistoryDto> WeightHistory { get; set; } = new();
 }

@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProgressTrackingService.Common;
-using ProgressTrackingService.Common.Errors;
 using ProgressTrackingService.Common.Extensions;
-using System.Security.Claims;
+using ProgressTrackingService.Common.Security;
 
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 
@@ -18,20 +17,10 @@ public static class ViewUserProgressEndpoint
             HttpContext httpContext,
             IMediator mediator) =>
         {
-            var callerIdStr = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(callerIdStr) || !Guid.TryParse(callerIdStr, out var callerId))
+            var accessError = httpContext.EnsureAccess(userId);
+            if (accessError != null)
             {
-                return Results.Json(
-                    ApiResponse<object?>.Failure(new[] { ProgressErrors.AuthTokenInvalid }, "Unauthorized.", 401),
-                    statusCode: 401);
-            }
-
-            var isAdmin = httpContext.User.IsInRole("Admin");
-            if (callerId != userId && !isAdmin)
-            {
-                return Results.Json(
-                    ApiResponse<object?>.Failure(new[] { ProgressErrors.PermForbidden }, "You are not authorized to view this user's progress.", 403),
-                    statusCode: 403);
+                return accessError;
             }
 
             var query = new ViewUserProgressOrchestrator(userId);
@@ -41,6 +30,11 @@ public static class ViewUserProgressEndpoint
         })
         .RequireAuthorization()
         .WithName("ViewUserProgress")
-        .WithTags("ProgressTracking");
+        .WithTags("ProgressTracking")
+        .Produces<ApiResponse<ViewUserProgressResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .WithSummary("Retrieve user progress profile with bounded recent workout and weight activity");
     }
 }
