@@ -2,6 +2,8 @@ using MediatR;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Errors;
 
+using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
+
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 
 public record ViewUserProgressOrchestrator(Guid UserId) : IRequest<Result<ViewUserProgressResponse>>;
@@ -30,7 +32,7 @@ public class ViewUserProgressOrchestratorHandler : IRequestHandler<ViewUserProgr
         }
 
         var workoutLogsResult = await _mediator.Send(new GetWorkoutLogsQuery(request.UserId), cancellationToken);
-        var weightHistoryResult = await _mediator.Send(new GetWeightHistoryQuery(request.UserId), cancellationToken);
+        var weightHistoryResult = await _mediator.Send(new GetWeightHistoryQuery(request.UserId, Page: 1, PageSize: 30), cancellationToken);
 
         var response = new ViewUserProgressResponse
         {
@@ -39,7 +41,7 @@ public class ViewUserProgressOrchestratorHandler : IRequestHandler<ViewUserProgr
                 ? workoutLogsResult.Value
                 : new List<WorkoutLogDto>(),
             WeightHistory = (weightHistoryResult.IsSuccess && weightHistoryResult.Value != null)
-                ? weightHistoryResult.Value
+                ? weightHistoryResult.Value.Items.ToList()
                 : new List<WeightHistoryDto>()
         };
 

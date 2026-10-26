@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 using ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
+using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
 using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
 
@@ -213,5 +214,6 @@ app.MapControllers();
 app.MapLogWorkoutEndpoint();
 app.MapViewUserProgressEndpoint();
 app.MapLogWeightEndpoint();
+app.MapGetWeightHistoryEndpoint();
 
 app.Run();

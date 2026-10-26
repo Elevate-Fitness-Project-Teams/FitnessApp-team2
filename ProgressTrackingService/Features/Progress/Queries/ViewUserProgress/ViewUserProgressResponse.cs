@@ -1,3 +1,4 @@
+using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
 using ProgressTrackingService.Models;
 
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
@@ -30,10 +31,3 @@ public class WorkoutLogDto
     public DateTime CompletedAt { get; set; }
 }
 
-public class WeightHistoryDto
-{
-    public Guid Id { get; set; }
-    public double Weight { get; set; }
-    public DateTime Date { get; set; }
-    public string? Notes { get; set; }
-}
