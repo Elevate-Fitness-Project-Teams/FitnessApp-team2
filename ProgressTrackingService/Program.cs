@@ -16,6 +16,7 @@ using ProgressTrackingService.Features.Progress.Commands.LogWeight;
 using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
 using ProgressTrackingService.Features.Progress.Queries.GetProgressStats;
 using ProgressTrackingService.Features.Achievements.Queries.GetUserAchievements;
+using ProgressTrackingService.Features.Progress.Queries.GetProgressDashboard;
 using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
 
@@ -219,5 +220,6 @@ app.MapLogWeightEndpoint();
 app.MapGetWeightHistoryEndpoint();
 app.MapGetProgressStatsEndpoint();
 app.MapGetUserAchievementsEndpoint();
+app.MapGetProgressDashboardEndpoint();
 
 app.Run();
