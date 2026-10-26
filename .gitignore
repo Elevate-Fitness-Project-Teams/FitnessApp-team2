@@ -52,3 +52,4 @@ Keys/
 docker-compose.production.yml
 credentials.md
 .github/.DS_Store
+docs_conversation_reports/
