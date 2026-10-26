@@ -9,6 +9,13 @@ namespace ProgressTrackingService.Features.Streaks.Queries.GetStreak;
 public class GetStreakQuery : IRequest<Result<GetStreakResponse>>
 {
     public Guid UserId { get; set; }
+
+    public GetStreakQuery() { }
+
+    public GetStreakQuery(Guid userId)
+    {
+        UserId = userId;
+    }
 }
 
 public class GetStreakHandler : IRequestHandler<GetStreakQuery, Result<GetStreakResponse>>
