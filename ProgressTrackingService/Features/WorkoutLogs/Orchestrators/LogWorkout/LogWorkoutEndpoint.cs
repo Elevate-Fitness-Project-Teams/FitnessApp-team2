@@ -58,6 +58,12 @@ public static class LogWorkoutEndpoint
         })
         .RequireAuthorization()
         .WithName("LogWorkout")
-        .WithTags("ProgressTracking");
+        .WithTags("ProgressTracking")
+        .Produces<ApiResponse<LogWorkoutResponse>>(StatusCodes.Status201Created)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .WithSummary("Log workout completion, increment streaks, evaluate achievements, and complete session via gRPC");
     }
 }
