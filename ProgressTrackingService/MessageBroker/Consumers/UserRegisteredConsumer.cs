@@ -1,9 +1,9 @@
 using MassTransit;
-using Microsoft.EntityFrameworkCore;
-using ProgressTrackingService.Common.Database;
-using ProgressTrackingService.Models;
+using MediatR;
+using ProgressTrackingService.Features.Users.Commands.InitializeUserProgress;
 
 namespace ProgressTrackingService.MessageBroker.Consumers;
+
 public class UserRegisteredEvent
 {
     public Guid UserId { get; set; }
@@ -14,41 +14,32 @@ public class UserRegisteredEvent
 
 public class UserRegisteredConsumer : IConsumer<UserRegisteredEvent>
 {
-    private readonly IGeneralRepo<Streak> _streakRepo;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
     private readonly ILogger<UserRegisteredConsumer> _logger;
 
     public UserRegisteredConsumer(
-        IGeneralRepo<Streak> streakRepo,
-        IUnitOfWork unitOfWork,
+        IMediator mediator,
         ILogger<UserRegisteredConsumer> logger)
     {
-        _streakRepo = streakRepo;
-        _unitOfWork = unitOfWork;
+        _mediator = mediator;
         _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<UserRegisteredEvent> context)
     {
         var userId = context.Message.UserId;
-        _logger.LogInformation("Received UserRegisteredEvent for User {UserId}", userId);
+        _logger.LogInformation("Processing UserRegisteredEvent for User {UserId}", userId);
 
-        await _unitOfWork.ExecuteAsync(async () =>
+        var result = await _mediator.Send(new InitializeUserProgressCommand(userId), context.CancellationToken);
+
+        if (result.IsSuccess)
         {
-            var existing = await _streakRepo.Find(s => s.UserId == userId).FirstOrDefaultAsync(context.CancellationToken);
-            if (existing == null)
-            {
-                var newStreak = new Streak
-                {
-                    UserId = userId,
-                    CurrentStreak = 0,
-                    LongestStreak = 0,
-                    LastWorkoutDate = null
-                };
-
-                await _streakRepo.AddAsync(newStreak, context.CancellationToken);
-                _logger.LogInformation("Initialized Streak for User {UserId}", userId);
-            }
-        }, context.CancellationToken);
+            _logger.LogInformation("Successfully initialized baseline progress records for User {UserId}", userId);
+        }
+        else
+        {
+            _logger.LogError("Failed to initialize progress records for User {UserId}: {Error}", userId, result.Error?.Description);
+            throw new InvalidOperationException($"Failed to initialize progress for user {userId}: {result.Error?.Description}");
+        }
     }
 }
