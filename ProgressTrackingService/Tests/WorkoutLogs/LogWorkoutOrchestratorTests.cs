@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Caching;
 using ProgressTrackingService.Common.Database;
+using ProgressTrackingService.Common.Domain;
 using ProgressTrackingService.Common.Errors;
 using ProgressTrackingService.Common.Grpc;
 using ProgressTrackingService.Features.Achievements.DTOs;
@@ -86,9 +87,11 @@ public class LogWorkoutOrchestratorTests : IDisposable
                 Task.FromResult(Result.Success<Guid?>(existingLogId)))
             .Build();
 
+        var uow = new UnitOfWork(_db.Context);
         var handler = new LogWorkoutOrchestratorHandler(
             mediatorMock,
             _sessionClient,
+            uow,
             _invalidator,
             _publishEndpoint,
             NullLogger<LogWorkoutOrchestratorHandler>.Instance);
@@ -130,9 +133,11 @@ public class LogWorkoutOrchestratorTests : IDisposable
                 Task.FromResult(Result.Success<Guid?>(null)))
             .Build();
 
+        var uow = new UnitOfWork(_db.Context);
         var handler = new LogWorkoutOrchestratorHandler(
             mediatorMock,
             _sessionClient,
+            uow,
             _invalidator,
             _publishEndpoint,
             NullLogger<LogWorkoutOrchestratorHandler>.Instance);
@@ -155,6 +160,105 @@ public class LogWorkoutOrchestratorTests : IDisposable
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(ProgressErrors.ResSessionNotFound, result.Error.Code);
+        Assert.Empty(_publishEndpoint.PublishedMessages);
+    }
+
+    [Fact]
+    public async Task Handle_WhenSuccessful_ExecutesInsideUnitOfWorkAndPublishesOutboxEvent()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var workoutId = Guid.NewGuid();
+        var logId = Guid.NewGuid();
+        var sessionId = "session-success";
+
+        var mediatorMock = new MockMediatorBuilder()
+            .RegisterHandler<GetWorkoutLogBySessionQuery, Result<Guid?>>(q =>
+                Task.FromResult(Result.Success<Guid?>(null)))
+            .RegisterHandler<SaveWorkoutLogCommand, Result<Guid>>(cmd =>
+                Task.FromResult(Result.Success(logId)))
+            .RegisterHandler<UpdateStatisticCommand, Result>(cmd =>
+                Task.FromResult(Result.Success()))
+            .RegisterHandler<UpdateStreakCommand, Result<StreakCalculationResult>>(cmd =>
+                Task.FromResult(Result.Success(new StreakCalculationResult(CurrentStreak: 3, LongestStreak: 5, StreakUpdated: true))))
+            .RegisterHandler<EvaluateAchievementsOrchestrator, Result<List<EarnedAchievementDto>>>(cmd =>
+                Task.FromResult(Result.Success(new List<EarnedAchievementDto>())))
+            .Build();
+
+        var uow = new UnitOfWork(_db.Context);
+        var handler = new LogWorkoutOrchestratorHandler(
+            mediatorMock,
+            _sessionClient,
+            uow,
+            _invalidator,
+            _publishEndpoint,
+            NullLogger<LogWorkoutOrchestratorHandler>.Instance);
+
+        var request = new LogWorkoutOrchestrator(
+            userId,
+            workoutId,
+            sessionId,
+            DateTime.UtcNow,
+            45,
+            350,
+            "Intermediate",
+            "Great workout",
+            5,
+            new List<LogWorkoutExerciseDto>());
+
+        // Act
+        var result = await handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(logId, result.Value.LogId);
+        Assert.True(result.Value.StreakUpdated);
+        Assert.Equal(3, result.Value.CurrentStreak);
+        Assert.Single(_publishEndpoint.PublishedMessages);
+    }
+
+    [Fact]
+    public async Task Handle_WhenInnerCommandFails_RollsBackTransactionAndReturnsFailure()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var workoutId = Guid.NewGuid();
+        var sessionId = "session-fail";
+
+        var mediatorMock = new MockMediatorBuilder()
+            .RegisterHandler<GetWorkoutLogBySessionQuery, Result<Guid?>>(q =>
+                Task.FromResult(Result.Success<Guid?>(null)))
+            .RegisterHandler<SaveWorkoutLogCommand, Result<Guid>>(cmd =>
+                Task.FromResult(Result.Failure<Guid>(Error.Failure("DB.SaveFailed", "Disk write failure."))))
+            .Build();
+
+        var uow = new UnitOfWork(_db.Context);
+        var handler = new LogWorkoutOrchestratorHandler(
+            mediatorMock,
+            _sessionClient,
+            uow,
+            _invalidator,
+            _publishEndpoint,
+            NullLogger<LogWorkoutOrchestratorHandler>.Instance);
+
+        var request = new LogWorkoutOrchestrator(
+            userId,
+            workoutId,
+            sessionId,
+            DateTime.UtcNow,
+            30,
+            200,
+            "Beginner",
+            null,
+            4,
+            new List<LogWorkoutExerciseDto>());
+
+        // Act
+        var result = await handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Disk write failure", result.Error.Description);
         Assert.Empty(_publishEndpoint.PublishedMessages);
     }
 }
