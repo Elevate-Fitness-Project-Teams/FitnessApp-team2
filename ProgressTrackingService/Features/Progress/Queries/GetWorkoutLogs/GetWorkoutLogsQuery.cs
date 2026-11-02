@@ -6,7 +6,7 @@ using ProgressTrackingService.Models;
 
 namespace ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 
-public record GetWorkoutLogsQuery(Guid UserId) : IRequest<Result<List<WorkoutLogDto>>>;
+public record GetWorkoutLogsQuery(Guid UserId, int Limit = 10) : IRequest<Result<List<WorkoutLogDto>>>;
 
 public class GetWorkoutLogsQueryHandler : IRequestHandler<GetWorkoutLogsQuery, Result<List<WorkoutLogDto>>>
 {
@@ -19,9 +19,12 @@ public class GetWorkoutLogsQueryHandler : IRequestHandler<GetWorkoutLogsQuery, R
 
     public async Task<Result<List<WorkoutLogDto>>> Handle(GetWorkoutLogsQuery request, CancellationToken cancellationToken)
     {
+        var limit = request.Limit <= 0 ? 10 : (request.Limit > 100 ? 100 : request.Limit);
+
         var result = await _workoutLogRepo.Find(w => w.UserId == request.UserId)
             .AsNoTracking()
             .OrderByDescending(w => w.CompletedAt)
+            .Take(limit)
             .Select(wl => new WorkoutLogDto
             {
                 Id = wl.Id,

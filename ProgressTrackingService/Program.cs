@@ -13,6 +13,10 @@ using System.Security.Cryptography;
 using ProgressTrackingService.Features.WorkoutLogs.Orchestrators.LogWorkout;
 using ProgressTrackingService.Features.Progress.Queries.ViewUserProgress;
 using ProgressTrackingService.Features.Progress.Commands.LogWeight;
+using ProgressTrackingService.Features.Progress.Queries.GetWeightHistory;
+using ProgressTrackingService.Features.Progress.Queries.GetProgressStats;
+using ProgressTrackingService.Features.Achievements.Queries.GetUserAchievements;
+using ProgressTrackingService.Features.Progress.Queries.GetProgressDashboard;
 using ProgressTrackingService.MessageBroker.Consumers;
 using ProgressTrackingService.Middleware;
 
@@ -41,6 +45,14 @@ builder.Services.AddMassTransit(x =>
     {
         o.UseSqlServer();
         o.UseBusOutbox();
+        o.QueryDelay = TimeSpan.FromSeconds(5);
+        o.DuplicateDetectionWindow = TimeSpan.FromMinutes(30);
+    });
+
+    x.AddConfigureEndpointsCallback((ctx, name, cfg) =>
+    {
+        cfg.UseMessageRetry(r => r.Exponential(5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2)));
+        cfg.UseEntityFrameworkOutbox<ApplicationDbContext>(ctx);
     });
 
     x.UsingRabbitMq((context, cfg) =>
@@ -213,5 +225,9 @@ app.MapControllers();
 app.MapLogWorkoutEndpoint();
 app.MapViewUserProgressEndpoint();
 app.MapLogWeightEndpoint();
+app.MapGetWeightHistoryEndpoint();
+app.MapGetProgressStatsEndpoint();
+app.MapGetUserAchievementsEndpoint();
+app.MapGetProgressDashboardEndpoint();
 
 app.Run();

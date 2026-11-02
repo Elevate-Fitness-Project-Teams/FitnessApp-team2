@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using ProgressTrackingService.Common;
 using ProgressTrackingService.Common.Caching;
 using ProgressTrackingService.Common.Database;
+using ProgressTrackingService.Common.Domain;
 using ProgressTrackingService.Common.Errors;
 using ProgressTrackingService.Common.Grpc;
 using ProgressTrackingService.Features.Achievements.DTOs;
@@ -86,9 +87,11 @@ public class LogWorkoutOrchestratorTests : IDisposable
                 Task.FromResult(Result.Success<Guid?>(existingLogId)))
             .Build();
 
+        var uow = new UnitOfWork(_db.Context);
         var handler = new LogWorkoutOrchestratorHandler(
             mediatorMock,
             _sessionClient,
+            uow,
             _invalidator,
             _publishEndpoint,
             NullLogger<LogWorkoutOrchestratorHandler>.Instance);
@@ -130,9 +133,11 @@ public class LogWorkoutOrchestratorTests : IDisposable
                 Task.FromResult(Result.Success<Guid?>(null)))
             .Build();
 
+        var uow = new UnitOfWork(_db.Context);
         var handler = new LogWorkoutOrchestratorHandler(
             mediatorMock,
             _sessionClient,
+            uow,
             _invalidator,
             _publishEndpoint,
             NullLogger<LogWorkoutOrchestratorHandler>.Instance);
@@ -157,61 +162,105 @@ public class LogWorkoutOrchestratorTests : IDisposable
         Assert.Equal(ProgressErrors.ResSessionNotFound, result.Error.Code);
         Assert.Empty(_publishEndpoint.PublishedMessages);
     }
-}
 
-// Lightweight test dispatcher for orchestrator integration unit testing
-public class MockMediatorBuilder
-{
-    private readonly Dictionary<Type, Func<object, Task<object>>> _handlers = new();
-
-    public MockMediatorBuilder RegisterHandler<TRequest, TResponse>(Func<TRequest, Task<TResponse>> handler)
+    [Fact]
+    public async Task Handle_WhenSuccessful_ExecutesInsideUnitOfWorkAndPublishesOutboxEvent()
     {
-        _handlers[typeof(TRequest)] = async req =>
-        {
-            var res = await handler((TRequest)req);
-            return res!;
-        };
-        return this;
+        // Arrange
+        var userId = Guid.NewGuid();
+        var workoutId = Guid.NewGuid();
+        var logId = Guid.NewGuid();
+        var sessionId = "session-success";
+
+        var mediatorMock = new MockMediatorBuilder()
+            .RegisterHandler<GetWorkoutLogBySessionQuery, Result<Guid?>>(q =>
+                Task.FromResult(Result.Success<Guid?>(null)))
+            .RegisterHandler<SaveWorkoutLogCommand, Result<Guid>>(cmd =>
+                Task.FromResult(Result.Success(logId)))
+            .RegisterHandler<UpdateStatisticCommand, Result>(cmd =>
+                Task.FromResult(Result.Success()))
+            .RegisterHandler<UpdateStreakCommand, Result<StreakCalculationResult>>(cmd =>
+                Task.FromResult(Result.Success(new StreakCalculationResult(CurrentStreak: 3, LongestStreak: 5, StreakUpdated: true))))
+            .RegisterHandler<EvaluateAchievementsOrchestrator, Result<List<EarnedAchievementDto>>>(cmd =>
+                Task.FromResult(Result.Success(new List<EarnedAchievementDto>())))
+            .Build();
+
+        var uow = new UnitOfWork(_db.Context);
+        var handler = new LogWorkoutOrchestratorHandler(
+            mediatorMock,
+            _sessionClient,
+            uow,
+            _invalidator,
+            _publishEndpoint,
+            NullLogger<LogWorkoutOrchestratorHandler>.Instance);
+
+        var request = new LogWorkoutOrchestrator(
+            userId,
+            workoutId,
+            sessionId,
+            DateTime.UtcNow,
+            45,
+            350,
+            "Intermediate",
+            "Great workout",
+            5,
+            new List<LogWorkoutExerciseDto>());
+
+        // Act
+        var result = await handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        Assert.Equal(logId, result.Value.LogId);
+        Assert.True(result.Value.StreakUpdated);
+        Assert.Equal(3, result.Value.CurrentStreak);
+        Assert.Single(_publishEndpoint.PublishedMessages);
     }
 
-    public IMediator Build() => new MockMediator(_handlers);
-
-    private class MockMediator : IMediator
+    [Fact]
+    public async Task Handle_WhenInnerCommandFails_RollsBackTransactionAndReturnsFailure()
     {
-        private readonly Dictionary<Type, Func<object, Task<object>>> _handlers;
+        // Arrange
+        var userId = Guid.NewGuid();
+        var workoutId = Guid.NewGuid();
+        var sessionId = "session-fail";
 
-        public MockMediator(Dictionary<Type, Func<object, Task<object>>> handlers)
-        {
-            _handlers = handlers;
-        }
+        var mediatorMock = new MockMediatorBuilder()
+            .RegisterHandler<GetWorkoutLogBySessionQuery, Result<Guid?>>(q =>
+                Task.FromResult(Result.Success<Guid?>(null)))
+            .RegisterHandler<SaveWorkoutLogCommand, Result<Guid>>(cmd =>
+                Task.FromResult(Result.Failure<Guid>(Error.Failure("DB.SaveFailed", "Disk write failure."))))
+            .Build();
 
-        public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
-        {
-            var reqType = request.GetType();
-            if (_handlers.TryGetValue(reqType, out var handler))
-            {
-                var result = await handler(request);
-                return (TResponse)result;
-            }
-            throw new NotImplementedException($"No mock registered for {reqType.Name}");
-        }
+        var uow = new UnitOfWork(_db.Context);
+        var handler = new LogWorkoutOrchestratorHandler(
+            mediatorMock,
+            _sessionClient,
+            uow,
+            _invalidator,
+            _publishEndpoint,
+            NullLogger<LogWorkoutOrchestratorHandler>.Instance);
 
-        public Task Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest =>
-            Task.CompletedTask;
+        var request = new LogWorkoutOrchestrator(
+            userId,
+            workoutId,
+            sessionId,
+            DateTime.UtcNow,
+            30,
+            200,
+            "Beginner",
+            null,
+            4,
+            new List<LogWorkoutExerciseDto>());
 
-        public Task<object?> Send(object request, CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
+        // Act
+        var result = await handler.Handle(request, CancellationToken.None);
 
-        public Task Publish(object notification, CancellationToken cancellationToken = default) =>
-            Task.CompletedTask;
-
-        public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification =>
-            Task.CompletedTask;
-
-        public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
-
-        public IAsyncEnumerable<object?> CreateStream(object request, CancellationToken cancellationToken = default) =>
-            throw new NotImplementedException();
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Contains("Disk write failure", result.Error.Description);
+        Assert.Empty(_publishEndpoint.PublishedMessages);
     }
 }
+
+

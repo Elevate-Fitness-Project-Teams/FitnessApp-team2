@@ -109,6 +109,34 @@
       }
     },
     {
+      "DownstreamPathTemplate": "/api/v1/progress",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "progresstrackingservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/progress",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "1s",
+        "PeriodTimespan": 1,
+        "Limit": 30
+      },
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 15000
+      }
+    },
+    {
       "DownstreamPathTemplate": "/api/v1/profiles/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

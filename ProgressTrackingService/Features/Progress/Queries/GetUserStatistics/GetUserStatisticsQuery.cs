@@ -26,6 +26,8 @@ public class GetUserStatisticsQueryHandler : IRequestHandler<GetUserStatisticsQu
             {
                 TotalWorkouts = stat.TotalWorkouts,
                 TotalCaloriesBurned = stat.TotalCaloriesBurned,
+                TotalMinutes = stat.TotalMinutes,
+                CurrentWeight = stat.CurrentWeight,
                 TotalWeightLost = stat.TotalWeightLost,
                 UpdatedAt = stat.UpdatedAt
             })
