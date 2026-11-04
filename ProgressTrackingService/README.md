@@ -22,6 +22,73 @@ Downstream and peer microservices depend on PTS:
 
 ---
 
+### 1.3 Cross-Service External Calls & Messaging Topology Graph
+
+The following diagram details all synchronous gRPC calls, asynchronous RabbitMQ message contracts, transactional outbox/inbox mechanisms, and gateway entry points connecting `ProgressTrackingService` to the wider Elevate Fitness ecosystem:
+
+```mermaid
+flowchart TD
+    subgraph Clients["Clients & Edge Gateway"]
+        Mobile["Mobile App (Flutter / React Native)"]
+        Web["Web Portal (SPA)"]
+        Gateway["Ocelot API Gateway (/api/v1/progress/*)"]
+    end
+
+    subgraph PTS["ProgressTrackingService (PTS)"]
+        Endpoints["Minimal API Endpoints"]
+        Orchestrators["CQRS Write/Read Orchestrators"]
+        UoW["IUnitOfWork (Transaction & Savepoints)"]
+        LocalDB[("SQL Server: ProgressTrackingDb")]
+        Outbox[("EF Core Outbox Table")]
+        Inbox[("EF Core InboxState Table")]
+        RedisCache[("Redis Distributed Cache")]
+    end
+
+    subgraph PeerServices["External & Peer Services"]
+        AuthSvc["AuthenticationService"]
+        WorkoutSvc["WorkoutService"]
+        FceSvc["FitnessCalculationService (FCE)"]
+        NotifSvc["NotificationService / Event Bus"]
+    end
+
+    subgraph MessageBroker["MassTransit Message Broker (RabbitMQ)"]
+        ExUserReg["Exchange: UserRegisteredEvent"]
+        ExStatsSub["Exchange: FitnessStatsSubmittedEvent"]
+        ExWeightUpd["Exchange: WeightUpdatedEvent"]
+        ExWorkoutLog["Exchange: WorkoutLoggedEvent"]
+        ExAchEarned["Exchange: AchievementEarnedEvent"]
+    end
+
+    %% Client Ingress
+    Mobile & Web --> Gateway
+    Gateway -->|HTTP + Bearer JWT| Endpoints
+    Endpoints --> Orchestrators
+
+    %% Internal PTS Storage & Caching
+    Orchestrators --> UoW
+    UoW <--> LocalDB
+    UoW -->|Stage Outbound Events| Outbox
+    Orchestrators <-->|Cache Aside & Invalidation| RedisCache
+
+    %% Inbound Events (Async via RabbitMQ)
+    AuthSvc -->|Publish on Signup| ExUserReg
+    ExUserReg -->|Deliver to Consumer| Inbox
+    Inbox -->|Deduplicated Event| Orchestrators
+
+    FceSvc -->|Publish on Calorie Target Calc| ExStatsSub
+    ExStatsSub -->|Deliver to Consumer| Inbox
+
+    %% Synchronous gRPC Inter-Service Call
+    Orchestrators -->|Sync gRPC: CompleteSessionAsync| WorkoutSvc
+
+    %% Outbound Events (Async via Transactional Outbox)
+    Outbox -.->|MassTransit Outbox Dispatcher| ExWeightUpd & ExWorkoutLog & ExAchEarned
+    ExWeightUpd -->|Trigger Recalculation| FceSvc
+    ExWorkoutLog & ExAchEarned -->|Push Notifications & Badges| NotifSvc
+```
+
+---
+
 ### 1.2 Mathematical & Pure Domain Engine
 
 All core business calculations are implemented as pure, deterministic domain classes in `ProgressTrackingService.Common.Domain`:
@@ -241,12 +308,80 @@ All responses follow the unified envelope:
 
 ## 5. Distributed Caching Architecture (Redis)
 
-### 5.1 Cache Strategy
-* **Cache-Aside Pattern:** Handlers query Redis before accessing SQL Server. On cache miss, data is read from SQL and populated in Redis.
-* **Fault-Tolerant Fallback:** If Redis is down, calls fail open to SQL Server without throwing exceptions (`RedisCacheService` logs warning and continues).
-* **Atomic Post-Commit Invalidation:** Cache keys are invalidated **only after** `UnitOfWork.CommitAsync()` succeeds, preventing dirty reads.
+### 5.1 Caching Strategy & Resilience
+* **Cache-Aside Pattern:** Query handlers check Redis before accessing SQL Server. On a cache hit, data is returned instantly (< 5ms) without touching the database. On a cache miss, data is queried from SQL Server with `.AsNoTracking()`, serialized, and cached with a bounded TTL.
+* **Fault-Tolerant Fallback:** If Redis is down, calls degrade gracefully to SQL Server without throwing exceptions or degrading user experience (`RedisCacheService` logs a warning and continues).
+* **Atomic Post-Commit Invalidation:** Cache invalidation runs strictly **after** `UnitOfWork.CommitAsync()` succeeds, preventing dirty reads where the cache is cleared while the database transaction is rolled back.
 
-### 5.2 Cache Keys & TTLs
+---
+
+### 5.2 Cache-Aside Read Flow Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Mobile/Web Client
+    participant EP as Progress Query Endpoint
+    participant H as MediatR Query Handler
+    participant R as Redis Cache
+    participant DB as SQL Server (ProgressTrackingDb)
+
+    C->>EP: GET /api/v1/progress/stats/{userId}
+    EP->>H: Send(GetProgressStatsQuery)
+    H->>R: GET pts:stats:{userId}
+    alt Cache Hit (Data Exists in Redis)
+        R-->>H: Return Cached JSON Payload
+        H-->>EP: Return UserProgressStatsDto (< 5ms)
+        EP-->>C: 200 OK (Envelope with Data)
+    else Cache Miss (or Redis Offline / Fallback)
+        R-->>H: null (or Connection Exception Logged)
+        H->>DB: Query UserStatistics & Streaks (AsNoTracking)
+        DB-->>H: Return Fresh Aggregated Data
+        H->>R: SETEX pts:stats:{userId} (TTL: 10 min)
+        H-->>EP: Return UserProgressStatsDto
+        EP-->>C: 200 OK (Envelope with Data)
+    end
+```
+
+---
+
+### 5.3 Post-Commit Cache Invalidation Write Flow Diagram
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant C as Mobile/Web Client
+    participant EP as Progress Command Endpoint
+    participant O as LogWorkoutOrchestrator
+    participant UOW as UnitOfWork Transaction
+    participant DB as SQL Server
+    participant OB as MassTransit Outbox
+    participant INV as CacheInvalidator
+    participant R as Redis Cache
+
+    C->>EP: POST /api/v1/progress/workouts
+    EP->>O: Send(LogWorkoutOrchestrator)
+    O->>UOW: ExecuteAsync()
+    Note over O,DB: 1. Save Workout Log Aggregate<br/>2. Update Statistics (ExecuteUpdate)<br/>3. Update Streak & Badges
+    O->>OB: Stage Outbox Events
+    UOW->>DB: COMMIT Transaction (Data + Outbox atomically)
+    Note over O,INV: Post-Commit Hook Triggered
+    O->>INV: InvalidateUserAsync(userId)
+    par Atomic Invalidation Operations
+        INV->>R: DEL pts:stats:{userId}
+        INV->>R: DEL pts:achievements:{userId}
+        INV->>R: DEL pts:dashboard:{userId}:*
+        INV->>R: DEL pts:weighthistory:{userId}:*
+    end
+    INV-->>O: Invalidation Complete
+    O-->>EP: Return 201 Created
+    EP-->>C: Response Envelope
+    Note over C,R: Next Read Guaranteed to Fetch Fresh Committed State
+```
+
+---
+
+### 5.4 Cache Keys & TTLs Catalog
 
 | Cache Key Pattern | TTL | Contents | Invalidation Triggers |
 | :--- | :---: | :--- | :--- |
