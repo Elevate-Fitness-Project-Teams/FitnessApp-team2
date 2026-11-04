@@ -26,9 +26,27 @@ jobs:
           export TZ=Africa/Cairo
           echo "tag=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
 
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore FitnessApp.slnx
+
+      - name: Run Tests
+        run: dotnet test FitnessApp.slnx -c Release --no-restore --logger "trx;LogFileName=test_results.trx" --collect:"XPlat Code Coverage"
+
   build-and-push:
     name: Build & Push ${{ matrix.service }}
-    needs: generate-tag
+    needs: [generate-tag, test]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -75,7 +93,7 @@ jobs:
 
   summary:
     name: Deployment Summary
-    needs: [generate-tag, build-and-push]
+    needs: [generate-tag, test, build-and-push]
     runs-on: ubuntu-latest
     if: always()
     steps:
