@@ -40,6 +40,7 @@ public class ConsumerIntegrationTests
 
         var provider = services.BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
+        harness.TestTimeout = TimeSpan.FromSeconds(10);
 
         await harness.Start();
 
@@ -55,7 +56,7 @@ public class ConsumerIntegrationTests
             });
 
             // Assert
-            Assert.True(await harness.Consumed.Any<UserRegisteredEvent>());
+            Assert.True(await harness.Published.Any<UserRegisteredEvent>());
             var consumerHarness = harness.GetConsumerHarness<UserRegisteredConsumer>();
             Assert.True(await consumerHarness.Consumed.Any<UserRegisteredEvent>());
         }
@@ -91,6 +92,7 @@ public class ConsumerIntegrationTests
 
         var provider = services.BuildServiceProvider();
         var harness = provider.GetRequiredService<ITestHarness>();
+        harness.TestTimeout = TimeSpan.FromSeconds(10);
 
         await harness.Start();
 
@@ -106,7 +108,7 @@ public class ConsumerIntegrationTests
             });
 
             // Assert
-            Assert.True(await harness.Consumed.Any<FitnessStatsSubmittedEvent>());
+            Assert.True(await harness.Published.Any<FitnessStatsSubmittedEvent>());
             var consumerHarness = harness.GetConsumerHarness<FitnessStatsSubmittedConsumer>();
             Assert.True(await consumerHarness.Consumed.Any<FitnessStatsSubmittedEvent>());
         }
