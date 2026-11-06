@@ -7,6 +7,7 @@
   <Project Path="FitnessCalculationService/FitnessCalculationService.csproj" />
   <Project Path="NutritionService/NutritionService.csproj" />
   <Project Path="ProgressTrackingService/ProgressTrackingService.csproj" />
+  <Project Path="SubscriptionBillingService/SubscriptionBillingService.csproj" />
   <Project Path="UserProfileService/UserProfileService.csproj" />
   <Project Path="WorkoutService/WorkoutService.csproj" />
 </Solution>
