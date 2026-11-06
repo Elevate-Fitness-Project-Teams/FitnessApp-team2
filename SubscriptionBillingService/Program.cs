@@ -4,8 +4,12 @@ using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using SubscriptionBillingService.Common.Behaviors;
 using SubscriptionBillingService.Common.Database;
+using SubscriptionBillingService.Features.Subscriptions.Consumers;
+using SubscriptionBillingService.Infrastructure.Caching;
+using SubscriptionBillingService.Infrastructure.Paymob;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +24,46 @@ builder.Services.AddMediatR(cfg =>
 });
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
+// Paymob Options & Gateway HTTP Client
+builder.Services.Configure<PaymobOptions>(builder.Configuration.GetSection(PaymobOptions.SectionName));
+builder.Services.AddHttpClient<IPaymobGatewayClient, PaymobGatewayClient>((sp, client) =>
+{
+    var options = builder.Configuration.GetSection(PaymobOptions.SectionName).Get<PaymobOptions>() ?? new PaymobOptions();
+    client.BaseAddress = new Uri(options.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
+builder.Services.AddSingleton(sp =>
+{
+    var hmacSecret = builder.Configuration["Paymob:HmacSecret"] ?? string.Empty;
+    return new PaymobHmacValidator(hmacSecret);
+});
+
+// Redis Caching & Shared Connection Multiplexer
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var redisConfig = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    var options = ConfigurationOptions.Parse(redisConfig);
+    options.AbortOnConnectFail = false;
+    options.ConnectTimeout = 1000;
+    options.SyncTimeout = 500;
+    options.AsyncTimeout = 500;
+    return ConnectionMultiplexer.Connect(options);
+});
+builder.Services.AddSingleton<ISubscriptionTierCache, RedisSubscriptionTierCache>();
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    options.InstanceName = "sub:";
+});
+
 // MassTransit with Entity Framework Core Outbox & RabbitMQ
 builder.Services.AddMassTransit(x =>
 {
     x.SetKebabCaseEndpointNameFormatter();
+
+    x.AddConsumer<ProcessPaymobRefundConsumer>();
 
     x.AddEntityFrameworkOutbox<SubscriptionDbContext>(o =>
     {
@@ -46,6 +86,12 @@ builder.Services.AddMassTransit(x =>
             h.Password(password);
         });
 
+        cfg.ReceiveEndpoint("subscription-refund-processor", ep =>
+        {
+            ep.UseMessageRetry(r => r.Exponential(5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2)));
+            ep.ConfigureConsumer<ProcessPaymobRefundConsumer>(context);
+        });
+
         cfg.ConfigureEndpoints(context);
     });
 });
@@ -62,13 +108,6 @@ builder.Services.AddDbContext<SubscriptionDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-// Redis Caching
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
-    options.InstanceName = "sub:";
-});
 
 // RS256 JWT Authentication
 var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"] ?? "../Keys/auth-service-public.pem";
