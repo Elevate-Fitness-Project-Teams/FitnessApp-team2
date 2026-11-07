@@ -64,6 +64,8 @@ jobs:
             dockerfile: ./ProgressTrackingService/Dockerfile
           - service: fitnesscalc
             dockerfile: ./FitnessCalculationService/Dockerfile
+          - service: subscription
+            dockerfile: ./SubscriptionBillingService/Dockerfile
     steps:
       - name: Checkout
         uses: actions/checkout@v4

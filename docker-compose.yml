@@ -175,6 +175,39 @@ services:
       sqlserver:
         condition: service_healthy
 
+  subscriptionbillingservice:
+    image: ${DOCKER_REGISTRY-}subscriptionbillingservice
+    build:
+      context: .
+      dockerfile: SubscriptionBillingService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SubscriptionBillingDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - RabbitMq__Host=rabbitmq
+      - RabbitMq__VirtualHost=/
+      - RabbitMq__Username=guest
+      - RabbitMq__Password=guest
+      - Redis__ConnectionString=redis:6379
+      - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
+      - Jwt__KeyId=elevate-fitness-key-1
+      - Paymob__BaseUrl=https://accept.paymob.com
+      - Paymob__ApiKey=${PAYMOB_API_KEY:-mock_key}
+      - Paymob__SecretKey=${PAYMOB_SECRET_KEY:-mock_secret}
+      - Paymob__PublicKey=${PAYMOB_PUBLIC_KEY:-mock_public}
+      - Paymob__HmacSecret=${PAYMOB_HMAC_SECRET:-mock_hmac}
+      - Paymob__CardIntegrationId=${PAYMOB_CARD_INTEGRATION_ID:-123456}
+    volumes:
+      - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
+    ports:
+      - "8092:8080"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
     build:
@@ -186,6 +219,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Docker
       - Jwt__PublicKeyPath=/app/keys/auth-service-public.pem
       - Jwt__KeyId=elevate-fitness-key-1
+      - Redis__ConnectionString=redis:6379
     volumes:
       - ./Keys/auth-service-public.pem:/app/keys/auth-service-public.pem:ro
     depends_on:
@@ -194,4 +228,5 @@ services:
       - nutritionservice
       - progresstrackingservice
       - userprofileservice
-      - workoutservice
+      - workoutservice
+      - subscriptionbillingservice
