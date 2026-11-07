@@ -110,12 +110,23 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
 // RS256 JWT Authentication
-var publicKeyPath = builder.Configuration["Jwt:PublicKeyPath"] ?? "../Keys/auth-service-public.pem";
+var rawPublicKeyPath = builder.Configuration["Jwt:PublicKeyPath"] ?? "keys/auth-service-public.pem";
+var candidatePaths = new[]
+{
+    rawPublicKeyPath,
+    Path.Combine(builder.Environment.ContentRootPath, rawPublicKeyPath),
+    Path.Combine(builder.Environment.ContentRootPath, "keys/auth-service-public.pem"),
+    Path.Combine(builder.Environment.ContentRootPath, "../Keys/auth-service-public.pem"),
+    "/app/keys/auth-service-public.pem"
+};
+
+var resolvedKeyPath = candidatePaths.FirstOrDefault(File.Exists);
 RsaSecurityKey rsaSecurityKey;
-if (File.Exists(publicKeyPath))
+
+if (resolvedKeyPath != null)
 {
     var rsa = RSA.Create();
-    rsa.ImportFromPem(File.ReadAllText(publicKeyPath));
+    rsa.ImportFromPem(File.ReadAllText(resolvedKeyPath));
     rsaSecurityKey = new RsaSecurityKey(rsa)
     {
         KeyId = builder.Configuration["Jwt:KeyId"] ?? "elevate-fitness-key-1"
