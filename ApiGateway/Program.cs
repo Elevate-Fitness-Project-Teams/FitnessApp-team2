@@ -94,6 +94,21 @@ else
 builder.Services.AddAuthorization();
 builder.Services.AddHealthChecks();
 
+// Redis Connection for Dynamic Rate Limiting & Token Denylist
+var redisConn = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+try
+{
+    var redisOptions = StackExchange.Redis.ConfigurationOptions.Parse(redisConn);
+    redisOptions.AbortOnConnectFail = false;
+    redisOptions.ConnectTimeout = 1000;
+    var multiplexer = StackExchange.Redis.ConnectionMultiplexer.Connect(redisOptions);
+    builder.Services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(multiplexer);
+}
+catch (Exception ex)
+{
+    Log.Warning(ex, "Failed to connect to Redis from ApiGateway on startup. Continuing without Redis.");
+}
+
 // 5. Ocelot + Polly Provider
 builder.Services.AddOcelot(builder.Configuration)
     .AddPolly();
@@ -119,6 +134,9 @@ app.UseCors("GatewayCorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Dynamic Tier Rate Limiter (2000 req/hr for Premium, 100 req/hr for Free)
+app.UseMiddleware<ApiGateway.Middleware.DynamicTierRateLimitingMiddleware>();
 
 // 7. Gateway Health Endpoint
 app.MapHealthChecks("/health");

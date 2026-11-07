@@ -471,6 +471,44 @@
         "DurationOfBreak": 10000,
         "TimeoutValue": 15000
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/subscription/webhooks/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "subscriptionbillingservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/subscription/webhooks/{everything}",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 15000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/v1/subscription/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "subscriptionbillingservice",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/subscription/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      },
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 15000
+      }
     }
   ],
   "GlobalConfiguration": {
