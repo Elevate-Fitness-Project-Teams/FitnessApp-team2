@@ -73,6 +73,7 @@ public class PaymentAttemptConfiguration : IEntityTypeConfiguration<PaymentAttem
             .WithMany(s => s.PaymentAttempts)
             .HasPrincipalKey(s => s.UserId)
             .HasForeignKey(x => x.UserId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
