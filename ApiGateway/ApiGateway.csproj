@@ -11,6 +11,7 @@
     <PackageReference Include="Ocelot" Version="23.4.3" />
     <PackageReference Include="Ocelot.Provider.Polly" Version="23.4.3" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.24" />
   </ItemGroup>
 
 </Project>
