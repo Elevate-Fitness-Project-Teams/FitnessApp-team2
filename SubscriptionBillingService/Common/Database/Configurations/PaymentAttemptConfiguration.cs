@@ -67,13 +67,5 @@ public class PaymentAttemptConfiguration : IEntityTypeConfiguration<PaymentAttem
 
         builder.HasIndex(x => x.ProviderTransactionId)
             .HasDatabaseName("IX_PaymentAttempts_ProviderTransactionId");
-
-        // Relationships
-        builder.HasOne(x => x.UserSubscription)
-            .WithMany(s => s.PaymentAttempts)
-            .HasPrincipalKey(s => s.UserId)
-            .HasForeignKey(x => x.UserId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

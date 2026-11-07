@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -72,7 +72,6 @@ namespace SubscriptionBillingService.Common.Database.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_UserSubscriptions", x => x.Id);
-                    table.UniqueConstraint("AK_UserSubscriptions_UserId", x => x.UserId);
                 });
 
             migrationBuilder.CreateTable(
@@ -145,12 +144,6 @@ namespace SubscriptionBillingService.Common.Database.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_PaymentAttempts", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PaymentAttempts_UserSubscriptions_UserId",
-                        column: x => x.UserId,
-                        principalTable: "UserSubscriptions",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(

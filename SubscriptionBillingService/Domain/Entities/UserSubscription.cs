@@ -17,7 +17,4 @@ public class UserSubscription : BaseEntity
 
     [Timestamp]
     public byte[]? RowVersion { get; set; }
-
-    // Navigation properties
-    public ICollection<PaymentAttempt> PaymentAttempts { get; set; } = new List<PaymentAttempt>();
 }
