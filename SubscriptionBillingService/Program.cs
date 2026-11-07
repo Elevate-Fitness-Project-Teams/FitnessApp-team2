@@ -189,6 +189,10 @@ builder.Services.AddOpenApi(options =>
 
 builder.Services.AddHealthChecks();
 
+// Background Sweepers
+builder.Services.AddHostedService<SubscriptionBillingService.Infrastructure.Workers.SubscriptionExpirationSweeper>();
+builder.Services.AddHostedService<SubscriptionBillingService.Infrastructure.Workers.PendingRefundSweeper>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

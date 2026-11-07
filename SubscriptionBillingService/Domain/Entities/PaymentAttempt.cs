@@ -25,7 +25,6 @@ public class PaymentAttempt : BaseEntity
     public byte[]? RowVersion { get; set; }
 
     // Navigation properties
-    public UserSubscription? UserSubscription { get; set; }
     public ICollection<BillingLog> BillingLogs { get; set; } = new List<BillingLog>();
     public RefundRequest? RefundRequest { get; set; }
 }
