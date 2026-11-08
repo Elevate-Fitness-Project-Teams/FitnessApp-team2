@@ -21,8 +21,15 @@ public class RevokeRefreshTokenCommandHandler : IRequestHandler<RevokeRefreshTok
     {
         return await _unitOfWork.ExecuteAsync(async () =>
         {
-            var token = await _repo.Find(x => x.Token == request.Token)
-                .Select(x => new RefreshToken { Id = x.Id, RevokedAt = x.RevokedAt })
+            var query = _repo.Find(x => x.Token == request.Token);
+
+            if (!string.IsNullOrEmpty(request.UserId))
+            {
+                query = query.Where(x => x.UserId == request.UserId);
+            }
+
+            var token = await query
+                .Select(x => new RefreshToken { Id = x.Id, RevokedAt = x.RevokedAt, UserId = x.UserId })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (token != null && token.RevokedAt == null)

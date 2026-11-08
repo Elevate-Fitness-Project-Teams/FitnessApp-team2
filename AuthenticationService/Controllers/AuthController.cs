@@ -3,6 +3,7 @@ using AuthenticationService.Features.Auth.Commands.ChangeUserPassword;
 using AuthenticationService.Features.Auth.Orchestrators.ForgotPassword;
 using AuthenticationService.Features.Auth.Orchestrators.Login;
 using AuthenticationService.Features.Auth.Orchestrators.Logout;
+using AuthenticationService.Features.Auth.Orchestrators.LogoutAll;
 using AuthenticationService.Features.Auth.Orchestrators.RefreshToken;
 using AuthenticationService.Features.Auth.Orchestrators.Register;
 using AuthenticationService.Features.Auth.Orchestrators.ResetPassword;
@@ -14,6 +15,7 @@ using AuthenticationService.Models.Responses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace AuthenticationService.Controllers;
@@ -181,11 +183,20 @@ public class AuthController : ControllerBase
     [HttpPost("logout")]
     public async Task<IActionResult> Logout([FromBody] LogoutRequest request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
-        var command = new LogoutOrchestrator(request.RefreshToken, userId);
+        var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+        var expClaim = User.FindFirst(JwtRegisteredClaimNames.Exp)?.Value;
+        DateTime? expiresAtUtc = null;
+        if (long.TryParse(expClaim, out var expUnix))
+        {
+            expiresAtUtc = DateTimeOffset.FromUnixTimeSeconds(expUnix).UtcDateTime;
+        }
+
+        var command = new LogoutOrchestrator(request.RefreshToken, userId, jti, expiresAtUtc);
         var result = await _mediator.Send(command, cancellationToken);
 
         if (result.IsFailure)
@@ -194,6 +205,26 @@ public class AuthController : ControllerBase
                 result.Errors.First().Description));
 
         return Ok(ApiResponse<bool>.Success(true, "Logged out successfully."));
+    }
+
+    [Authorize]
+    [HttpPost("logout-all")]
+    public async Task<IActionResult> LogoutAll(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var command = new LogoutAllOrchestrator(userId);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return StatusCode(400, ApiResponse<bool>.Failure(
+                result.Errors.Select(e => e.Description),
+                result.Errors.First().Description));
+
+        return Ok(ApiResponse<bool>.Success(true, "Logged out from all devices successfully."));
     }
 
     [HttpPost("validate-token")]
