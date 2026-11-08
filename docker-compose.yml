@@ -47,6 +47,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=AuthenticationDb;User Id=sa;Password=Youssef@salah1;TrustServerCertificate=True;
+      - ConnectionStrings__Redis=redis:6379
+      - Redis__ConnectionString=redis:6379
       - RabbitMq__Host=rabbitmq
       - RabbitMq__VirtualHost=/
       - RabbitMq__Username=guest
@@ -61,6 +63,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_started
+      redis:
+        condition: service_healthy
 
   fitnesscalculationservice:
     image: ${DOCKER_REGISTRY-}fitnesscalculationservice

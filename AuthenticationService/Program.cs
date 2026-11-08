@@ -7,9 +7,11 @@ using AuthenticationService.Services;
 using FluentValidation;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -78,6 +80,28 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped(typeof(IGeneralRepo<>), typeof(GeneralRepo<>));
+
+// Redis Connection Multiplexer & Token Revocation Store
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var redisConfig = builder.Configuration["Redis:ConnectionString"]
+        ?? builder.Configuration.GetConnectionString("Redis")
+        ?? "localhost:6379";
+    var options = ConfigurationOptions.Parse(redisConfig);
+    options.AbortOnConnectFail = false;
+    options.ConnectTimeout = 1000;
+    options.SyncTimeout = 500;
+    options.AsyncTimeout = 500;
+    return ConnectionMultiplexer.Connect(options);
+});
+builder.Services.AddSingleton<ITokenRevocationStore, RedisTokenRevocationStore>();
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 
 builder.Services.AddOptions<JwtOptions>()
@@ -191,6 +215,8 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+
+app.UseForwardedHeaders();
 
 app.UseAuthentication();
 app.UseAuthorization();
