@@ -1,3 +1,9 @@
+<div align="center">
+
+<img src="../assets/logo.svg" alt="NextRep Logo" width="280" />
+
+</div>
+
 # Progress Tracking Service (PTS) — Architecture & Business Guide
 
 > **Microservice:** `ProgressTrackingService`  
@@ -11,8 +17,8 @@
 
 ## 1. Business Domain Overview
 
-### 1.1 Purpose in Elevate Fitness Ecosystem
-The **Progress Tracking Service (PTS)** is the central motivational, gamification, and historical analytics engine of the Elevate Fitness microservice platform. It captures daily workout completions, tracks body weight milestones, calculates consecutive training streaks, evaluates and awards milestone achievement badges, and projects comprehensive period-over-period analytics dashboards for athletes and coaches.
+### 1.1 Purpose in NextRep Ecosystem
+The **Progress Tracking Service (PTS)** is the central motivational, gamification, and historical analytics engine of the NextRep microservice platform. It captures daily workout completions, tracks body weight milestones, calculates consecutive training streaks, evaluates and awards milestone achievement badges, and projects comprehensive period-over-period analytics dashboards for athletes and coaches.
 
 Downstream and peer microservices depend on PTS:
 * **Authentication Service:** Publishes `UserRegisteredEvent` when a new athlete registers. PTS idempotently initializes baseline progress records (0 workouts, 0 streak) so new users never experience empty state exceptions.
@@ -24,7 +30,7 @@ Downstream and peer microservices depend on PTS:
 
 ### 1.3 Cross-Service External Calls & Messaging Topology Graph
 
-The following diagram details all synchronous gRPC calls, asynchronous RabbitMQ message contracts, transactional outbox/inbox mechanisms, and gateway entry points connecting `ProgressTrackingService` to the wider Elevate Fitness ecosystem:
+The following diagram details all synchronous gRPC calls, asynchronous RabbitMQ message contracts, transactional outbox/inbox mechanisms, and gateway entry points connecting `ProgressTrackingService` to the wider NextRep ecosystem:
 
 ```mermaid
 flowchart TD
@@ -419,7 +425,7 @@ To test the entire habit loop manually:
    ```bash
    POST http://localhost:8080/api/v1/auth/login
    {
-     "email": "testuser@elevate.com",
+     "email": "testuser@nextrep.com",
      "password": "Password123!"
    }
    ```

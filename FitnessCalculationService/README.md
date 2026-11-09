@@ -1,3 +1,9 @@
+<div align="center">
+
+<img src="../assets/logo.svg" alt="NextRep Logo" width="280" />
+
+</div>
+
 # Fitness Calculation Engine (FCE) — Architecture & Business Guide
 
 > **Microservice:** `FitnessCalculationService`  
@@ -10,8 +16,8 @@
 
 ## 1. Business Domain Overview
 
-### 1.1 Purpose in Elevate Fitness Ecosystem
-The **Fitness Calculation Engine (FCE)** is the central metabolic and exercise prescription brain of the Elevate Fitness microservice platform. It transforms raw physical user inputs (weight, height, age, gender, activity level, fitness goal) into clinically accurate, actionable daily targets (BMR, TDEE, Calorie Target, Calorie Status) and automatically matches and manages the user's active workout plan.
+### 1.1 Purpose in NextRep Ecosystem
+The **Fitness Calculation Engine (FCE)** is the central metabolic and exercise prescription brain of the NextRep microservice platform. It transforms raw physical user inputs (weight, height, age, gender, activity level, fitness goal) into clinically accurate, actionable daily targets (BMR, TDEE, Calorie Target, Calorie Status) and automatically matches and manages the user's active workout plan.
 
 Downstream microservices depend on FCE:
 * **Nutrition Service:** Synchronously requests user metabolic targets (`GET /api/v1/fitness/metrics/{userId}` or gRPC) to calculate macro breakdown and recommend meal plans.
@@ -23,7 +29,7 @@ Downstream microservices depend on FCE:
 
 ### 1.2 Mathematical & Clinical Domain Engine
 
-All metabolic calculations are executed by the pure, stateless domain service [`MetabolicCalculator`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Domain/Services/MetabolicCalculator.cs).
+All metabolic calculations are executed by the pure, stateless domain service [`MetabolicCalculator`](./Domain/Services/MetabolicCalculator.cs).
 
 #### 1. Basal Metabolic Rate (BMR)
 Calculated using the clinically validated **Mifflin-St Jeor Equation**:
@@ -334,7 +340,7 @@ erDiagram
 ## 5. Redis Distributed Caching Architecture
 
 ### 5.1 Architecture & Implementation
-* **Provider:** StackExchange.Redis integrated through `IDistributedCache` in [RedisCacheService.cs](file:///d:/Elevate%20Fitness/FitnessCalculationService/Common/Caching/RedisCacheService.cs).
+* **Provider:** StackExchange.Redis integrated through `IDistributedCache` in [RedisCacheService.cs](./Common/Caching/RedisCacheService.cs).
 * **Key Prefix:** `fce:`.
 * **JSON Serialization:** CamelCase naming with `JsonStringEnumConverter` for human-readable Redis inspectability.
 * **Resilient Non-Blocking Fallback:** All Redis operations (`GetAsync`, `SetAsync`, `RemoveAsync`) are wrapped in try-catch handlers. If Redis experiences a timeout or network outage, the service logs a warning and **falls back directly to the primary database** without failing user requests or aborting database transactions.
@@ -377,13 +383,13 @@ flowchart LR
 ```
 
 1. **Pure In-Process Invocation:**
-   Classes like [`MetabolicCalculator`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Domain/Services/MetabolicCalculator.cs) are **pure domain services**. They contain mathematical algorithms with no I/O dependencies. The test runner instantiates the class directly (`new MetabolicCalculator()`), passes arguments, and asserts the output. Execution happens in microseconds directly inside the CPU/RAM.
+   Classes like [`MetabolicCalculator`](./Domain/Services/MetabolicCalculator.cs) are **pure domain services**. They contain mathematical algorithms with no I/O dependencies. The test runner instantiates the class directly (`new MetabolicCalculator()`), passes arguments, and asserts the output. Execution happens in microseconds directly inside the CPU/RAM.
 
 2. **Validation Without Web Pipelines:**
    FluentValidation validators (e.g. `SubmitFitnessStatsCommandValidator`) are standalone classes. Tests invoke `.Validate(command)` directly in memory, testing boundary rules (e.g. `Age = 11` produces `VAL_INVALID_AGE`) without generating an HTTP request.
 
 3. **Test Doubles Instead of External Infrastructure:**
-   To test [`RedisCacheService`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Common/Caching/RedisCacheService.cs), we do not need a running Redis container. We inject [`TestDistributedCache`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Tests/Caching/TestDistributedCache.cs) (an in-memory dictionary) and [`FaultyDistributedCache`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Tests/Caching/FaultyDistributedCache.cs) (which intentionally throws `TimeoutException`). This proves that the cache serializes objects correctly and degrades gracefully when Redis is down.
+   To test [`RedisCacheService`](./Common/Caching/RedisCacheService.cs), we do not need a running Redis container. We inject [`TestDistributedCache`](./Tests/Caching/TestDistributedCache.cs) (an in-memory dictionary) and [`FaultyDistributedCache`](./Tests/Caching/FaultyDistributedCache.cs) (which intentionally throws `TimeoutException`). This proves that the cache serializes objects correctly and degrades gracefully when Redis is down.
 
 4. **Testing Endpoints Without Sockets (Integration/API Testing):**
    In ASP.NET Core, endpoint testing can also be performed without opening network sockets using `WebApplicationFactory<Program>`. It boots the ASP.NET Core dependency injection container and middleware pipeline using an in-memory `TestServer`. Requests flow through an in-memory `HttpMessageHandler` directly to endpoint delegates and back into test assertions without TCP handshakes or firewall interference.
@@ -428,7 +434,7 @@ Passed!  - Failed: 0, Passed: 53, Skipped: 0, Total: 53, Duration: 328 ms - Fitn
 | `GET` | `/api/v1/fitness/plan-history/{userId}` | Get plan assignment audit log | Bearer JWT (Ownership) | None |
 
 ### 7.2 gRPC Endpoints
-Defined in [`Protos/calorie_target.proto`](file:///d:/Elevate%20Fitness/FitnessCalculationService/Protos/calorie_target.proto):
+Defined in [`Protos/calorie_target.proto`](./Protos/calorie_target.proto):
 * **Service:** `CalorieTargetService`
 * **Method:** `GetCalorieTarget(CalorieTargetRequest) returns (CalorieTargetResponse)`
 * **Usage:** High-performance, binary synchronous RPC invoked by `NutritionService` for sub-millisecond meal calculations.
@@ -438,7 +444,7 @@ Defined in [`Protos/calorie_target.proto`](file:///d:/Elevate%20Fitness/FitnessC
 ## 8. Local Setup & Docker Development
 
 ### 8.1 Docker Compose
-The microservice is fully orchestrated in the root [docker-compose.yml](file:///d:/Elevate%20Fitness/docker-compose.yml):
+The microservice is fully orchestrated in the root [docker-compose.yml](../docker-compose.yml):
 
 ```yaml
 fitnesscalculationservice:

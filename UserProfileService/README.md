@@ -1,3 +1,9 @@
+<div align="center">
+
+<img src="../assets/logo.svg" alt="NextRep Logo" width="280" />
+
+</div>
+
 # User Profile Service — Architecture & Vertical Slice Plan
 
 The **User Profile Service** manages user personal metadata, UI preferences, regional localization, privacy settings, and cached subscription flags. This service is structured using **Vertical Slice Architecture (VSA)** to maintain high feature cohesion and isolation.

@@ -1,6 +1,12 @@
-# 📦 Subscription & Billing Service (`SubscriptionBillingService`)
+<div align="center">
 
-> **Elevate Fitness Architecture & Service Documentation**  
+<img src="../assets/logo.svg" alt="NextRep Logo" width="280" />
+
+</div>
+
+# Subscription & Billing Service (`SubscriptionBillingService`)
+
+> **NextRep Architecture & Service Documentation**  
 > **Target Framework:** .NET 9.0 (ASP.NET Core Web API)  
 > **Persistence:** SQL Server (`SubscriptionBillingDb`) via Entity Framework Core 9  
 > **Caching:** Redis Distributed Cache (`StackExchange.Redis`)  
