@@ -4,9 +4,9 @@
 
 </div>
 
-# User Profile Service — Architecture & Vertical Slice Plan
+# User Profile Service — Architecture, Vertical Slice & CQRS Plan
 
-The **User Profile Service** manages user personal metadata, UI preferences, regional localization, privacy settings, and cached subscription flags. This service is structured using **Vertical Slice Architecture (VSA)** to maintain high feature cohesion and isolation.
+The **User Profile Service** manages user personal metadata, UI preferences, regional localization, privacy settings, and cached subscription flags. This service is structured using **Vertical Slice Architecture (VSA) and CQRS** to maintain high feature cohesion and isolation.
 
 ---
 

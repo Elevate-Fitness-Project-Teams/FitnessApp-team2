@@ -7,7 +7,7 @@
 **An Enterprise-Grade Distributed System Engineered with .NET 9, Vertical Slice Architecture, CQRS, MassTransit Transactional Outbox, gRPC (HTTP/2), Redis 7, Ocelot API Gateway, RS256 Asymmetric JWTs with Sub-Millisecond Hybrid Token Revocation, and Native Paymob Payment Processing**
 
 [![.NET 9.0](https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
-[![Architecture](https://img.shields.io/badge/Architecture-Microservices%20%7C%20Vertical%20Slice-00ADD8?style=for-the-badge)](./FitnessApp.slnx)
+[![Architecture](https://img.shields.io/badge/Architecture-Microservices%20%7C%20Vertical%20Slice%20%7C%20CQRS-00ADD8?style=for-the-badge)](./FitnessApp.slnx)
 [![Messaging](https://img.shields.io/badge/Event%20Bus-RabbitMQ%20%2B%20MassTransit%20Outbox-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)](./docker-compose.yml)
 [![RPC](https://img.shields.io/badge/Sync%20RPC-gRPC%20(Protobuf%20HTTP%2F2)-244C5A?style=for-the-badge&logo=google&logoColor=white)](./docker-compose.yml)
 [![Cache & Security](https://img.shields.io/badge/Redis%207-MGET%20Token%20Denylist%20%2B%20Cache-DC382D?style=for-the-badge&logo=redis&logoColor=white)](./ApiGateway/Middleware/TokenRevocationMiddleware.cs)
