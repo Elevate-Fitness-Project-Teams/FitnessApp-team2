@@ -23,8 +23,7 @@ public class RefreshTokenOrchestratorHandlerTests
         _unitOfWork = new FakeUnitOfWork();
         _tokenRevocationStore = new FakeTokenRevocationStore();
 
-        var privateKeyPath = FindKeyFile("auth-service-private.pem");
-        var publicKeyPath = FindKeyFile("auth-service-public.pem");
+        var (privateKeyPath, publicKeyPath) = TestRsaKeyHelper.EnsureTestKeys();
 
         var options = new JwtOptions
         {
@@ -42,21 +41,6 @@ public class RefreshTokenOrchestratorHandlerTests
             _jwtProvider,
             _unitOfWork,
             _tokenRevocationStore);
-    }
-
-    private static string FindKeyFile(string filename)
-    {
-        var candidates = new[]
-        {
-            Path.Combine(Directory.GetCurrentDirectory(), "keys", filename),
-            Path.Combine(Directory.GetCurrentDirectory(), "../Keys", filename),
-            Path.Combine(AppContext.BaseDirectory, "../../../keys", filename),
-            Path.Combine(AppContext.BaseDirectory, "../../../../Keys", filename),
-            Path.Combine(@"D:\Elevate Fitness\Keys", filename)
-        };
-
-        return candidates.FirstOrDefault(File.Exists)
-               ?? throw new FileNotFoundException($"Cannot locate key file: {filename}");
     }
 
     [Fact]
