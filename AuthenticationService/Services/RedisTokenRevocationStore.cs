@@ -132,3 +132,4 @@ public class RedisTokenRevocationStore : ITokenRevocationStore
         }
     }
 }
+

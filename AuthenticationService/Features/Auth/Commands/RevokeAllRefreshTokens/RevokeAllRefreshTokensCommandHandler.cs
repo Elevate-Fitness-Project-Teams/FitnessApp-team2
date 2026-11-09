@@ -36,3 +36,4 @@ public class RevokeAllRefreshTokensCommandHandler : IRequestHandler<RevokeAllRef
         }, cancellationToken);
     }
 }
+

@@ -118,3 +118,4 @@ public class TokenRevocationMiddleware
         await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
     }
 }
+

@@ -34,3 +34,4 @@ public class LogoutAllOrchestratorHandler : IRequestHandler<LogoutAllOrchestrato
         return Result.Success();
     }
 }
+

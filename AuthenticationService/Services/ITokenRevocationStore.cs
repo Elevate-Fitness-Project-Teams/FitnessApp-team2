@@ -18,3 +18,4 @@ public interface ITokenRevocationStore
     /// </summary>
     Task<bool> IsTokenRevokedAsync(string? jti, Guid? userId = null, long? issuedAtUnix = null, CancellationToken ct = default);
 }
+

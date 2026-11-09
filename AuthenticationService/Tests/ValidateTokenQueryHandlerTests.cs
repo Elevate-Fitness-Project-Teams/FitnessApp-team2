@@ -17,8 +17,7 @@ public class ValidateTokenQueryHandlerTests
 
     public ValidateTokenQueryHandlerTests()
     {
-        var privateKeyPath = FindKeyFile("auth-service-private.pem");
-        var publicKeyPath = FindKeyFile("auth-service-public.pem");
+        var (privateKeyPath, publicKeyPath) = TestRsaKeyHelper.EnsureTestKeys();
 
         var options = new JwtOptions
         {
@@ -33,21 +32,6 @@ public class ValidateTokenQueryHandlerTests
         _jwtProvider = new JwtProvider(Microsoft.Extensions.Options.Options.Create(options));
         _tokenRevocationStore = new FakeTokenRevocationStore();
         _handler = new ValidateTokenQueryHandler(_jwtProvider, _tokenRevocationStore);
-    }
-
-    private static string FindKeyFile(string filename)
-    {
-        var candidates = new[]
-        {
-            Path.Combine(Directory.GetCurrentDirectory(), "keys", filename),
-            Path.Combine(Directory.GetCurrentDirectory(), "../Keys", filename),
-            Path.Combine(AppContext.BaseDirectory, "../../../keys", filename),
-            Path.Combine(AppContext.BaseDirectory, "../../../../Keys", filename),
-            Path.Combine(@"D:\Elevate Fitness\Keys", filename)
-        };
-
-        return candidates.FirstOrDefault(File.Exists)
-               ?? throw new FileNotFoundException($"Cannot locate key file: {filename}");
     }
 
     [Fact]
