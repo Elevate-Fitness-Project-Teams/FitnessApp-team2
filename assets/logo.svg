@@ -1,0 +1,109 @@
+<svg id="svg-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 480" class="h-52 w-auto" fill="none">
+  <defs>
+    <linearGradient id="v1-copper" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D27D5E"/>
+      <stop offset="100%" stop-color="#BA6447"/>
+    </linearGradient>
+    <linearGradient id="v1-sage" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#769A89"/>
+      <stop offset="100%" stop-color="#5B7E6E"/>
+    </linearGradient>
+    <pattern id="v1-kc" width="4" height="4" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.9" fill="#181C1E" fill-opacity="0.4"/>
+    </pattern>
+    <pattern id="v1-ks" width="4" height="4" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="0.9" fill="#181C1E" fill-opacity="0.38"/>
+    </pattern>
+  </defs>
+
+  <g transform="translate(0, -25)">
+    <!-- Left Sage Barbell Plates -->
+    <g fill="url(#v1-sage)" stroke="#88AB9A" stroke-width="1.5">
+      <rect x="136" y="218" width="6" height="16" rx="2"/>
+      <rect x="147" y="206" width="11" height="40" rx="3"/>
+      <rect x="163" y="192" width="14" height="68" rx="4"/>
+      <rect x="182" y="176" width="17" height="100" rx="4.5"/>
+      <rect x="204" y="216" width="5" height="20" rx="1.5"/>
+      <rect x="209" y="221" width="32" height="10" rx="1" stroke="none"/>
+    </g>
+    <g fill="url(#v1-ks)">
+      <rect x="148" y="226" width="9" height="18" rx="2"/>
+      <rect x="164" y="226" width="12" height="32" rx="3"/>
+      <rect x="183" y="226" width="15" height="48" rx="3"/>
+    </g>
+
+    <!-- Right Sage Barbell Plates -->
+    <g fill="url(#v1-sage)" stroke="#88AB9A" stroke-width="1.5">
+      <rect x="374" y="221" width="28" height="10" rx="1" stroke="none"/>
+      <rect x="402" y="216" width="5" height="20" rx="1.5"/>
+      <rect x="412" y="176" width="17" height="100" rx="4.5"/>
+      <rect x="434" y="192" width="14" height="68" rx="4"/>
+      <rect x="453" y="206" width="11" height="40" rx="3"/>
+      <rect x="469" y="218" width="6" height="16" rx="2"/>
+    </g>
+    <g fill="url(#v1-ks)">
+      <rect x="413" y="226" width="15" height="48" rx="3"/>
+      <rect x="435" y="226" width="12" height="32" rx="3"/>
+      <rect x="454" y="226" width="9" height="18" rx="2"/>
+    </g>
+
+    <!-- Vertical Copper Dumbbell -->
+    <g>
+      <rect x="250" y="120" width="16" height="8" rx="2.5" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.2"/>
+      <rect x="228" y="132" width="60" height="15" rx="4" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.5"/>
+      <rect x="252" y="133" width="35" height="13" rx="3" fill="url(#v1-kc)"/>
+      <rect x="221" y="151" width="74" height="16" rx="4.5" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.5"/>
+      <rect x="248" y="152" width="45" height="14" rx="3" fill="url(#v1-kc)"/>
+      <path d="M 248 172 H 268 L 265 180 C 268 202, 268 232, 265 254 L 268 262 H 248 L 251 254 C 248 232, 248 202, 251 180 Z" fill="url(#v1-copper)"/>
+      <path d="M 260 182 C 263 202, 263 232, 260 252" stroke="#181C1E" stroke-width="2.5" stroke-linecap="round"/>
+      <rect x="221" y="267" width="74" height="16" rx="4.5" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.5"/>
+      <rect x="248" y="268" width="45" height="14" rx="3" fill="url(#v1-kc)"/>
+      <rect x="228" y="287" width="60" height="15" rx="4" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.5"/>
+      <rect x="252" y="288" width="35" height="13" rx="3" fill="url(#v1-kc)"/>
+      <rect x="250" y="306" width="16" height="8" rx="2.5" fill="url(#v1-copper)" stroke="#DF8E70" stroke-width="1.2"/>
+    </g>
+
+    <!-- Interlocking Sage 'N' + Copper Rising Arrow -->
+    <path d="M 274 186 L 274 248 L 293 248 L 293 228 L 339 282 L 366 282 L 366 202 L 347 224 L 347 262 L 274 186 Z" fill="url(#v1-sage)"/>
+    <path d="M 274 174 L 301 174 L 327 204 L 368 148 L 352 135 L 402 117 L 402 169 L 386 156 L 331 236 L 274 174 Z" fill="url(#v1-copper)"/>
+  </g>
+
+  <!-- Stencil Wordmark -->
+  <g id="v1-word" transform="translate(120, 336)" fill="#E4E2DD">
+    <g transform="translate(0, 0)">
+      <path d="M 0 10 L 0 64 L 13 64 L 13 34 L 0 10 Z"/>
+      <path d="M 2 0 L 16 0 L 46 52 L 46 64 L 34 64 L 2 0 Z"/>
+      <path d="M 35 0 L 48 0 L 48 42 L 35 20 L 35 0 Z"/>
+    </g>
+    <g transform="translate(62, 0)">
+      <rect x="0" y="0" width="13" height="64"/>
+      <rect x="18" y="0" width="24" height="12"/>
+      <rect x="18" y="26" width="21" height="12"/>
+      <rect x="18" y="52" width="24" height="12"/>
+    </g>
+    <g transform="translate(116, 0)">
+      <polygon points="0,0 15,0 48,64 33,64"/>
+      <polygon points="34,0 49,0 32,26 24,14"/>
+      <polygon points="0,64 15,64 25,48 17,36"/>
+    </g>
+    <g transform="translate(174, 0)">
+      <rect x="0" y="0" width="46" height="12"/>
+      <rect x="16.5" y="16" width="13" height="48"/>
+    </g>
+    <g transform="translate(232, 0)">
+      <rect x="0" y="0" width="13" height="64"/>
+      <path d="M 18 0 H 34 C 43 0, 48 6, 48 18 C 48 28, 43 34, 35 36 L 49 64 H 34 L 22 38 H 18 V 26 H 31 C 34 26, 36 23, 36 18 C 36 13, 34 11, 31 11 H 18 Z"/>
+    </g>
+    <g transform="translate(294, 0)">
+      <rect x="0" y="0" width="13" height="64"/>
+      <rect x="18" y="0" width="24" height="12"/>
+      <rect x="18" y="26" width="21" height="12"/>
+      <rect x="18" y="52" width="24" height="12"/>
+    </g>
+    <g transform="translate(348, 0)">
+      <rect x="0" y="0" width="13" height="64"/>
+      <path d="M 18 0 H 34 C 44 0, 49 7, 49 19 C 49 31, 44 38, 34 38 H 18 V 26 H 31 C 35 26, 36 23, 36 19 C 36 15, 35 12, 31 12 H 18 Z"/>
+    </g>
+  </g>
+</svg>
+
