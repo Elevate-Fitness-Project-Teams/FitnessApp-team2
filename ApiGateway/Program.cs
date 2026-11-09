@@ -135,6 +135,9 @@ app.UseCors("GatewayCorsPolicy");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Immediate Token Revocation Denylist Check (< 0.5 ms Redis MGET)
+app.UseMiddleware<ApiGateway.Middleware.TokenRevocationMiddleware>();
+
 // Dynamic Tier Rate Limiter (2000 req/hr for Premium, 100 req/hr for Free)
 app.UseMiddleware<ApiGateway.Middleware.DynamicTierRateLimitingMiddleware>();
 
