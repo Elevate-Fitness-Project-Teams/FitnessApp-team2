@@ -9,4 +9,5 @@ public static class AuthErrorCodes
     public const string InvalidCredentials = "AUTH_INVALID_CREDENTIALS";
     public const string UserNotFound = "RES_NOT_FOUND";
     public const string EmailNotConfirmed = "AUTH_EMAIL_NOT_CONFIRMED";
+    public const string TokenRevoked = "AUTH_TOKEN_REVOKED";
 }

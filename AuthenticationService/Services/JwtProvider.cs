@@ -19,11 +19,15 @@ public class JwtProvider : IJwtProvider
 
     public (string Token, int ExpiresIn) GenerateToken(UserDto applicationUser)
     {
+        var now = DateTime.UtcNow;
+        var iatSeconds = EpochTime.GetIntDate(now);
+
         Claim[] claims =
         {
             new(JwtRegisteredClaimNames.Sub, applicationUser.Id),
             new(JwtRegisteredClaimNames.Email, applicationUser.Email!),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Iat, iatSeconds.ToString(), ClaimValueTypes.Integer64)
         };
 
         var rsaKey = RsaKeyService.GetPrivateKey(_options.PrivateKeyPath, _options.KeyId);
@@ -32,7 +36,9 @@ public class JwtProvider : IJwtProvider
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.AddMinutes(_options.ExpirationInMinutes),
+            IssuedAt = now,
+            NotBefore = now.AddSeconds(-5),
+            Expires = now.AddMinutes(_options.ExpirationInMinutes),
             Issuer = _options.Issuer,
             Audience = _options.Audience,
             SigningCredentials = signingCredentials
@@ -54,23 +60,32 @@ public class JwtProvider : IJwtProvider
 
     public string? ValidateToken(string token)
     {
+        var principal = GetValidatedPrincipal(token);
+        return principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+               ?? principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    }
+
+    public ClaimsPrincipal? GetValidatedPrincipal(string token)
+    {
         var tokenHandler = new JwtSecurityTokenHandler();
         var rsaKey = RsaKeyService.GetPublicKey(_options.PublicKeyPath, _options.KeyId);
 
         try
         {
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     IssuerSigningKey = rsaKey,
                     ValidateIssuerSigningKey = true,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidIssuer = _options.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _options.Audience,
+                    ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
                 },
-                out var validatedToken);
+                out _);
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            return jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value;
+            return principal;
         }
         catch
         {
@@ -87,8 +102,10 @@ public class JwtProvider : IJwtProvider
         {
             IssuerSigningKey = rsaKey,
             ValidateIssuerSigningKey = true,
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = _options.Issuer,
+            ValidateAudience = true,
+            ValidAudience = _options.Audience,
             ValidateLifetime = false
         };
 
@@ -101,8 +118,8 @@ public class JwtProvider : IJwtProvider
                     StringComparison.InvariantCultureIgnoreCase))
                 return null;
 
-            return ((JwtSecurityToken)securityToken).Claims
-                .FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Sub)?.Value;
+            return principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                   ?? principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
         catch
         {
